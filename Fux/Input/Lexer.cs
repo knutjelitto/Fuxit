@@ -22,6 +22,7 @@ namespace Fux.Input
         public List<Rune> Text { get; }
 
         public int Offset { get; private set; }
+        public int Start { get; private set; }
         public int Length { get; }
 
         public int This => Ensure(Offset).Value;
@@ -43,31 +44,78 @@ namespace Fux.Input
             return Text[offset];
         }
 
-        public Lex Scan()
+        public Token Scan()
         {
-            var start = Offset;
+            Start = Offset;
             if (This == 0x0A) // linefeed
             {
-                Offset += 1;
-                return Lex.Newline;
+                return Build(Lex.Newline, 1);
             }
             if (This == 0x0D && Next == 0x0A) // return linefeed
             {
-                Offset += 2;
-                return Lex.Newline;
+                return Build(Lex.Newline, 2);
+            }
+            while (This == ' ') // space
+            {
+                Offset += 1;
+            }
+            if (Offset > Start)
+            {
+                return Build(Lex.Space);
             }
 
             switch (This)
             {
                 case '(':
-                    return Swallow(Lex.LParent);
+                    return Build(Lex.LParent, 1);
                 case ')':
-                    return Swallow(Lex.RParent);
+                    return Build(Lex.RParent, 1);
                 default:
+                    if (isLower)
+                    {
+                        return Build(LowerId());
+                    }
+                    else if (isUpper)
+                    {
+                        return Build(UpperId());
+                    }
                     break;
             }
 
             throw new NotImplementedException();
+        }
+
+        private Lex LowerId()
+        {
+            Assert(isLower);
+
+            IdTail();
+
+            return Lex.LowerId;
+        }
+
+        private Lex UpperId()
+        {
+            Assert(isUpper);
+
+            IdTail();
+
+            return Lex.UpperId;
+        }
+
+        private void IdTail()
+        {
+            Offset += 1;
+            while (isLower || isUpper || isDigit || This == '_' || This == '-')
+            {
+                Offset += 1;
+            }
+        }
+
+        private Token Build(Lex lex, int plus = 0)
+        {
+            Offset += plus;
+            return new Token(this, lex, Start, Offset);
         }
 
         private Lex Swallow(Lex lex)

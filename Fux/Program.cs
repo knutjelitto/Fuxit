@@ -11,7 +11,8 @@ namespace Fux
 
             while (true)
             {
-                lexer.Scan();
+                var lex = lexer.Scan();
+                Console.WriteLine($"{lex}");
             }
         }
     }

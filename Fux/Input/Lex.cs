@@ -9,6 +9,7 @@ namespace Fux.Input
     internal enum Lex
     {
         Newline,
+        Space,
         LowerId,
         UpperId,
         Number,
