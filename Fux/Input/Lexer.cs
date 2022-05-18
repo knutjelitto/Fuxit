@@ -10,6 +10,22 @@ namespace Fux.Input
 {
     internal class Lexer
     {
+        private static readonly HashSet<int> specials = new HashSet<int>
+        {
+            '{', '}',
+            '(', ')',
+            '[', ']',
+            '|', ';', ',',
+        };
+
+        private static readonly HashSet<int> symbols = new HashSet<int>
+        {
+            '$', '%', '&', '*', '+',
+            '~', '!', '\\', '^', '#',
+            '=', '.', ':', '-', '?',
+            '<', '>', '|',
+        };
+
         public Lexer(Source source)
         {
             Source = source;
@@ -27,6 +43,7 @@ namespace Fux.Input
 
         public int This => Ensure(Offset).Value;
         public int Next => Ensure(Offset + 1).Value;
+        public int Prev => Ensure(Offset - 1).Value;
 
         private Rune Ensure(int offset)
         {
@@ -41,7 +58,7 @@ namespace Fux.Input
                     Text.Add(new Rune(0));
                 }
             }
-            return Text[offset];
+            return offset >= 0 ? Text[offset] : new Rune(0);
         }
 
         public Token Scan()
@@ -70,19 +87,65 @@ namespace Fux.Input
                     return Build(Lex.LParent, 1);
                 case ')':
                     return Build(Lex.RParent, 1);
+                case '{':
+                    return Build(Lex.LBrace, 1);
+                case '}':
+                    return Build(Lex.RBrace, 1);
+                case '[':
+                    return Build(Lex.LBracket, 1);
+                case ']':
+                    return Build(Lex.RBracket, 1);
+                case '-' when IsDigit(Next):
+                    return Build(Number());
                 default:
-                    if (isLower)
+                    if (IsLower(This))
                     {
                         return Build(LowerId());
                     }
-                    else if (isUpper)
+                    else if (IsUpper(This))
                     {
                         return Build(UpperId());
+                    }
+                    else if (IsDigit(This))
+                    {
+                        return Build(Number());
+                    }
+                    else if (IsSymbol(This))
+                    {
+                        return Build(Operator());
                     }
                     break;
             }
 
             throw new NotImplementedException();
+        }
+
+        private Lex Operator()
+        {
+            Assert(isSymbol);
+
+            Offset += 1;
+
+            while (isSymbol)
+            {
+                Offset += 1;
+            }
+
+            return Lex.Operator;
+        }
+
+        private Lex Number()
+        {
+            Assert(This == '-' && IsDigit(Next) || IsDigit(This));
+
+            Offset += 1;
+
+            while (IsDigit(This))
+            {
+                Offset += 1;
+            }
+
+            return Lex.Number;
         }
 
         private Lex LowerId()
@@ -108,6 +171,11 @@ namespace Fux.Input
             Offset += 1;
             while (isLower || isUpper || isDigit || This == '_' || This == '-')
             {
+                if (This == '-' && (!IsLetter(Prev) || !IsLetter(Next)))
+                {
+                    break;
+                }
+
                 Offset += 1;
             }
         }
@@ -125,7 +193,7 @@ namespace Fux.Input
         }
 
         private bool isLower => 'a' <= This && This <= 'z';
-        private bool isUpper => 'A' <= This && This <= 'A';
+        private bool isUpper => 'A' <= This && This <= 'Z';
         private bool isLetter => isLower || isUpper;
         private bool isDigit => '0' <= This && This <= '9';
         private bool isPosDigit => '1' <= This && This <= '9';
@@ -135,5 +203,13 @@ namespace Fux.Input
         private bool isControl => 0x00 <= This && This <= 0x1F || 0x7F == This || 0x80 <= This && This <= 0x9F;
         private bool isSurrogate => 0xD800 <= This && This <= 0xDFFF;
         private bool isBidi => 0x200E == This || 0x200F == This || 0x202A <= This && This <= 0x202E || 0x2066 <= This && This <= 0x2069;
+        private bool isSymbol => symbols.Contains(This);
+        private bool isSpecial => specials.Contains(This);
+
+        private bool IsLower(int rune) => 'a' <= rune && rune <= 'z';
+        private bool IsUpper(int rune) => 'A' <= rune && rune <= 'Z';
+        private bool IsLetter(int rune) => IsLower(rune) || IsUpper(rune);
+        private bool IsDigit(int rune) => '0' <= rune && rune <= '9';
+        private bool IsSymbol(int rune) => symbols.Contains(rune);
     }
 }

@@ -20,7 +20,7 @@ namespace Fux.Input
         {
             if (lineOffset > line.Length)
             {
-                Console.Write("> ");
+                Console.Write("fux> ");
                 line = Console.ReadLine() ?? string.Empty;
                 lineOffset = 0;
             }

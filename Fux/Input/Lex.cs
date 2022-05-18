@@ -16,5 +16,9 @@ namespace Fux.Input
         Operator,
         LParent,
         RParent,
+        LBrace,
+        RBrace,
+        LBracket,
+        RBracket,
     }
 }

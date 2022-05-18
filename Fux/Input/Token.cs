@@ -26,22 +26,7 @@ namespace Fux.Input
             var value = string.Empty;
             if (End > Start)
             {
-                var builder = new StringBuilder();
-                builder.Append('(');
-                for (var at = Start; at < End; at++)
-                {
-                    var rune = Lexer.Text[at];
-                    if (rune.Value == '\n')
-                    {
-                        builder.Append("\\n");
-                    }
-                    else
-                    {
-                        builder.Append(char.ConvertFromUtf32(rune.Value));
-                    }
-                }
-                builder.Append(')');
-                value = builder.ToString();
+                value = $"({new Runes(Lexer.Text.Skip(Start).Take(End - Start))})";
             }
 
             return $"{Lex}{value}";
