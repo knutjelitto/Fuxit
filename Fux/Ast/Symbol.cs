@@ -8,12 +8,10 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class Number : Literal
+    internal abstract class Symbol : Atom
     {
-        public Number(Token token)
+        public Symbol(Token token)
         {
-            Assert(token.Lex == Lex.Number);
-
             Token = token;
         }
 

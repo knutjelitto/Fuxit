@@ -26,7 +26,7 @@ namespace Fux.Input
             return Lexer.Eof();
         }
 
-        public IEnumerable<Token> Nexter()
+        private IEnumerable<Token> Nexter()
         {
             var newlines = new List<Token>();
             var whites = new List<Token>();
@@ -40,11 +40,20 @@ namespace Fux.Input
 
                 var token = Lexer.Scan();
 
-                while (token.Newline)
+                if (token.Newline)
                 {
-                    newlines.Add(token);
+                    if (!token.StartContinuation && !lastToken.EndContinuation)
+                    {
+                        yield return new Token(Lex.Semicolon, token);
+                    }
 
-                    token = Lexer.Scan();
+                    do
+                    {
+                        newlines.Add(token);
+
+                        token = Lexer.Scan();
+                    }
+                    while (token.Newline);
                 }
 
                 while (token.White)

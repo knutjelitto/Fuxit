@@ -4,9 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Fux.Input;
+
 namespace Fux.Ast
 {
-    internal class Identifier : Atom
+    internal class Identifier : Symbol
     {
+        public Identifier(Token token) : base(token)
+        {
+        }
     }
 }

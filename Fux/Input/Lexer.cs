@@ -68,7 +68,7 @@ namespace Fux.Input
 
         public Token Bof()
         {
-            return Build(Lex.BOF);
+            return new Token(this, Lex.BOF, 0, 0);
         }
 
         public Token Scan()

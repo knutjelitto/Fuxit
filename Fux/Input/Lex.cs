@@ -11,12 +11,20 @@ namespace Fux.Input
     {
         BOF,
         EOF,
+        
         Newline,
         Space,
+        LineComment,
+        BlockComment,
+        
         LowerId,
         UpperId,
-        Number,
         Operator,
+
+        Number,
+
+        Semicolon,
+        
         LParent,
         RParent,
         LBrace,

@@ -18,6 +18,11 @@ namespace Fux.Input
             End = end;
         }
 
+        public Token(Lex lex, Token template)
+            : this(template.Lexer, lex, template.Start, template.End)
+        {
+        }
+
         public Lexer Lexer { get; }
         public Lex Lex { get; }
         public int Start { get; }
@@ -25,6 +30,24 @@ namespace Fux.Input
 
         public bool White => Lex == Lex.Space;
         public bool Newline => Lex == Lex.Newline;
+
+        public bool Atomic =>
+            Lex == Lex.Operator ||
+            Lex == Lex.LowerId ||
+            Lex == Lex.UpperId ||
+            Lex == Lex.Number;
+
+        public bool StartContinuation =>
+            Lex == Lex.Operator ||
+            Lex == Lex.RParent ||
+            Lex == Lex.RBrace ||
+            Lex == Lex.RBracket;
+
+        public bool EndContinuation =>
+            Lex == Lex.Operator ||
+            Lex == Lex.LParent ||
+            Lex == Lex.LBrace ||
+            Lex == Lex.LBracket;
 
         public void AddSpaces(IEnumerable<Token> spaces)
         {
