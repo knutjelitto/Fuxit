@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Fux.Input
 {
+    [Flags]
     internal enum Lex
     {
+        BOF,
+        EOF,
         Newline,
         Space,
         LowerId,

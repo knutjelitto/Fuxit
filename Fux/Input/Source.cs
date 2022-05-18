@@ -9,6 +9,6 @@ namespace Fux.Input
     internal abstract class Source
     {
         public abstract bool EOS { get; }
-        public abstract bool GetNext(out Rune rune);
+        public abstract bool GetNext(out char rune);
     }
 }

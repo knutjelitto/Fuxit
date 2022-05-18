@@ -20,16 +20,14 @@ namespace Fux.Input
 
         public override bool EOS => TextOffset >= Text.Length;
 
-        public override bool GetNext(out Rune rune)
+        public override bool GetNext(out char rune)
         {
             if (!EOS)
             {
-                var result = Rune.DecodeFromUtf16(Text[TextOffset..], out rune, out var consumed);
-                Assert(result == OperationStatus.Done);
-                TextOffset += consumed;
+                rune = Text[TextOffset++];
                 return true;
             }
-            rune = Rune.ReplacementChar;
+            rune = '\0';
             return false;
         }
     }

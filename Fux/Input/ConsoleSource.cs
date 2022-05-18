@@ -16,7 +16,7 @@ namespace Fux.Input
 
         public override bool EOS => false;
 
-        public override bool GetNext(out Rune rune)
+        public override bool GetNext(out char rune)
         {
             if (lineOffset > line.Length)
             {
@@ -27,14 +27,12 @@ namespace Fux.Input
          
             if (lineOffset < line.Length)
             {
-                var result = Rune.DecodeFromUtf16(line[lineOffset..], out rune, out var consumed);
-                Assert(result == OperationStatus.Done);
-                lineOffset += consumed;
+                rune = line[lineOffset++];
                 return true;
             }
 
             Assert(lineOffset == line.Length);
-            rune = new Rune('\n');
+            rune = '\n';
             lineOffset += 1;
             return true;
         }

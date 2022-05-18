@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Fux.Input
 {
-    internal class Runes : IReadOnlyList<Rune>
+    internal class Runes : IReadOnlyList<char>
     {
-        private readonly List<Rune> runes;
+        private readonly List<char> runes;
 
-        public Runes(IEnumerable<Rune> runes)
+        public Runes(IEnumerable<char> runes)
         {
-            this.runes = new List<Rune>(runes);
+            this.runes = new List<char>(runes);
         }
 
-        public Rune this[int index] => runes[index];
+        public char this[int index] => runes[index];
         public int Count => runes.Count;
-        public IEnumerator<Rune> GetEnumerator() => runes.GetEnumerator();
+        public IEnumerator<char> GetEnumerator() => runes.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)runes).GetEnumerator();
 
         public override string ToString()
@@ -26,17 +26,17 @@ namespace Fux.Input
             var builder = new StringBuilder();
             foreach (var rune in runes)
             {
-                if (rune.Value == '\n')
+                if (rune == '\n')
                 {
                     builder.Append("\\n");
                 }
-                else if (rune.Value == '\r')
+                else if (rune == '\r')
                 {
                     builder.Append("\\r");
                 }
                 else
                 {
-                    builder.Append(char.ConvertFromUtf32(rune.Value));
+                    builder.Append(rune);
                 }
             }
             return builder.ToString();

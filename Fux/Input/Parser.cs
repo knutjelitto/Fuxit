@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal class Parser
     {
-        public Parser(Lexer lexer)
+        public Parser(Layouter layouter)
         {
-            Lexer = lexer;
+            Layouter = layouter;
         }
 
-        public Lexer Lexer { get; }
+        public Layouter Layouter { get; }
     }
 }

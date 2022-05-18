@@ -29,23 +29,23 @@ namespace Fux.Input
         public Lexer(Source source)
         {
             Source = source;
-            Text = new List<Rune>();
+            Text = new List<char>();
             Offset = 0;
         }
 
         public Source Source { get; }
 
-        public List<Rune> Text { get; }
+        public List<char> Text { get; }
 
         public int Offset { get; private set; }
         public int Start { get; private set; }
         public int Length { get; }
 
-        public int This => Ensure(Offset).Value;
-        public int Next => Ensure(Offset + 1).Value;
-        public int Prev => Ensure(Offset - 1).Value;
+        public int This => Ensure(Offset);
+        public int Next => Ensure(Offset + 1);
+        public int Prev => Ensure(Offset - 1);
 
-        private Rune Ensure(int offset)
+        private char Ensure(int offset)
         {
             while (offset >= Text.Count)
             {
@@ -55,10 +55,20 @@ namespace Fux.Input
                 }
                 else
                 {
-                    Text.Add(new Rune(0));
+                    Text.Add('\0');
                 }
             }
-            return offset >= 0 ? Text[offset] : new Rune(0);
+            return offset >= 0 ? Text[offset] : '\0';
+        }
+
+        public Token Eof()
+        {
+            return Build(Lex.EOF);
+        }
+
+        public Token Bof()
+        {
+            return Build(Lex.BOF);
         }
 
         public Token Scan()

@@ -8,11 +8,12 @@ namespace Fux
         {
             var source = new ConsoleSource();
             var lexer = new Lexer(source);
+            var layouter = new Layouter(lexer);
 
             while (true)
             {
-                var lex = lexer.Scan();
-                Console.WriteLine($"{lex}");
+                var token = layouter.Next();
+                Console.WriteLine($"{token}");
             }
         }
     }
