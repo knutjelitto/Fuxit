@@ -8,12 +8,15 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class Number : Literal
+    internal class Unit : Atom
     {
-        public Number(Token token)
-            : base(token)
+        public Unit(Token left, Token right)
         {
-            Assert(token.Lex == Lex.Number);
+            Left = left;
+            Right = right;
         }
+
+        public Token Left { get; }
+        public Token Right { get; }
     }
 }

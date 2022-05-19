@@ -105,6 +105,8 @@ namespace Fux.Input
                     return Build(Lex.LBracket, 1);
                 case ']':
                     return Build(Lex.RBracket, 1);
+                case ';':
+                    return Build(Lex.Semicolon, 1);
                 case '-' when IsDigit(Next):
                     return Build(Number());
                 default:

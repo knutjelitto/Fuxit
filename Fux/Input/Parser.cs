@@ -4,51 +4,76 @@ namespace Fux.Input
 {
     internal class Parser
     {
+        private Token? current = null;
+
         public Parser(Layouter layouter)
         {
             Layouter = layouter;
-
-            Previous = Layouter.Lexer.Bof();
-            Current = Previous;
-            Advance();
         }
 
         public Layouter Layouter { get; }
 
-        private Token Previous { get; set; }
-        private Token Current { get; set; }
+        private Token Current
+        { 
+            get
+            {
+                if (current == null)
+                {
+                    current = Layouter.Next();
+                }
+                return current;
+            }
+        }
 
-        public Expr Expression()
+        public Expression Statement()
+        {
+            var expression = Expression();
+
+            Assert(Swallow().Lex == Lex.Semicolon);
+
+            return expression;
+        }
+
+        private Expression Expression()
         {
             return OperatorExpression();
         }
 
-        private Expr OperatorExpression()
+        private Expression OperatorExpression()
         {
             var first = PrefixExpression();
 
+            var rest = new List<OpExpr>();
+
             while (Current.IsOperator())
             {
-                var op = new Operator(Advance());
+                var op = new Operator(Swallow());
 
-                var next = PrefixExpression();
+                var expr = PrefixExpression();
 
-                first = new Apply(op, first, next);
+                var opExpr = new OpExpr(op, expr);
+
+                rest.Add(opExpr);
             }
 
-            return first;
+            if (rest.Count == 0)
+            {
+                return first;
+            }
+
+            return new OpChain(first, rest).Resolve();
         }
 
-        private Expr PrefixExpression()
+        private Expression PrefixExpression()
         {
-            Expr app;
+            Expression app;
 
             if (Current.IsOperator())
             {
-                var op = new Operator(Advance());
+                var op = new Operator(Swallow());
                 var argument = PrefixExpression();
 
-                app = new Apply(op, argument);
+                app = new Application(op, argument);
             }
             else
             {
@@ -58,22 +83,42 @@ namespace Fux.Input
             return app;
         }
 
-        private Expr ApplicationExpression()
+        private Expression ApplicationExpression()
         {
-            var expr = AtomExpression();
+            var first = AtomExpression();
 
-            return expr;
+            var rest = new List<Expression>();
+            while (IsAtomExpression())
+            {
+                rest.Add(AtomExpression());
+            }
+
+            if (rest.Count > 0)
+            {
+                return new Application(first, rest.ToArray());
+            }
+
+            return first;
         }
 
-        private Expr AtomExpression()
+        private bool IsAtomExpression()
+        {
+            return Current.Lex == Lex.Number
+                || Current.Lex == Lex.LowerId
+                || Current.Lex == Lex.UpperId
+                || Current.Lex == Lex.LParent
+                ;
+        }
+
+        private Expression AtomExpression()
         {
             if (Current.Lex == Lex.Number)
             {
-                return new Number(Advance());
+                return new Number(Swallow());
             }
             else if (Current.Lex == Lex.LowerId || Current.Lex == Lex.UpperId)
             {
-                return new Identifier(Advance());
+                return new Identifier(Swallow());
             }
             else if (Current.Lex == Lex.LParent)
             {
@@ -83,24 +128,51 @@ namespace Fux.Input
             throw new InvalidOperationException();
         }
 
-        private Expr ParentExpression()
+        private Expression ParentExpression()
         {
             Assert(Current.Lex == Lex.LParent);
 
-            Advance();
+            var left = Swallow();
+
+            var expressions = new List<Expression>();
 
             while (Current.Lex != Lex.RParent)
             {
                 var expr = Expression();
+
+                expressions.Add(Expression());
+
+                if (Current.Lex == Lex.Comma)
+                {
+                    Swallow();
+
+                    continue;
+                }
+            }
+
+            Assert(Current.Lex == Lex.RParent);
+
+            var right = Swallow();
+
+            if (expressions.Count == 0)
+            {
+                return new Unit(left, right);
+            }
+            else if (expressions.Count == 1)
+            {
+                return new SubExpression(left, right, expressions[0]);
+            }
+            else
+            {
+                return new TupleExpression(left, right, expressions);
             }
         }
 
-        private Token Advance()
+        private Token Swallow()
         {
             var current = Current;
 
-            Previous = Current;
-            Current = Layouter.Next();
+            this.current = null;
 
             return current;
         }

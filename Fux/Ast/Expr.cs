@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Ast
 {
-    internal abstract class Expr
+    internal abstract class Expression
     {
     }
 }

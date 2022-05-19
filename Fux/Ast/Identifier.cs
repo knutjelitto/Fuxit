@@ -13,5 +13,10 @@ namespace Fux.Ast
         public Identifier(Token token) : base(token)
         {
         }
+
+        public override string ToString()
+        {
+            return $"{Token}";
+        }
     }
 }

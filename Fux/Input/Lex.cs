@@ -24,6 +24,7 @@ namespace Fux.Input
         Number,
 
         Semicolon,
+        Comma,
         
         LParent,
         RParent,

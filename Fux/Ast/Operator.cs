@@ -13,5 +13,12 @@ namespace Fux.Ast
         public Operator(Token token) : base(token)
         {
         }
+
+        public string Text => Token.ToString();
+
+        public override string ToString()
+        {
+            return $"({Token})";
+        }
     }
 }
