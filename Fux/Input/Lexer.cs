@@ -109,6 +109,8 @@ namespace Fux.Input
                     return Build(Lex.Semicolon, 1);
                 case '-' when IsDigit(Next):
                     return Build(Number());
+                case '"':
+                    return String();
                 default:
                     if (IsLower(This))
                     {
@@ -160,9 +162,102 @@ namespace Fux.Input
             return Lex.Number;
         }
 
+        private Token String()
+        {
+            Assert(This == '"');
+            Offset += 1;
+
+            while(This != '"')
+            {
+                switch (This)
+                {
+                    case '\\':
+                        Escape();
+                        break;
+                    default:
+                        if (IsCharacter(This))
+                        {
+                            Offset += 1;
+                        }
+                        else
+                        {
+                            if (This == '\0')
+                            {
+                                throw new NotImplementedException("unexpected end in string literal");
+                            }
+                            throw new NotImplementedException("illegal character in string literal");
+                        }
+                        break;
+                }
+            }
+
+            Assert(This == '"');
+
+            Offset += 1;
+
+            return Build(Lex.String);
+        }
+
+        private void Escape()
+        {
+            Assert(This == '\\');
+
+            Offset += 1;
+
+            switch (This)
+            {
+                case 'n':
+                case 'r':
+                case 't':
+                case '\\':
+                case '\'':
+                case '\"':
+                    Offset += 1;
+                    break;
+                case 'x':
+                    Offset += 1;
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    break;
+                case 'u':
+                    Offset += 1;
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    break;
+                case 'U':
+                    Offset += 1;
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    Swallow(IsHexDigit);
+                    break;
+                default:
+                    Assert(false);
+                    break;
+            }
+        }
+
+        private int Swallow(Func<int, bool> predicate)
+        {
+            if (predicate(This))
+            {
+                var current = This;
+
+                Offset += 1;
+
+                return current;
+            }
+
+            throw new NotImplementedException($"can't match current character");
+        }
+
         private Lex LowerId()
         {
-            Assert(isLower);
+            Assert(IsLower(This));
 
             IdTail();
 
@@ -171,7 +266,7 @@ namespace Fux.Input
 
         private Lex UpperId()
         {
-            Assert(isUpper);
+            Assert(IsUpper(This));
 
             IdTail();
 
@@ -181,7 +276,7 @@ namespace Fux.Input
         private void IdTail()
         {
             Offset += 1;
-            while (isLower || isUpper || isDigit || This == '_' || This == '-')
+            while (IsLower(This) || IsUpper(This) || IsDigit(This) || This == '_' || This == '-')
             {
                 if (This == '-' && (!IsLetter(Prev) || !IsLetter(Next)))
                 {
@@ -204,17 +299,11 @@ namespace Fux.Input
             return lex;
         }
 
-        private bool isLower => 'a' <= This && This <= 'z';
-        private bool isUpper => 'A' <= This && This <= 'Z';
-        private bool isLetter => isLower || isUpper;
-        private bool isDigit => '0' <= This && This <= '9';
-        private bool isPosDigit => '1' <= This && This <= '9';
-        private bool isHexDigit => 'a' <= This && This <= 'f' || 'A' <= This && This <= 'F' || isDigit;
-        private bool isChar => isUnicode && !isControl && !isSurrogate && !isBidi;
-        private bool isUnicode => 0x00 <= This && This <= 0x10FFFF;
-        private bool isControl => 0x00 <= This && This <= 0x1F || 0x7F == This || 0x80 <= This && This <= 0x9F;
-        private bool isSurrogate => 0xD800 <= This && This <= 0xDFFF;
-        private bool isBidi => 0x200E == This || 0x200F == This || 0x202A <= This && This <= 0x202E || 0x2066 <= This && This <= 0x2069;
+        private bool IsCharacter(int rune) => IsUnicode(rune) && !IsControl(rune) && !IsSurrogate(rune) && !IsBidi(rune);
+        private bool IsUnicode(int rune) => 0x00 <= rune && rune <= 0x10FFFF;
+        private bool IsControl(int rune) => 0x00 <= rune && rune <= 0x1F || 0x7F == rune || 0x80 <= rune && rune <= 0x9F;
+        private bool IsSurrogate(int rune) => 0xD800 <= rune && rune <= 0xDFFF;
+        private bool IsBidi(int rune) => 0x200E == rune || 0x200F == rune || 0x202A <= rune && rune <= 0x202E || 0x2066 <= rune && rune <= 0x2069;
         private bool isSymbol => symbols.Contains(This);
         private bool isSpecial => specials.Contains(This);
 
@@ -222,6 +311,8 @@ namespace Fux.Input
         private bool IsUpper(int rune) => 'A' <= rune && rune <= 'Z';
         private bool IsLetter(int rune) => IsLower(rune) || IsUpper(rune);
         private bool IsDigit(int rune) => '0' <= rune && rune <= '9';
+        private bool IsPosDigit(int rune) => '1' <= rune && rune <= '9';
+        private bool IsHexDigit(int rune) => 'a' <= rune && rune <= 'f' || 'A' <= rune && rune <= 'F' || IsDigit(rune);
         private bool IsSymbol(int rune) => symbols.Contains(rune);
     }
 }

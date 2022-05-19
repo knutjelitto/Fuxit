@@ -11,7 +11,7 @@ namespace Fux.Input
         public Layouter(Lexer lexer)
         {
             Lexer = lexer;
-            Iterator = Nexter().GetEnumerator();
+            Iterator = Iterable().GetEnumerator();
         }
 
         public Lexer Lexer { get; }
@@ -26,7 +26,7 @@ namespace Fux.Input
             return Lexer.Eof();
         }
 
-        private IEnumerable<Token> Nexter()
+        private IEnumerable<Token> Iterable()
         {
             var newlines = new List<Token>();
             var whites = new List<Token>();

@@ -37,7 +37,8 @@ namespace Fux.Input
             Lex == Lex.Operator ||
             Lex == Lex.LowerId ||
             Lex == Lex.UpperId ||
-            Lex == Lex.Number;
+            Lex == Lex.Number ||
+            Lex == Lex.String;
 
         public bool StartContinuation =>
             Lex == Lex.Operator ||

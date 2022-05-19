@@ -8,12 +8,12 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class Number : Literal
+    internal class StringLiteral : Literal
     {
-        public Number(Token token)
+        public StringLiteral(Token token)
             : base(token)
         {
-            Assert(token.Lex == Lex.Number);
+            Assert(token.Lex == Lex.String);
         }
     }
 }
