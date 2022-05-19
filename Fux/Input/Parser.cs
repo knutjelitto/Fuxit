@@ -104,6 +104,7 @@ namespace Fux.Input
         private bool IsAtomExpression()
         {
             return Current.Lex == Lex.Number
+                || Current.Lex == Lex.String
                 || Current.Lex == Lex.LowerId
                 || Current.Lex == Lex.UpperId
                 || Current.Lex == Lex.LParent
@@ -114,7 +115,11 @@ namespace Fux.Input
         {
             if (Current.Lex == Lex.Number)
             {
-                return new Number(Swallow());
+                return new NumberLiteral(Swallow());
+            }
+            else if (Current.Lex == Lex.String)
+            {
+                return new StringLiteral(Swallow());
             }
             else if (Current.Lex == Lex.LowerId || Current.Lex == Lex.UpperId)
             {

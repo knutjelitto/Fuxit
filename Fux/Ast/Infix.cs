@@ -25,6 +25,7 @@ namespace Fux.Ast
             Add(">=", 110, Assoc.None);
 
             Add("+", 120, Assoc.Left);
+            Add("++", 120, Assoc.Left);
             Add("-", 120, Assoc.Left);
 
             Add("*", 130, Assoc.Left);

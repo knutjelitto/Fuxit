@@ -15,7 +15,7 @@ namespace Fux.Input
 
         public static bool IsLiteral(this Token token)
         {
-            return token.Lex == Lex.Number;
+            return token.Lex == Lex.Number || token.Lex == Lex.String;
         }
     }
 }

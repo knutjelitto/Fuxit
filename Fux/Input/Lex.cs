@@ -22,6 +22,7 @@ namespace Fux.Input
         Operator,
 
         Number,
+        String,
 
         Semicolon,
         Comma,
