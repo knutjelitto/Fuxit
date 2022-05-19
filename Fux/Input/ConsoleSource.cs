@@ -14,6 +14,11 @@ namespace Fux.Input
         private string line = string.Empty;
         private int lineOffset = 1;
 
+        public ConsoleSource()
+            : base("<console>")
+        {
+        }
+
         public override bool EOS => false;
 
         public override bool GetNext(out char rune)

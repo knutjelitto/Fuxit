@@ -9,9 +9,10 @@ namespace Fux.Input
 {
     internal class StringSource : Source
     {
-        public StringSource(string text)
+        public StringSource(string name, string content)
+            : base(name)
         {
-            Text = text;
+            Text = content;
             TextOffset = 0;
         }
 

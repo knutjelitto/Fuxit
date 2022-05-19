@@ -6,7 +6,12 @@ namespace Fux
     {
         static void Main(string[] args)
         {
-            var source = new ConsoleSource();
+            Run(Source.FromFile(@"src/core/Tuple.fux"));
+            //Run(new ConsoleSource());
+        }
+
+        static void Run(Source source)
+        {
             var lexer = new Lexer(source);
             var layouter = new Layouter(lexer);
             var parser = new Parser(layouter);

@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 #pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0028 // Simplify collection initialization
 
 namespace Fux.Input
 {
     internal class Lexer
     {
-        private static readonly HashSet<int> specials = new HashSet<int>
+        private static readonly HashSet<int> specials = new()
         {
             '{', '}',
             '(', ')',
@@ -18,7 +19,7 @@ namespace Fux.Input
             '|', ';', ',',
         };
 
-        private static readonly HashSet<int> symbols = new HashSet<int>
+        private static readonly HashSet<int> symbols = new()
         {
             '$', '%', '&', '*', '+',
             '~', '!', '\\', '^', '#',
@@ -29,13 +30,14 @@ namespace Fux.Input
         public Lexer(Source source)
         {
             Source = source;
-            Text = new List<char>();
+
             Offset = 0;
+
+            Lines = new List<int>();
+            Lines.Add(0);
         }
 
         public Source Source { get; }
-
-        public List<char> Text { get; }
 
         public int Offset { get; private set; }
         public int Start { get; private set; }
@@ -45,20 +47,11 @@ namespace Fux.Input
         public int Next => Ensure(Offset + 1);
         public int Prev => Ensure(Offset - 1);
 
+        public List<int> Lines { get; }
+
         private char Ensure(int offset)
         {
-            while (offset >= Text.Count)
-            {
-                if (Source.GetNext(out var rune))
-                {
-                    Text.Add(rune);
-                }
-                else
-                {
-                    Text.Add('\0');
-                }
-            }
-            return offset >= 0 ? Text[offset] : '\0';
+            return Source.Ensure(offset);
         }
 
         public Token Eof()
@@ -196,12 +189,6 @@ namespace Fux.Input
         {
             Offset += plus;
             return new Token(this, lex, Start, Offset);
-        }
-
-        private Lex Swallow(Lex lex)
-        {
-            Offset += 1;
-            return lex;
         }
 
         private bool isLower => 'a' <= This && This <= 'z';
