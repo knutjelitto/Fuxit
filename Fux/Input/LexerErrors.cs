@@ -21,6 +21,12 @@ namespace Fux.Input
                 new LexerError(Location, $"unexpected character `{(char)rune}´"));
         }
 
+        public DiagnosticException IllegalWhitespace(Token token)
+        {
+            return new DiagnosticException(
+                new LexerError(token.Location, $"illegal whitespace before {token}"));
+        }
+
         private ILocation Location => new Location(Lexer.Source, Lexer.Offset, 1);
     }
 }

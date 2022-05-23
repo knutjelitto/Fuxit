@@ -42,9 +42,8 @@
         public static Lex Space = new("_sp_");
         public static Lex LineComment = new("_line-comment_");
         public static Lex BlockComment = new("_block-comment_");
-        public static Lex LayoutIndent = new("❰");
-        public static Lex LayoutUndent = new("❱");
-        public static Lex LayoutSame = new("°");
+        public static Lex LayoutStart = new("〈〈");
+        public static Lex LayoutEnd = new("〉〉");
 
         public static Lex LowerId = new("_lower-id_");
         public static Lex UpperId = new("_upper-id_");

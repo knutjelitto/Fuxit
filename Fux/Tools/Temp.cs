@@ -5,8 +5,6 @@ namespace Fux.Tools
 {
     public static class Temp
     {
-        private static string temp = string.Empty;
-
         public static string TempPath(string top)
         {
             var path = Path.Combine(Environment.CurrentDirectory, "../../../../Temp");

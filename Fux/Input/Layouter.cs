@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Fux.Input
 {
     internal class Layouter
     {
         private Token? current = null;
+        private List<Token> tokens = new();
 
         public Layouter(Lexer lexer)
         {
@@ -28,13 +25,28 @@ namespace Fux.Input
             return Lexer.Eof();
         }
 
+        private Token NextToken()
+        {
+            var whites = new Whites();
+            var current = Lexer.CreateNext();
+
+            while (current.White)
+            {
+                whites.Add(current);
+
+                current = Lexer.CreateNext();
+            }
+
+            return current.TransferWhites(whites);
+        }
+
         private Token Current
         {
             get
             {
                 if (current == null)
                 {
-                    current = Lexer.CreateNext();
+                    current = NextToken();
                 }
                 return current;
             }
@@ -49,83 +61,45 @@ namespace Fux.Input
             return token;
         }
 
-        private IEnumerable<Token> Iterable(int indent, Whites whites)
+        private IEnumerable<Token> Collect()
         {
-            if (Current.Lex == Lex.EOF)
+            var starter = Current;
+
+            while (Current.Line == starter.Line)
             {
-                yield break;
+                if (Current.Lex == Lex.EOF)
+                {
+                    yield break;
+                }
+                yield return Consume();
             }
 
-            Assert(whites.IsValidBeforeIndent);
-            Assert(Current.Indent == indent);
-
-            var before = Current;
-
-            while (true)
+            if (!Current.Whites.IsTransparent)
             {
-                yield return Consume().TransferWhites(whites);
+                throw Lexer.Error.IllegalWhitespace(Current);
+            }
 
-                whites = CollectWhite();
+            Assert(Current.Line > starter.Line);
 
-                if (whites.IsValidInline)
+            if (Current.Column > starter.Column) // indented
+            {
+                foreach (var token in Collect().ToList())
                 {
-                    continue;
-                }
-
-                if (whites.IsValidBeforeIndent)
-                {
-                    if (Current.Indent > indent)
-                    {
-                        yield return new Token(Lex.LayoutIndent, new Location(Current.Location.Source, before.Location.Next, 0));
-
-                        foreach (var token in Iterable(Current.Indent, whites))
-                        {
-                            yield return token;
-                        }
-
-                        yield return new Token(Lex.LayoutUndent, new Location(Current.Location.Source, before.Location.Next, 0));
-                    }
-                    else if (Current.Indent == indent)
-                    {
-                        yield return new Token(Lex.LayoutSame, new Location(Current.Location.Source, before.Location.Next, 0));
-
-                        continue;
-                    }
-                    else
-                    {
-                        yield break;
-                    }
+                    yield return token;
                 }
             }
         }
 
         private IEnumerable<Token> Iterable()
-        {
-            var whites = CollectWhite();
+{
+            yield return new Token(Lex.LayoutStart, new Location(Lexer.Source, Current.Location.Offset, 0));
 
-            if (Current.Lex == Lex.EOF)
-            {
-                yield return Consume().TransferWhites(whites);
-
-                yield break;
-            }
-
-            Assert(Current.Indent == 1);
-
-            foreach (var token in Iterable(Current.Indent, whites))
+            foreach (var token in Collect().ToList())
             {
                 yield return token;
             }
-        }
 
-        private Whites CollectWhite()
-        {
-            var whites = new Whites();
-            while (Current.White)
-            {
-                whites.Add(Consume());
-            }
-            return whites;
+            yield return new Token(Lex.LayoutEnd, new Location(Lexer.Source, Current.Location.Offset, 0));
         }
     }
 }

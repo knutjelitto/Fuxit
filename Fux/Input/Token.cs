@@ -25,7 +25,8 @@ namespace Fux.Input
 
         public Lex Lex { get; }
         public ILocation Location { get; }
-        public int Indent => Location.Column;
+        public int Column => Location.Column;
+        public int Line => Location.Line;
 
         public bool White => Lex == Lex.Newline || Lex == Lex.Space || Lex == Lex.BlockComment || Lex == Lex.LineComment;
         public bool Newline => Lex == Lex.Newline;

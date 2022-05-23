@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal class Whites
     {
         private readonly List<Token> whites = new();
-        private bool validBeforeLexeme = true;
-        private bool validInline = true;
+        private bool transparent = true;
 
         public void Add(Token white)
         {
@@ -18,27 +11,25 @@ namespace Fux.Input
 
             if (white.Lex == Lex.BlockComment || white.Lex == Lex.LineComment)
             {
-                validBeforeLexeme = false;
+                transparent = false;
             }
             else if (white.Lex == Lex.Newline)
             {
-                validBeforeLexeme = true;
-                validInline = false;
+                transparent = true;
             }
             else
             {
-                validBeforeLexeme = validBeforeLexeme && white.Lex == Lex.Space;
+                transparent = transparent && white.Lex == Lex.Space;
             }
 
             whites.Add(white);
         }
 
-        public bool IsValidBeforeIndent => validBeforeLexeme;
-        public bool IsValidInline => validInline;
+        public bool IsTransparent => transparent;
 
         public override string ToString()
         {
-            return String.Join("", whites);
+            return string.Join("", whites);
         }
     }
 }

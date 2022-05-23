@@ -27,23 +27,19 @@ namespace Fux
                             do
                             {
                                 token = parser.Lexer.GetNext();
-                                if (token.Lex == Lex.LayoutIndent)
+                                if (token.Lex == Lex.LayoutStart)
                                 {
-                                    writer.WriteLine();
+                                    writer.WriteLine($"{token.Lex}");
                                     writer.Plus();
                                 }
-                                else if (token.Lex == Lex.LayoutUndent)
+                                else if (token.Lex == Lex.LayoutEnd)
                                 {
                                     writer.Minus();
-                                    writer.WriteLine();
-                                }
-                                else if (token.Lex == Lex.LayoutSame)
-                                {
-                                    writer.Write(" • ");
+                                    writer.WriteLine($"{token.Lex}");
                                 }
                                 else
                                 {
-                                    writer.Write($"{token}");
+                                    writer.Write($"{token} ");
                                 }
                             }
                             while (token.Lex != Lex.EOF);

@@ -44,7 +44,7 @@ namespace Fux.Input
 
         private int At(int offset) => Source.Ensure(Offset + offset);
 
-        private LexerErrors Error { get; }
+        public LexerErrors Error { get; }
 
         public Token Eof()
         {
