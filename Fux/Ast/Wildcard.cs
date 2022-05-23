@@ -8,15 +8,15 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class Unit : Atom
+    internal class Wildcard : Symbol
     {
-        public Unit(Token left, Token right)
+        public Wildcard(Token token) : base(token)
         {
-            Left = left;
-            Right = right;
         }
 
-        public Token Left { get; }
-        public Token Right { get; }
+        public override string ToString()
+        {
+            return $"{Token}";
+        }
     }
 }

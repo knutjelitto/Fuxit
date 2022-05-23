@@ -8,9 +8,9 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class TupleExpression : Atom
+    internal class ListExpression : Atom
     {
-        public TupleExpression(Token left, Token right, IReadOnlyList<Expression> expressions)
+        public ListExpression(Token left, Token right, IReadOnlyList<Expression> expressions)
         {
             Left = left;
             Right = right;

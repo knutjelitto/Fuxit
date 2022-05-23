@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Fux": {
+      "commandName": "Project",
+      "commandLineArgs": "rep"
+    }
+  }
+}

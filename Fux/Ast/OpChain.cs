@@ -17,6 +17,8 @@ namespace Fux.Ast
         public Expression First { get; }
         public IReadOnlyList<OpExpr> Rest { get; }
 
+        public override bool IsAtomic => throw new NotImplementedException();
+
         public Expression Resolve()
         {
             return Resolve(First, 0, Rest.ToList());
@@ -55,7 +57,8 @@ namespace Fux.Ast
                         lh_prec = Infix.Instance[lookahead.Text];
                     }
                 }
-                lhs = new Application(op, lhs, rhs);
+                lhs = op.Combine(lhs, rhs);
+                //lhs = new ApplicationExpression(op, lhs, rhs);
             }
 
             return lhs;

@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Fux.Tools
+namespace Fux.Ast
 {
-    internal interface ISource
+    internal class InfixExpression : Expression
     {
+        public override bool IsAtomic => false;
     }
 }

@@ -8,6 +8,8 @@ namespace Fux.Input
 {
     internal class Layouter
     {
+        private Token? current = null;
+
         public Layouter(Lexer lexer)
         {
             Lexer = lexer;
@@ -26,54 +28,104 @@ namespace Fux.Input
             return Lexer.Eof();
         }
 
-        private IEnumerable<Token> Iterable()
+        private Token Current
         {
-            var newlines = new List<Token>();
-            var whites = new List<Token>();
+            get
+            {
+                if (current == null)
+                {
+                    current = Lexer.CreateNext();
+                }
+                return current;
+            }
+        }
 
-            var lastToken = Lexer.Bof();
+        private Token Consume()
+        {
+            var token = Current;
+
+            current = null;
+
+            return token;
+        }
+
+        private IEnumerable<Token> Iterable(int indent, Whites whites)
+        {
+            if (Current.Lex == Lex.EOF)
+            {
+                yield break;
+            }
+
+            Assert(whites.IsValidBeforeIndent);
+            Assert(Current.Indent == indent);
+
+            var before = Current;
 
             while (true)
             {
-                newlines.Clear();
-                whites.Clear();
+                yield return Consume().TransferWhites(whites);
 
-                var token = Lexer.Scan();
+                whites = CollectWhite();
 
-                if (token.Newline)
+                if (whites.IsValidInline)
                 {
-                    if (!token.StartContinuation && !lastToken.EndContinuation)
-                    {
-                        yield return new Token(Lex.Semicolon, token);
-                    }
-
-                    do
-                    {
-                        newlines.Add(token);
-
-                        token = Lexer.Scan();
-                    }
-                    while (token.Newline);
+                    continue;
                 }
 
-                while (token.White)
+                if (whites.IsValidBeforeIndent)
                 {
-                    whites.Add(token);
+                    if (Current.Indent > indent)
+                    {
+                        yield return new Token(Lex.LayoutIndent, new Location(Current.Location.Source, before.Location.Next, 0));
 
-                    token = Lexer.Scan();
-                }
+                        foreach (var token in Iterable(Current.Indent, whites))
+                        {
+                            yield return token;
+                        }
 
-                token.AddSpaces(newlines.Concat(whites));
+                        yield return new Token(Lex.LayoutUndent, new Location(Current.Location.Source, before.Location.Next, 0));
+                    }
+                    else if (Current.Indent == indent)
+                    {
+                        yield return new Token(Lex.LayoutSame, new Location(Current.Location.Source, before.Location.Next, 0));
 
-                yield return token;
-
-                lastToken = token;
-
-                if (token.Lex == Lex.EOF)
-                {
-                    break;
+                        continue;
+                    }
+                    else
+                    {
+                        yield break;
+                    }
                 }
             }
+        }
+
+        private IEnumerable<Token> Iterable()
+        {
+            var whites = CollectWhite();
+
+            if (Current.Lex == Lex.EOF)
+            {
+                yield return Consume().TransferWhites(whites);
+
+                yield break;
+            }
+
+            Assert(Current.Indent == 1);
+
+            foreach (var token in Iterable(Current.Indent, whites))
+            {
+                yield return token;
+            }
+        }
+
+        private Whites CollectWhite()
+        {
+            var whites = new Whites();
+            while (Current.White)
+            {
+                whites.Add(Consume());
+            }
+            return whites;
         }
     }
 }

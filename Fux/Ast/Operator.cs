@@ -20,5 +20,33 @@ namespace Fux.Ast
         {
             return $"({Token})";
         }
+
+        public virtual Expression Combine(Expression lhs, Expression rhs)
+        {
+            return new ApplicationExpression(this, lhs, rhs);
+        }
+
+        public static Operator Arrow(Token token) => new ArrowOp(token);
+        public static Operator Select(Token token) => new SelectOp(token);
+
+        public class ArrowOp : Operator
+        {
+            public ArrowOp(Token token) : base(token) { }
+
+            public override Expression Combine(Expression lhs, Expression rhs)
+            {
+                return new ArrowExpr(this, lhs, rhs);
+            }
+        }
+        
+        public class SelectOp : Operator
+        {
+            public SelectOp(Token token) : base(token) { }
+
+            public override Expression Combine(Expression lhs, Expression rhs)
+            {
+                return new SelectExpr(this, lhs, rhs);
+            }
+        }
     }
 }

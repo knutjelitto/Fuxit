@@ -2,25 +2,24 @@
 
 namespace Fux
 {
-    internal class Program
+    internal class Program : Runner
     {
         static void Main(string[] args)
         {
-            Run(Source.FromFile(@"src/core/Tuple.fux"));
-            //Run(new ConsoleSource());
-        }
-
-        static void Run(Source source)
-        {
-            var lexer = new Lexer(source);
-            var layouter = new Layouter(lexer);
-            var parser = new Parser(layouter);
-
-            while (true)
+            if (args.Length == 1 && args[0] == "repl")
             {
-                var expr = parser.Statement();
-                Console.WriteLine($"{expr}");
+                RunRepl(new ConsoleSource());
             }
+            else
+            {
+                RunModule(Source.FromFile(@"src/core/Array.fux"));
+                //RunModule(Source.FromFile(@"src/core/Basics.fux"));
+                //RunModule(Source.FromFile(@"src/core/Bitwise.fux"));
+
+                //RunModule(Source.FromFile(@"src/core/Tester.fux"));
+            }
+
+            WaitForKey();
         }
     }
 }

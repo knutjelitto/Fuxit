@@ -1,4 +1,6 @@
-﻿namespace Fux.Errors
+﻿using Fux.Input;
+
+namespace Fux.Errors
 {
     public abstract class LocatedMessageError : Error
     {
@@ -13,9 +15,7 @@
 
         public override IEnumerable<string> Report()
         {
-            throw new NotImplementedException();
-            //var (line, column) = Location.Source.GetLineAndColumn(Location.Offset);
-            //writer.WriteLine($"{Location.Source.Name}({line},{column}): {Message}");
+            yield return $"{Location.Source.Name}({Location.Line},{Location.Column}): {Message}";
         }
     }
 }

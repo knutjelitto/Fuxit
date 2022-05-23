@@ -8,5 +8,6 @@ namespace Fux.Ast
 {
     internal abstract class Atom : Expression
     {
+        public override bool IsAtomic => true;
     }
 }

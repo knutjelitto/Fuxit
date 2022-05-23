@@ -1,58 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable IDE0028 // Simplify collection initialization
+﻿#pragma warning disable IDE1006 // Naming Styles
 
 namespace Fux.Input
 {
     internal class Lexer
     {
-        private static readonly HashSet<int> specials = new()
-        {
-            '{', '}',
-            '(', ')',
-            '[', ']',
-            '|', ';', ',',
-        };
+        private static readonly Dictionary<string, (string name, Lex kwLex)> keywords = new();
 
-        private static readonly HashSet<int> symbols = new()
+        static Lexer()
         {
-            '$', '%', '&', '*', '+',
-            '~', '!', '\\', '^', '#',
-            '=', '.', ':', '-', '?',
-            '<', '>', '|',
-        };
+            AddKw("module", Lex.KwModule);
+            AddKw("exposing", Lex.KwExposing);
+            AddKw("import", Lex.KwImport);
+
+            AddKw("type", Lex.KwType);
+
+            AddKw("if", Lex.KwIf);
+            AddKw("then", Lex.KwThen);
+            AddKw("else", Lex.KwElse);
+
+            AddKw("let", Lex.KwLet);
+            AddKw("in", Lex.KwIn);
+
+            AddKw("case", Lex.KwCase);
+        }
 
         public Lexer(Source source)
         {
             Source = source;
-
             Offset = 0;
-
-            Lines = new List<int>();
-            Lines.Add(0);
+            Error = new LexerErrors(this);
+            Layout = new Layouter(this);
         }
 
         public Source Source { get; }
-
         public int Offset { get; private set; }
         public int Start { get; private set; }
-        public int Length { get; }
 
-        public int This => Ensure(Offset);
-        public int Next => Ensure(Offset + 1);
-        public int Prev => Ensure(Offset - 1);
+        private Layouter Layout { get; }
 
-        public List<int> Lines { get; }
+        private int Current => Source.Ensure(Offset);
+        private int Next => Source.Ensure(Offset + 1);
+        private int Previous => Source.Ensure(Offset - 1);
 
-        private char Ensure(int offset)
-        {
-            return Source.Ensure(offset);
-        }
+        private int At(int offset) => Source.Ensure(Offset + offset);
+
+        private LexerErrors Error { get; }
 
         public Token Eof()
         {
@@ -61,21 +53,26 @@ namespace Fux.Input
 
         public Token Bof()
         {
-            return new Token(this, Lex.BOF, 0, 0);
+            return new Token(Lex.BOF, new Location(Source, 0, 0));
         }
 
-        public Token Scan()
+        public Token GetNext()
+        {
+            return Layout.Next();
+        }
+
+        public Token CreateNext()
         {
             Start = Offset;
-            if (This == 0x0A) // linefeed
+            if (Current == 0x0A) // linefeed
             {
                 return Build(Lex.Newline, 1);
             }
-            if (This == 0x0D && Next == 0x0A) // return linefeed
+            if (Current == 0x0D && Next == 0x0A) // return linefeed
             {
                 return Build(Lex.Newline, 2);
             }
-            while (This == ' ') // space
+            while (Current == ' ') // space
             {
                 Offset += 1;
             }
@@ -84,12 +81,14 @@ namespace Fux.Input
                 return Build(Lex.Space);
             }
 
-            switch (This)
+            switch (Current)
             {
                 case '(':
-                    return Build(Lex.LParent, 1);
+                    return LeftParentOrSymbol();
                 case ')':
                     return Build(Lex.RParent, 1);
+                case '{' when Next == '-':
+                    return BlockComment();
                 case '{':
                     return Build(Lex.LBrace, 1);
                 case '}':
@@ -100,40 +99,133 @@ namespace Fux.Input
                     return Build(Lex.RBracket, 1);
                 case ';':
                     return Build(Lex.Semicolon, 1);
-                case '-' when IsDigit(Next):
+                case ',':
+                    return Build(Lex.Comma, 1);
+                case ':' when !Next.IsSymbol():
+                    return Build(Lex.Colon, 1);
+                case '=' when !Next.IsSymbol():
+                    return Build(Lex.Define, 1);
+                case '-' when Next == '-':
+                    return LineComment();
+                case '-' when Next.IsDigit():
                     return Build(Number());
                 case '"':
                     return String();
+                case '_':
+                    return Wildcard();
                 default:
-                    if (IsLower(This))
+                    if (Current.IsLower())
                     {
-                        return Build(LowerId());
+                        return LowerId();
                     }
-                    else if (IsUpper(This))
+                    else if (Current.IsUpper())
                     {
                         return Build(UpperId());
                     }
-                    else if (IsDigit(This))
+                    else if (Current.IsDigit())
                     {
                         return Build(Number());
                     }
-                    else if (IsSymbol(This))
+                    else if (Current.IsSymbol())
                     {
                         return Build(Operator());
                     }
                     break;
             }
 
-            throw new NotImplementedException();
+            if (Source.EOS)
+            {
+                return Build(Lex.EOF);
+            }
+
+            throw Error.Unexpected(Current);
+        }
+
+        private Token LeftParentOrSymbol()
+        {
+            Assert(Current == '(');
+
+            if (Next.IsSymbol())
+            {
+                var offset = 1;
+
+                do
+                {
+                    offset += 1;
+                }
+                while (At(offset).IsSymbol());
+
+                if (At(offset) == ')')
+                {
+                    var token = Build(Lex.LowerId, offset + 1);
+
+                    return token;
+                }
+            }
+
+            return Build(Lex.LParent, 1);
+        }
+
+        private Token Wildcard()
+        {
+            Assert(Current == '_');
+
+            return Build(Lex.Wildcard, 1);
+        }
+
+        private Token BlockComment()
+        {
+            Assert(Current == '{' && Next == '-');
+
+            Offset += 2;
+
+            while (true)
+            {
+                if (Current == '{' && Next == '-')
+                {
+                    BlockComment();
+                }
+                else if (Current == '-' && Next == '}')
+                {
+                    return Build(Lex.BlockComment, 2);
+                }
+                else
+                {
+                    if (Current == '\n')
+                    {
+                        Source.NextLine(Offset + 1);
+                    }
+                    Offset += 1;
+                }
+            }
+        }
+
+        private Token LineComment()
+        {
+            Assert(Current == '-' && Next == '-');
+
+            Offset += 2;
+
+            while (true)
+            {
+                if (Current == '\n' || Current == '\r' || Current == '\0')
+                {
+                    return Build(Lex.LineComment);
+                }
+                else
+                {
+                    Offset += 1;
+                }
+            }
         }
 
         private Lex Operator()
         {
-            Assert(isSymbol);
+            Assert(Current.IsSymbol());
 
             Offset += 1;
 
-            while (isSymbol)
+            while (Current.IsSymbol())
             {
                 Offset += 1;
             }
@@ -143,11 +235,11 @@ namespace Fux.Input
 
         private Lex Number()
         {
-            Assert(This == '-' && IsDigit(Next) || IsDigit(This));
+            Assert(Current == '-' && Next.IsDigit() || Current.IsDigit());
 
             Offset += 1;
 
-            while (IsDigit(This))
+            while (Current.IsDigit())
             {
                 Offset += 1;
             }
@@ -157,24 +249,24 @@ namespace Fux.Input
 
         private Token String()
         {
-            Assert(This == '"');
+            Assert(Current == '"');
             Offset += 1;
 
-            while(This != '"')
+            while(Current != '"')
             {
-                switch (This)
+                switch (Current)
                 {
                     case '\\':
                         Escape();
                         break;
                     default:
-                        if (IsCharacter(This))
+                        if (Current.IsCharacter())
                         {
                             Offset += 1;
                         }
                         else
                         {
-                            if (This == '\0')
+                            if (Current == '\0')
                             {
                                 throw new NotImplementedException("unexpected end in string literal");
                             }
@@ -184,7 +276,7 @@ namespace Fux.Input
                 }
             }
 
-            Assert(This == '"');
+            Assert(Current == '"');
 
             Offset += 1;
 
@@ -193,11 +285,11 @@ namespace Fux.Input
 
         private void Escape()
         {
-            Assert(This == '\\');
+            Assert(Current == '\\');
 
             Offset += 1;
 
-            switch (This)
+            switch (Current)
             {
                 case 'n':
                 case 'r':
@@ -209,24 +301,24 @@ namespace Fux.Input
                     break;
                 case 'x':
                     Offset += 1;
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
                     break;
                 case 'u':
                     Offset += 1;
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
                     break;
                 case 'U':
                     Offset += 1;
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
-                    Swallow(IsHexDigit);
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
+                    Swallow(rune => rune.IsHexDigit());
                     break;
                 default:
                     Assert(false);
@@ -236,9 +328,9 @@ namespace Fux.Input
 
         private int Swallow(Func<int, bool> predicate)
         {
-            if (predicate(This))
+            if (predicate(Current))
             {
-                var current = This;
+                var current = Current;
 
                 Offset += 1;
 
@@ -248,18 +340,30 @@ namespace Fux.Input
             throw new NotImplementedException($"can't match current character");
         }
 
-        private Lex LowerId()
+        private int Swallow(int rune)
         {
-            Assert(IsLower(This));
+            return Swallow(current => current == rune);
+        }
+
+        private Token LowerId()
+        {
+            Assert(Current.IsLower());
 
             IdTail();
 
-            return Lex.LowerId;
+            var token = Build(Lex.LowerId);
+
+            if (keywords.TryGetValue(token.Text, out var tuple))
+            {
+                token = new Token(tuple.kwLex, token);
+            }
+
+            return token;
         }
 
         private Lex UpperId()
         {
-            Assert(IsUpper(This));
+            Assert(Current.IsUpper());
 
             IdTail();
 
@@ -269,9 +373,9 @@ namespace Fux.Input
         private void IdTail()
         {
             Offset += 1;
-            while (IsLower(This) || IsUpper(This) || IsDigit(This) || This == '_' || This == '-')
+            while (Current.IsLower() || Current.IsUpper() || Current.IsDigit() || Current == '_' || Current == '-')
             {
-                if (This == '-' && (!IsLetter(Prev) || !IsLetter(Next)))
+                if (Current == '-' && (!Previous.IsLetter() || !Next.IsLetter()))
                 {
                     break;
                 }
@@ -283,29 +387,16 @@ namespace Fux.Input
         private Token Build(Lex lex, int plus = 0)
         {
             Offset += plus;
-            return new Token(this, lex, Start, Offset);
+            if (lex == Lex.Newline)
+            {
+                Source.NextLine(Offset);
+            }
+            return new Token(lex, new Location(Source, Start, Offset - Start));
         }
 
-        private Lex Swallow(Lex lex)
+        private static void AddKw(string name, Lex kwLex)
         {
-            Offset += 1;
-            return lex;
+            keywords.Add(name, (name, kwLex));
         }
-
-        private bool IsCharacter(int rune) => IsUnicode(rune) && !IsControl(rune) && !IsSurrogate(rune) && !IsBidi(rune);
-        private bool IsUnicode(int rune) => 0x00 <= rune && rune <= 0x10FFFF;
-        private bool IsControl(int rune) => 0x00 <= rune && rune <= 0x1F || 0x7F == rune || 0x80 <= rune && rune <= 0x9F;
-        private bool IsSurrogate(int rune) => 0xD800 <= rune && rune <= 0xDFFF;
-        private bool IsBidi(int rune) => 0x200E == rune || 0x200F == rune || 0x202A <= rune && rune <= 0x202E || 0x2066 <= rune && rune <= 0x2069;
-        private bool isSymbol => symbols.Contains(This);
-        private bool isSpecial => specials.Contains(This);
-
-        private bool IsLower(int rune) => 'a' <= rune && rune <= 'z';
-        private bool IsUpper(int rune) => 'A' <= rune && rune <= 'Z';
-        private bool IsLetter(int rune) => IsLower(rune) || IsUpper(rune);
-        private bool IsDigit(int rune) => '0' <= rune && rune <= '9';
-        private bool IsPosDigit(int rune) => '1' <= rune && rune <= '9';
-        private bool IsHexDigit(int rune) => 'a' <= rune && rune <= 'f' || 'A' <= rune && rune <= 'F' || IsDigit(rune);
-        private bool IsSymbol(int rune) => symbols.Contains(rune);
     }
 }

@@ -10,28 +10,26 @@ namespace Fux.Input
     [DebuggerDisplay("{Dbg()}")]
     internal class Token
     {
-        private readonly List<Token> spacesBefore = new List<Token>();
+        private Whites? whitesBefore = new();
 
-        public Token(Lexer lexer, Lex lex, int start, int end)
+        public Token(Lex lex, ILocation location)
         {
-            Lexer = lexer;
             Lex = lex;
-            Start = start;
-            End = end;
+            Location = location;
         }
 
         public Token(Lex lex, Token template)
-            : this(template.Lexer, lex, template.Start, template.End)
+            : this(lex, template.Location)
         {
         }
 
-        public Lexer Lexer { get; }
         public Lex Lex { get; }
-        public int Start { get; }
-        public int End { get; }
+        public ILocation Location { get; }
+        public int Indent => Location.Column;
 
-        public bool White => Lex == Lex.Space;
+        public bool White => Lex == Lex.Newline || Lex == Lex.Space || Lex == Lex.BlockComment || Lex == Lex.LineComment;
         public bool Newline => Lex == Lex.Newline;
+        public Whites Whites => whitesBefore ?? new Whites();
 
         public bool Atomic =>
             Lex == Lex.Operator ||
@@ -42,35 +40,41 @@ namespace Fux.Input
 
         public bool StartContinuation =>
             Lex == Lex.Operator ||
+            Lex == Lex.LParent ||
             Lex == Lex.RParent ||
             Lex == Lex.RBrace ||
-            Lex == Lex.RBracket;
+            Lex == Lex.LBrace ||
+            Lex == Lex.RBracket ||
+            Lex == Lex.KwThen ||
+            Lex == Lex.KwElse ||
+            Lex == Lex.Comma;
 
         public bool EndContinuation =>
             Lex == Lex.Operator ||
             Lex == Lex.LParent ||
             Lex == Lex.LBrace ||
-            Lex == Lex.LBracket;
+            Lex == Lex.LBracket ||
+            Lex == Lex.KwThen ||
+            Lex == Lex.KwElse ||
+            Lex == Lex.Comma;
 
-        public void AddSpaces(IEnumerable<Token> spaces)
+        public Token TransferWhites(Whites whites)
         {
-            spacesBefore.AddRange(spaces);
+            whitesBefore = whites;
+
+            return this;
         }
+
+        public string Text => Location.Text;
 
         public override string ToString()
         {
-            return new Runes(Lexer.Text.Skip(Start).Take(End - Start)).ToString();
+            return Text;
         }
 
         public string Dbg()
         {
-            var value = string.Empty;
-            if (End > Start)
-            {
-                value = "(" + this + ")";
-            }
-
-            return $"{Lex}{value}";
+            return $"{Lex}(\"{Location.Text}\",{Location})";
         }
     }
 }

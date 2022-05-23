@@ -12,20 +12,20 @@ namespace Fux.Input
         public StringSource(string name, string content)
             : base(name)
         {
-            Text = content;
+            Content = content;
             TextOffset = 0;
         }
 
-        public string Text { get; }
+        public string Content { get; }
         public int TextOffset { get; private set; }
 
-        public override bool EOS => TextOffset >= Text.Length;
+        public override bool EOS => TextOffset >= Content.Length;
 
         public override bool GetNext(out char rune)
         {
             if (!EOS)
             {
-                rune = Text[TextOffset++];
+                rune = Content[TextOffset++];
                 return true;
             }
             rune = '\0';
