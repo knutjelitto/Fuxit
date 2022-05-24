@@ -2,28 +2,30 @@
 
 namespace Fux.Input
 {
-    internal class Parser
+    internal class Parser2
     {
         private Token? current = null;
 
-        public Parser(ParserErrors error, Line line)
+        public Parser2(Layout layout)
         {
-            Error = error;
-            Line = line;
+            Layout = layout;
+            Error = new ParserErrors();
         }
 
+
+        public Layout Layout { get; }
+        public Lexer Lexer => Layout.Lexer;
         public ParserErrors Error { get; }
-        public Line Line { get; }
 
         private Token Current
         { 
             get
             {
-                if (currentLine == null)
+                if (current == null)
                 {
-                    currentLine = Lines.GetLine();
+                    current = Layout.GetNext();
                 }
-                return currentLine.Tokens[0];
+                return current;
             }
         }
 

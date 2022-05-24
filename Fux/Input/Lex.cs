@@ -44,6 +44,8 @@
         public static Lex BlockComment = new("_block-comment_");
         public static Lex LayoutStart = new("«");
         public static Lex LayoutEnd = new("»");
+        public static Lex GroupStart = new("«");
+        public static Lex GroupEnd = new("»");
 
         public static Lex LowerId = new("_lower-id_");
         public static Lex UpperId = new("_upper-id_");
@@ -56,7 +58,8 @@
         public static Lex Colon = new(":");
         public static Lex Define = new Lex("=");
         public static Lex Semicolon = new(";");
-        public static Lex Comma = new(",");        
+        public static Lex Comma = new(",");
+        public static Lex Dot = new(".");
 
         public static Lex LParent = new("(");
         public static Lex RParent = new(")");

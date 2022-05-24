@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 
 namespace Fux.Input
 {
@@ -21,7 +16,7 @@ namespace Fux.Input
                     Assert(last.IsFlat && line.IsFlat);
                     foreach (var token in line.Tokens)
                     {
-                        last.Add(token);
+                        last.AddToken(token);
                     }
 
                     return;
@@ -29,6 +24,13 @@ namespace Fux.Input
             }
 
             lines.Add(line);
+        }
+
+        public Line Remove(int index)
+        {
+            var line = lines[index];
+            lines.RemoveAt(index);
+            return line;
         }
 
         public Line this[int index] => lines[index];
@@ -39,7 +41,11 @@ namespace Fux.Input
         private bool TailContinue(Token token)
         {
             return token.Lex == Lex.Comma
+                || token.Lex == Lex.LParent
                 || token.Lex == Lex.LBrace
+                || token.Lex == Lex.LBracket
+                || token.Lex == Lex.KwElse
+                || token.IsOperator()
                 ;
         }
 
@@ -47,6 +53,10 @@ namespace Fux.Input
         {
             return token.Lex == Lex.Comma
                 || token.Lex == Lex.RParent
+                || token.Lex == Lex.RBrace
+                || token.Lex == Lex.RBracket
+                || token.Lex == Lex.KwElse
+                || token.IsOperator();
                 ;
 
         }

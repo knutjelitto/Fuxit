@@ -91,6 +91,8 @@ namespace Fux.Input
                     return Build(Lex.RBracket, 1);
                 case ';':
                     return Build(Lex.Semicolon, 1);
+                case '.' when !Next.IsSymbol():
+                    return Build(Lex.Dot, 1);
                 case ',':
                     return Build(Lex.Comma, 1);
                 case ':' when !Next.IsSymbol():
@@ -227,13 +229,30 @@ namespace Fux.Input
 
         private Lex Number()
         {
-            Assert(Current == '-' && Next.IsDigit() || Current.IsDigit());
+            if (Current == '-')
+            {
+                Offset += 1;
+            }
+
+            Assert(Current.IsDigit());
 
             Offset += 1;
 
-            while (Current.IsDigit())
+            if (Current == 'x')
             {
                 Offset += 1;
+
+                while (Current.IsHexDigit())
+                {
+                    Offset += 1;
+                }
+            }
+            else
+            {
+                while (Current.IsDigit())
+                {
+                    Offset += 1;
+                }
             }
 
             return Lex.Number;

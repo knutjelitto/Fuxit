@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
-    internal class LineParser
+    internal class Liner
     {
         private Token? current = null;
 
-        public LineParser(Lexer lexer)
+        public Liner(Lexer lexer)
         {
             Lexer = lexer;
             Error = new ParserErrors();
@@ -20,11 +14,11 @@ namespace Fux.Input
 
         public ParserErrors Error { get; }
 
-        public Line? GetLine()
+        public Line GetLine()
         {
             if (Current.Lex == Lex.EOF)
             {
-                return null;
+                return new Line(Current);
             }
 
             return CreateLine();
@@ -36,7 +30,7 @@ namespace Fux.Input
             {
                 if (current == null)
                 {
-                    current = CreateNext();
+                    current = CreateNextToken();
                 }
                 return current;
             }
@@ -59,13 +53,15 @@ namespace Fux.Input
 
             while (!Current.EOF && Current.Line == starter.Line)
             {
-                line.Add(Consume());
+                line.AddToken(Consume());
             }
 
             if (Current.Column > starter.Column)
             {
                 CreateLines(line);
             }
+
+            line.Compress();
 
             return line;
         }
@@ -76,11 +72,11 @@ namespace Fux.Input
 
             while (!Current.EOF && Current.Column == starter.Column)
             {
-                parent.Add(CreateLine());
+                parent.AddIndent(CreateLine());
             }
         }
 
-        private Token CreateNext()
+        private Token CreateNextToken()
         {
             var whites = new Whites();
             var current = Lexer.GetNext();

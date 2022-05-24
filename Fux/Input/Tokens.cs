@@ -20,5 +20,10 @@ namespace Fux.Input
         public int Count => tokens.Count;
         public IEnumerator<Token> GetEnumerator() => tokens.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)tokens).GetEnumerator();
+
+        public override string ToString()
+        {
+            return string.Join(" ", tokens);
+        }
     }
 }

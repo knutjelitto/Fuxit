@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Ast;
-using Fux.Input;
+﻿using Fux.Input;
 
 namespace Fux
 {
@@ -15,19 +8,22 @@ namespace Fux
         {
             Console.WriteLine($"{source.Name}");
             Run(source,
-                parser =>
+                (Lexer lexer) =>
                 {
                     var name = Path.GetFileNameWithoutExtension(source.Name) + "-ast.txt";
                     using (var writer = name.Writer())
                     {
-                        var liner = new LineParser(parser.Lexer);
+                        var liner = new Liner(lexer);
+                        var errors = new ParserErrors();
 
                         while (true)
                         {
-#if true
-                            Line? line;
+                            Line line = liner.GetLine();
 
-                            while ((line = liner.GetLine()) != null)
+                            var parser = new Parser(errors, line);
+
+
+                            do
                             {
                                 Write(line);
                                 writer.WriteLine();
@@ -43,7 +39,18 @@ namespace Fux
                                         }
                                         next = true;
 
-                                        writer.Write($"{token}");
+                                        if (token.Lex == Lex.LParent)
+                                        {
+                                            writer.Write($"(");
+                                        }
+                                        else if (token.Lex == Lex.RParent)
+                                        {
+                                            writer.Write($")");
+                                        }
+                                        else
+                                        {
+                                            writer.Write($"{token}");
+                                        }
                                     }
                                     writer.WriteLine();
                                     writer.Indent(() =>
@@ -54,15 +61,10 @@ namespace Fux
                                         }
                                     });
                                 }
+
+                                line = liner.GetLine();
                             }
-#else
-                            var expr = parser.SourceFile();
-                            writer.WriteLine($"{expr}");
-                            foreach (var stmt in expr.Declarations)
-                            {
-                                writer.WriteLine($"{stmt}");
-                            }
-#endif
+                            while (line.Tokens.Count != 1 || line.Tokens[0].Lex != Lex.EOF);
 
                             break;
                         }
@@ -84,13 +86,13 @@ namespace Fux
         }
 
 
-        private static void Run(Source source, Action<Parser> loop)
+        private static void Run(Source source, Action<Parser2> loop)
         {
             try
             {
                 var lexer = new Lexer(source);
                 var layout = new Layout(lexer);
-                var parser = new Parser(layout);
+                var parser = new Parser2(layout);
 
                 loop(parser);
             }
@@ -103,6 +105,22 @@ namespace Fux
             }
         }
 
+        private static void Run(Source source, Action<Lexer> loop)
+        {
+            try
+            {
+                var lexer = new Lexer(source);
+
+                loop(lexer);
+            }
+            catch (DiagnosticException diagnostic)
+            {
+                foreach (var line in diagnostic.Report())
+                {
+                    Console.WriteLine(line);
+                }
+            }
+        }
         protected static void WaitForKey()
         {
             Console.Write("any key ...");
