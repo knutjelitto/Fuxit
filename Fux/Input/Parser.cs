@@ -6,14 +6,15 @@ namespace Fux.Input
     {
         private Token? current = null;
 
-        public Parser(Lexer lexer)
+        public Parser(Layout layout)
         {
-            Lexer = lexer;
-            Error = new ParserErrors(this);
+            Layout = layout;
+            Error = new ParserErrors();
         }
 
-        public Lexer Lexer { get; }
 
+        public Layout Layout { get; }
+        public Lexer Lexer => Layout.Lexer;
         public ParserErrors Error { get; }
 
         private Token Current
@@ -22,7 +23,7 @@ namespace Fux.Input
             {
                 if (current == null)
                 {
-                    current = Lexer.GetNext();
+                    current = Layout.GetNext();
                 }
                 return current;
             }

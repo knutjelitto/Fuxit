@@ -30,6 +30,7 @@ namespace Fux.Input
 
         public bool White => Lex == Lex.Newline || Lex == Lex.Space || Lex == Lex.BlockComment || Lex == Lex.LineComment;
         public bool Newline => Lex == Lex.Newline;
+        public bool EOF => Lex == Lex.EOF;
         public Whites Whites => whitesBefore ?? new Whites();
 
         public bool Atomic =>

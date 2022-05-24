@@ -9,12 +9,9 @@ namespace Fux.Input
 {
     internal class ParserErrors
     {
-        public ParserErrors(Parser parser)
+        public ParserErrors()
         {
-            Parser = parser;
         }
-
-        public Parser Parser { get; }
 
         public DiagnosticException NotImplemented(Token current, [CallerMemberName]string? member = null)
         {
@@ -34,6 +31,12 @@ namespace Fux.Input
             context = context == null ? "" : $" (in {context})";
             return new DiagnosticException(
                 new ParserError(unexpected.Location, $"unexpected {unexpected.Lex.PP()}{context}"));
+        }
+
+        public DiagnosticException IllegalFirstLexeme(Token first)
+        {
+            return new DiagnosticException(
+                new ParserError(first.Location, $"first lexeme on line can not preceeded by a comment"));
         }
     }
 }

@@ -20,29 +20,41 @@ namespace Fux
                     var name = Path.GetFileNameWithoutExtension(source.Name) + "-ast.txt";
                     using (var writer = name.Writer())
                     {
+                        var liner = new LineParser(parser.Lexer);
+
                         while (true)
                         {
 #if true
-                            Token token;
-                            do
+                            Line? line;
+
+                            while ((line = liner.GetLine()) != null)
                             {
-                                token = parser.Lexer.GetNext();
-                                if (token.Lex == Lex.LayoutStart)
+                                Write(line);
+                                writer.WriteLine();
+
+                                void Write(Line line)
                                 {
-                                    writer.WriteLine($"{token.Lex}");
-                                    writer.Plus();
-                                }
-                                else if (token.Lex == Lex.LayoutEnd)
-                                {
-                                    writer.Minus();
-                                    writer.WriteLine($"{token.Lex}");
-                                }
-                                else
-                                {
-                                    writer.Write($"{token} ");
+                                    var next = false;
+                                    foreach (var token in line.Tokens)
+                                    {
+                                        if (next)
+                                        {
+                                            writer.Write(" ");
+                                        }
+                                        next = true;
+
+                                        writer.Write($"{token}");
+                                    }
+                                    writer.WriteLine();
+                                    writer.Indent(() =>
+                                    {
+                                        foreach (var indented in line.Lines)
+                                        {
+                                            Write(indented);
+                                        }
+                                    });
                                 }
                             }
-                            while (token.Lex != Lex.EOF);
 #else
                             var expr = parser.SourceFile();
                             writer.WriteLine($"{expr}");
@@ -77,7 +89,8 @@ namespace Fux
             try
             {
                 var lexer = new Lexer(source);
-                var parser = new Parser(lexer);
+                var layout = new Layout(lexer);
+                var parser = new Parser(layout);
 
                 loop(parser);
             }

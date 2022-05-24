@@ -29,14 +29,11 @@ namespace Fux.Input
             Source = source;
             Offset = 0;
             Error = new LexerErrors(this);
-            Layout = new Layouter(this);
         }
 
         public Source Source { get; }
         public int Offset { get; private set; }
         public int Start { get; private set; }
-
-        private Layouter Layout { get; }
 
         private int Current => Source.Ensure(Offset);
         private int Next => Source.Ensure(Offset + 1);
@@ -57,11 +54,6 @@ namespace Fux.Input
         }
 
         public Token GetNext()
-        {
-            return Layout.Next();
-        }
-
-        public Token CreateNext()
         {
             Start = Offset;
             if (Current == 0x0A) // linefeed

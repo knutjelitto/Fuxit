@@ -2,12 +2,12 @@
 
 namespace Fux.Input
 {
-    internal class Layouter
+    internal class Layout
     {
         private Token? current = null;
         private List<Token> tokens = new();
 
-        public Layouter(Lexer lexer)
+        public Layout(Lexer lexer)
         {
             Lexer = lexer;
             Iterator = Iterable().GetEnumerator();
@@ -16,7 +16,7 @@ namespace Fux.Input
         public Lexer Lexer { get; }
         public IEnumerator<Token> Iterator { get; }
 
-        public Token Next()
+        public Token GetNext()
         {
             if (Iterator.MoveNext())
             {
@@ -28,13 +28,13 @@ namespace Fux.Input
         private Token NextToken()
         {
             var whites = new Whites();
-            var current = Lexer.CreateNext();
+            var current = Lexer.GetNext();
 
             while (current.White)
             {
                 whites.Add(current);
 
-                current = Lexer.CreateNext();
+                current = Lexer.GetNext();
             }
 
             return current.TransferWhites(whites);
@@ -83,7 +83,8 @@ namespace Fux.Input
 
             if (Current.Column > starter.Column) // indented
             {
-                foreach (var token in Collect().ToList())
+                var list = Iterable().ToList();
+                foreach (var token in list)
                 {
                     yield return token;
                 }
@@ -91,15 +92,21 @@ namespace Fux.Input
         }
 
         private IEnumerable<Token> Iterable()
-{
-            yield return new Token(Lex.LayoutStart, new Location(Lexer.Source, Current.Location.Offset, 0));
+        {
+            var column = Current.Column;
 
-            foreach (var token in Collect().ToList())
+            while (Current.Lex != Lex.EOF && Current.Column == column)
             {
-                yield return token;
-            }
+                yield return new Token(Lex.LayoutStart, new Location(Lexer.Source, Current.Location.Offset, 0));
 
-            yield return new Token(Lex.LayoutEnd, new Location(Lexer.Source, Current.Location.Offset, 0));
+                var list = Collect().ToList();
+                foreach (var token in list)
+                {
+                    yield return token;
+                }
+
+                yield return new Token(Lex.LayoutEnd, new Location(Lexer.Source, Current.Location.Offset, 0));
+            }
         }
     }
 }
