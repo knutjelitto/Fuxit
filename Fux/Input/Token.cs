@@ -76,7 +76,7 @@ namespace Fux.Input
 
         public string Dbg()
         {
-            return $"{Lex}(\"{Location.Text}\",{Location})";
+            return $"{Lex}(\"{this}\",{Location})";
         }
     }
 }

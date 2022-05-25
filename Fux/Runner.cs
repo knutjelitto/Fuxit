@@ -5,17 +5,16 @@ namespace Fux
 {
     internal class Runner
     {
-        protected static void RunModule(Source source)
+        protected static void RunModule(ErrorBag errors, Source source)
         {
             Console.WriteLine($"{source.Name}");
-            Run(source,
-                (Lexer lexer) =>
+            Run(errors, source,
+                (ErrorBag errors, Lexer lexer) =>
                 {
                     var name = Path.GetFileNameWithoutExtension(source.Name) + "-ast.txt";
                     using (var writer = name.Writer())
                     {
-                        var liner = new Liner(lexer);
-                        var errors = new ParserErrors();
+                        var liner = new Liner(errors, lexer);
 
                         while (true)
                         {
@@ -92,9 +91,9 @@ namespace Fux
                 });
         }
 
-        protected static void RunRepl(Source source)
+        protected static void RunRepl(ErrorBag errors, Source source)
         {
-            Run(source, 
+            Run(errors, source, 
                 parser =>
                 {
                     while (true)
@@ -106,13 +105,13 @@ namespace Fux
         }
 
 
-        private static void Run(Source source, Action<Parser2> loop)
+        private static void Run(ErrorBag errors, Source source, Action<Parser2> loop)
         {
             try
             {
-                var lexer = new Lexer(source);
+                var lexer = new Lexer(errors,source);
                 var layout = new Layout(lexer);
-                var parser = new Parser2(layout);
+                var parser = new Parser2(errors, layout);
 
                 loop(parser);
             }
@@ -125,13 +124,13 @@ namespace Fux
             }
         }
 
-        private static void Run(Source source, Action<Lexer> loop)
+        private static void Run(ErrorBag errors, Source source, Action<ErrorBag, Lexer> loop)
         {
             try
             {
-                var lexer = new Lexer(source);
+                var lexer = new Lexer(errors, source);
 
-                loop(lexer);
+                loop(errors, lexer);
             }
             catch (DiagnosticException diagnostic)
             {

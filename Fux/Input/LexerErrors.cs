@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace Fux.Input
 {
-    internal class LexerErrors
+    internal class LexerErrors : InputErrors
     {
-        public LexerErrors(Lexer lexer)
+        public LexerErrors(ErrorBag errors, Lexer lexer)
+            : base(errors)
         {
             Lexer = lexer;
         }
@@ -17,14 +18,16 @@ namespace Fux.Input
 
         public DiagnosticException Unexpected(int rune)
         {
-            return new DiagnosticException(
-                new LexerError(Location, $"unexpected character `{(char)rune}´"));
+            return Add(
+                new LexerError(Location, $"unexpected character `{(char)rune}´")
+            );
         }
 
         public DiagnosticException IllegalWhitespace(Token token)
         {
-            return new DiagnosticException(
-                new LexerError(token.Location, $"illegal whitespace before {token}"));
+            return Add(
+                new LexerError(token.Location, $"illegal whitespace before {token}")
+            );
         }
 
         private ILocation Location => new Location(Lexer.Source, Lexer.Offset, 1);

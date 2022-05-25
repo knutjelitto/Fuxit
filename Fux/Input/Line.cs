@@ -1,9 +1,10 @@
 ﻿namespace Fux.Input
 {
+    [DebuggerDisplay("{Dbg()}")]
     internal class Line
     {
         private readonly Tokens tokens = new();
-        private readonly Lines indent = new();
+        private readonly Lines lines = new();
 
         public Line() { }
 
@@ -19,24 +20,22 @@
 
         public void AddIndent(Line line)
         {
-            if (tokens.ToString() == "case node of")
-            {
-                Assert(true);
-            }
-            indent.Add(line);
+            lines.Add(line);
         }
 
-        public IReadOnlyList<Token> Tokens => tokens;
+        public Tokens Tokens => tokens;
 
-        public IReadOnlyList<Line> Lines => indent;
+        public Lines Lines => lines;
 
         public bool EOF => IsFlat && tokens.Count == 1 && tokens[0].EOF;
 
         public void Compress()
         {
-            if (indent.Count == 1)
+            if (lines.Count == 1)
             {
-                var first = indent.First();
+                var first = lines.First();
+
+                Assert(first.IsFlat);
 
                 if (first.IsFlat && first.StartsWith(token => token.IsOperator()))
                 {
@@ -46,48 +45,58 @@
                 {
                     PushUp(0);
                 }
-                else if (first.IsFlat && EndsWith(token => token.Lex == Lex.Define || token.Lex == Lex.KwElse || token.Lex == Lex.KwThen))
+                else if (first.IsFlat && EndsWith(token => token.Lex == Lex.Assign || token.Lex == Lex.Colon || token.Lex == Lex.KwElse || token.Lex == Lex.KwThen))
                 {
                     PushUp(0);
                 }
-                else if (first.IsFlat && first.StartsWith(token => token.Lex == Lex.Define))
+                else if (first.IsFlat && first.StartsWith(token => token.Lex == Lex.Assign))
                 {
                     PushUp(0);
                 }
             }
 
             var i = 0;
-            while (i < indent.Count)
+            while (i < lines.Count)
             {
-                if (indent[i].IsAtomic)
+                if (lines[i].IsAtomic)
                 {
                     PushUp(i);
                 }
                 else
                 {
-                    break;
+                    PushUpGrouped(i);
                 }
             }
-
         }
 
         private Token Open(Token template)
         {
-            return new Token(Lex.LParent, new Location(template.Location.Source, template.Location.Offset, 0));
+            return new OpenToken(template);
         }
 
         private Token Close(Token template)
         {
-            return new Token(Lex.RParent, new Location(template.Location.Source, template.Location.Next, 0));
+            return new CloseToken(template);
         }
 
         private void PushUp(int lineIndex)
         {
-            var line = indent.Remove(lineIndex);
+            var line = lines.Remove(lineIndex);
             foreach (var token in line.Tokens)
             {
                 tokens.Add(token);
             }
+        }
+
+        private void PushUpGrouped(int lineIndex)
+        {
+            var line = lines.Remove(lineIndex);
+            tokens.Add(Open(line.tokens.First()));
+            foreach (var token in line.Tokens)
+            {
+                tokens.Add(token);
+            }
+            tokens.Add(Close(line.tokens.Last()));
         }
 
         public bool EndsWith(Func<Token, bool> predicate)
@@ -100,7 +109,7 @@
             return tokens.Count > 0 && predicate(tokens.First());
         }
 
-        public bool IsFlat => indent.Count == 0;
+        public bool IsFlat => lines.Count == 0;
 
         public bool IsAtomic => IsFlat && (
             tokens.Count == 1 ||
@@ -113,6 +122,17 @@
                 || first.Lex == Lex.LBrace && last.Lex == Lex.RBrace
                 || first.Lex == Lex.LBracket && last.Lex == Lex.RBracket
                 ;
+        }
+
+        public string Dbg()
+        {
+            var joined = string.Join(" ", tokens);
+
+            if (lines.Count > 0)
+            {
+                return $"{joined} +...";
+            }
+            return joined;
         }
     }
 }

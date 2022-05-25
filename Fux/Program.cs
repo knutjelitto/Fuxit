@@ -6,18 +6,29 @@ namespace Fux
     {
         static void Main(string[] args)
         {
+            var errors = new ErrorBag();
+
             if (args.Length == 1 && args[0] == "repl")
             {
-                RunRepl(new ConsoleSource());
+                RunRepl(errors, new ConsoleSource());
             }
             else
             {
-                //RunModule(Source.FromFile(@"src/core/Array.elm"));
-                RunModule(Source.FromFile(@"src/core/Basics.elm"));
-                RunModule(Source.FromFile(@"src/core/Bitwise.elm"));
-                RunModule(Source.FromFile(@"src/core/Char.elm"));
+                RunModule(errors, Source.FromFile(@"src/core/Array.elm"));
+                RunModule(errors, Source.FromFile(@"src/core/Basics.elm"));
+                RunModule(errors, Source.FromFile(@"src/core/Bitwise.elm"));
+                RunModule(errors, Source.FromFile(@"src/core/Char.elm"));
 
-                //RunModule(Source.FromFile(@"src/core/Tester.fux"));
+                //RunModule(errors, Source.FromFile(@"src/core/Tester.fux"));
+
+                if (!errors.Ok)
+                {
+                    using (var writer = Writer.Console())
+                    {
+                        writer.WriteLine("=== errors ===");
+                        errors.ReportFirstFew(writer);
+                    }
+                }
             }
 
             WaitForKey();

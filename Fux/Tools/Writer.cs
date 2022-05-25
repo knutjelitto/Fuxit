@@ -19,6 +19,11 @@
         {
         }
 
+        public static Writer Console()
+        {
+            return new Writer(System.Console.Out);
+        }
+
         public void WriteLine()
         {
             sink.WriteLine();

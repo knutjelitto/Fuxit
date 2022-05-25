@@ -45,6 +45,7 @@ namespace Fux.Input
                 || token.Lex == Lex.LBrace
                 || token.Lex == Lex.LBracket
                 || token.Lex == Lex.KwElse
+                || token.Lex == Lex.KwThen
                 || token.IsOperator()
                 ;
         }
@@ -56,6 +57,7 @@ namespace Fux.Input
                 || token.Lex == Lex.RBrace
                 || token.Lex == Lex.RBracket
                 || token.Lex == Lex.KwElse
+                || token.Lex == Lex.KwThen
                 || token.IsOperator();
                 ;
 
