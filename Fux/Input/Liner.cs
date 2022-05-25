@@ -4,10 +4,10 @@
     {
         private Token? current = null;
 
-        public Liner(Lexer lexer)
+        public Liner(ErrorBag errors, Lexer lexer)
         {
             Lexer = lexer;
-            Error = new ParserErrors();
+            Error = new ParserErrors(errors);
         }
 
         public Lexer Lexer { get; }

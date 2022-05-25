@@ -1,15 +1,17 @@
 ﻿using Fux.Ast;
 
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+
 namespace Fux.Input
 {
     internal class Parser2
     {
         private Token? current = null;
 
-        public Parser2(Layout layout)
+        public Parser2(ErrorBag errors, Layout layout)
         {
             Layout = layout;
-            Error = new ParserErrors();
+            Error = new ParserErrors(errors);
         }
 
 
@@ -74,7 +76,7 @@ namespace Fux.Input
             {
                 return Annotation(expression);
             }
-            else if (Current.Lex == Lex.Define)
+            else if (Current.Lex == Lex.Assign)
             {
                 return Value(expression, false);
             }
@@ -95,7 +97,7 @@ namespace Fux.Input
 
         private Expression Value(Expression lhs, bool inner)
         {
-            var define = Swallow(Lex.Define);
+            var define = Swallow(Lex.Assign);
 
             var rhs = Expression();
 
@@ -113,7 +115,7 @@ namespace Fux.Input
 
             var lhs = ApplicationExpression();
 
-            var defineToken = Swallow(Lex.Define);
+            var defineToken = Swallow(Lex.Assign);
 
             var rhs = Expression();
 
@@ -314,15 +316,6 @@ namespace Fux.Input
                 ;
         }
 
-        private bool IsStatementStart()
-        {
-            return IsAtomStart()
-                || Current.Lex == Lex.KwLet
-                || Current.Lex == Lex.KwIf
-                || Current.Lex == Lex.KwCase
-                ;
-        }
-
         private Expression AtomExpression()
         {
             if (Current.Lex == Lex.Number)
@@ -390,7 +383,7 @@ namespace Fux.Input
             {
                 var expression = Expression();
 
-                if (Current.Lex == Lex.Define)
+                if (Current.Lex == Lex.Assign)
                 {
                     expression = Value(expression, true);
                 }
@@ -420,7 +413,7 @@ namespace Fux.Input
             {
                 var expression = Expression();
 
-                if (Current.Lex == Lex.Define)
+                if (Current.Lex == Lex.Assign)
                 {
                     expression = Value(expression, true);
                 }

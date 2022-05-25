@@ -8,9 +8,9 @@ namespace Fux.Input
 {
     internal class Parser
     {
-        public Parser(ParserErrors error, Line line)
+        public Parser(ErrorBag errors, Line line)
         {
-            Error = error;
+            Error = new ParserErrors(errors);
             Line = line;
         }
 
@@ -41,7 +41,7 @@ namespace Fux.Input
                 {
                     outer = Annotation(cursor, lhs);
                 }
-                else if (cursor.Is(Lex.Define))
+                else if (cursor.Is(Lex.Assign))
                 {
                     outer = Definition(cursor, lhs);
                 }
@@ -104,7 +104,7 @@ namespace Fux.Input
 
             var lhs = Expression(cursor);
 
-            var kwDefine = Swallow(cursor, Lex.Define);
+            var kwDefine = Swallow(cursor, Lex.Assign);
 
             var rhs = Expression(cursor);
 
@@ -113,7 +113,7 @@ namespace Fux.Input
 
         public Definition Definition(LineCursor cursor, Expression lhs)
         {
-            var kwDefine = Swallow(cursor, Lex.Define);
+            var kwDefine = Swallow(cursor, Lex.Assign);
 
             Expression rhs;
 
@@ -147,11 +147,6 @@ namespace Fux.Input
 
             Assert(cursor.LineCount > 0);
 
-            if (cursor.Is(Lex.KwIf))
-            {
-                return If(cursor);
-            }
-
             var first = cursor[0];
 
             if (first.Is(Lex.KwLet))
@@ -168,7 +163,14 @@ namespace Fux.Input
 
         public Expression If(LineCursor cursor)
         {
-            throw Error.NotImplemented(cursor.At());
+            if (cursor.LineCount == 0)
+            {
+                throw Error.Internal(cursor.Last(), "expected inner lines");
+            }
+
+            var iff = cursor[0];
+
+            throw Error.NotImplemented(iff.At());
         }
 
         public Expression Let(LineCursor cursor)
@@ -181,7 +183,7 @@ namespace Fux.Input
             var let = cursor[0];
             var inn = cursor[1];
 
-            if (!let.Is(Lex.KwLet) || let.Lenght != 1)
+            if (!let.Is(Lex.KwLet) || let.TokenCount != 1)
             {
                 throw Error.Internal(let.At(), $"expected '{Lex.KwLet}' as sole token on line");
             }
@@ -204,7 +206,7 @@ namespace Fux.Input
 
         private Expression KwIn(LineCursor inn)
         {
-            Swallow(inn, Lex.KwIn);
+            var kwIn = Swallow(inn, Lex.KwIn);
 
             Expression expression;
 
@@ -221,7 +223,7 @@ namespace Fux.Input
             {
                 if (inn.LineCount != 1)
                 {
-                    throw Error.Internal(inn.At(), $"only one inner line implemented");
+                    throw Error.Internal(kwIn, $"only one inner line implemented");
                 }
 
                 expression = Expression(inn[0]);
@@ -255,7 +257,23 @@ namespace Fux.Input
 
         private Expression Expression(LineCursor cursor)
         {
+            if (cursor.Is(Lex.KwIf))
+            {
+                return InlineIf(cursor);
+            }
             return Operator(cursor);
+        }
+
+        private Expression InlineIf(LineCursor cursor)
+        {
+            var kwIf = Swallow(cursor, Lex.KwIf);
+            var condition = Expression(cursor);
+            var kwThen = Swallow(cursor, Lex.KwThen);
+            var whenTrue = Expression(cursor);
+            var kwElse = Swallow(cursor, Lex.KwElse);
+            var whenFalse = Expression(cursor);
+
+            return new IfExpression(condition, whenTrue, whenFalse);
         }
 
         private Expression Operator(LineCursor cursor)
@@ -338,6 +356,13 @@ namespace Fux.Input
             {
                 return new NumberLiteral(cursor.Advance());
             }
+            else if (cursor.Is(Lex.GroupOpen))
+            {
+                var open = Swallow(cursor, Lex.GroupOpen);
+                var expression = Expression(cursor);
+                var close = Swallow(cursor, Lex.GroupClose);
+                return expression;
+            }
             else if (cursor.Is(Lex.LParent))
             {
                 return Tuple(cursor);
@@ -358,6 +383,7 @@ namespace Fux.Input
                 || cursor.Is(Lex.LParent)
                 || cursor.Is(Lex.LBracket)
                 || cursor.Is(Lex.LBrace)
+                || cursor.Is(Lex.GroupOpen)
                 );
         }
 

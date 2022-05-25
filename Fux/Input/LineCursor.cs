@@ -18,8 +18,7 @@ namespace Fux.Input
 
         public Line Line { get; }
         public int Offset { get; private set; }
-        public int Lenght => Line.Tokens.Count;
-
+        public int TokenCount => Line.Tokens.Count;
         public int LineCount => Line.Lines.Count;
         public LineCursor this[int index] => new LineCursor(Line.Lines[index]);
 

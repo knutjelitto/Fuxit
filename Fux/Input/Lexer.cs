@@ -24,11 +24,11 @@ namespace Fux.Input
             AddKw("case", Lex.KwCase);
         }
 
-        public Lexer(Source source)
+        public Lexer(ErrorBag errors, Source source)
         {
             Source = source;
             Offset = 0;
-            Error = new LexerErrors(this);
+            Error = new LexerErrors(errors, this);
         }
 
         public Source Source { get; }
@@ -96,7 +96,7 @@ namespace Fux.Input
                 case ':' when !Next.IsSymbol():
                     return Build(Lex.Colon, 1);
                 case '=' when !Next.IsSymbol():
-                    return Build(Lex.Define, 1);
+                    return Build(Lex.Assign, 1);
                 case '-' when Next == '-':
                     return LineComment();
                 case '-' when Next.IsDigit():
