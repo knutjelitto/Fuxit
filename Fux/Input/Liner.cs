@@ -21,7 +21,7 @@
                 return new Line(Current);
             }
 
-            return CreateLine();
+            return ParseLine();
         }
 
         private Token Current
@@ -45,20 +45,24 @@
             return token;
         }
 
-        private Line CreateLine()
+        private Line ParseLine()
         {
             var starter = Current;
 
             var line = new Line();
+            var tokens = new Tokens();
 
             while (!Current.EOF && Current.Line == starter.Line)
             {
-                line.AddToken(Consume());
+                var token = Consume();
+
+                line.AddToken(token);
+                tokens.Add(token);
             }
 
-            if (Current.Column > starter.Column)
+            if (!Current.EOF && Current.Column > starter.Column)
             {
-                CreateLines(line);
+                ParseLines(line, tokens);
             }
 
             line.Compress();
@@ -66,13 +70,13 @@
             return line;
         }
 
-        private void CreateLines(Line parent)
+        private void ParseLines(Line parent, Tokens tokens)
         {
             var starter = Current;
 
             while (!Current.EOF && Current.Column == starter.Column)
             {
-                parent.AddIndent(CreateLine());
+                parent.AddIndent(ParseLine());
             }
         }
 
