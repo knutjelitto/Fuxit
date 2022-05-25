@@ -36,16 +36,17 @@ namespace Fux.Ast
             Add(">=", 110, Assoc.None);
 
             Add("||", 120, Assoc.Left);
+            Add("&&", 130, Assoc.Left);
 
-            Add("+", 130, Assoc.Left);
-            Add("++", 130, Assoc.Left);
-            Add("::", 130, Assoc.Left);
-            Add("-", 130, Assoc.Left);
+            Add("+", 140, Assoc.Left);
+            Add("++", 140, Assoc.Left);
+            Add("::", 140, Assoc.Left);
+            Add("-", 140, Assoc.Left);
 
-            Add("*", 130, Assoc.Left);
-            Add("/", 130, Assoc.Left);
-            Add("//", 130, Assoc.Left);
-            Add("%", 130, Assoc.Left);
+            Add("*", 150, Assoc.Left);
+            Add("/", 150, Assoc.Left);
+            Add("//", 150, Assoc.Left);
+            Add("%", 150, Assoc.Left);
 
             Add(".", 1000, Assoc.Left, Operator.Select);
         }

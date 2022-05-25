@@ -140,7 +140,7 @@ namespace Fux.Input
 
             var tuple = TupleExpression();
 
-            return new Header(name, tuple.Expressions);
+            return new Header(name, tuple);
         }
 
         public Import Import()

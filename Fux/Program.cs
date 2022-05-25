@@ -13,8 +13,8 @@ namespace Fux
             else
             {
                 //RunModule(Source.FromFile(@"src/core/Array.elm"));
-                //RunModule(Source.FromFile(@"src/core/Basics.elm"));
-                //RunModule(Source.FromFile(@"src/core/Bitwise.elm"));
+                RunModule(Source.FromFile(@"src/core/Basics.elm"));
+                RunModule(Source.FromFile(@"src/core/Bitwise.elm"));
                 RunModule(Source.FromFile(@"src/core/Char.elm"));
 
                 //RunModule(Source.FromFile(@"src/core/Tester.fux"));

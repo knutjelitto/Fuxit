@@ -1,4 +1,5 @@
-﻿using Fux.Input;
+﻿using Fux.Errors;
+using Fux.Input;
 
 namespace Fux
 {
@@ -20,13 +21,32 @@ namespace Fux
                         {
                             Line line = liner.GetLine();
 
-                            var parser = new Parser(errors, line);
-
-
                             do
                             {
                                 Write(line);
+                                Compile(line);
                                 writer.WriteLine();
+
+                                void Compile(Line line)
+                                {
+                                    var cursor = new LineCursor(line);
+
+                                    var parser = new Parser(errors, line);
+
+                                    try
+                                    {
+                                        var expr = parser.Outer(cursor);
+                                    }
+                                    catch (DiagnosticException diagnostic)
+{
+                                        writer.WriteLine("--");
+                                        foreach (var error in diagnostic.Report())
+                                        {
+                                            writer.WriteLine(error);
+                                        }
+                                        writer.WriteLine("--");
+                                    }
+                                }
 
                                 void Write(Line line)
                                 {

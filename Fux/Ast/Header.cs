@@ -8,14 +8,14 @@ namespace Fux.Ast
 {
     internal class Header : Expression
     {
-        public Header(Expression name, IReadOnlyList<Expression> exports)
+        public Header(Expression name, TupleExpression exports)
         {
             Name = name;
             Exports = exports;
         }
 
         public Expression Name { get; }
-        public IReadOnlyList<Expression> Exports { get; }
+        public TupleExpression Exports { get; }
 
         public override bool IsAtomic => false;
 

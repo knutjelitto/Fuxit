@@ -59,7 +59,6 @@
         public static Lex Define = new Lex("=");
         public static Lex Semicolon = new(";");
         public static Lex Comma = new(",");
-        public static Lex Dot = new(".");
 
         public static Lex LParent = new("(");
         public static Lex RParent = new(")");

@@ -104,8 +104,7 @@
 
         public bool IsAtomic => IsFlat && (
             tokens.Count == 1 ||
-            IsGrouped(tokens.First(), tokens.Last()) ||
-            tokens.Count == 3 && tokens[1].Lex == Lex.Dot
+            IsGrouped(tokens.First(), tokens.Last())
             );
 
         private bool IsGrouped(Token first, Token last)

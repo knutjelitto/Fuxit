@@ -91,8 +91,6 @@ namespace Fux.Input
                     return Build(Lex.RBracket, 1);
                 case ';':
                     return Build(Lex.Semicolon, 1);
-                case '.' when !Next.IsSymbol():
-                    return Build(Lex.Dot, 1);
                 case ',':
                     return Build(Lex.Comma, 1);
                 case ':' when !Next.IsSymbol():

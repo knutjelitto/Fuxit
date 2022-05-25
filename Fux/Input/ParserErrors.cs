@@ -17,7 +17,14 @@ namespace Fux.Input
         {
             var text = string.IsNullOrEmpty(current.Text) ? current.Lex.Name : current.Text;
             return new DiagnosticException(
-                new ParserError(current.Location, $"{member} - not implemented at `{text}´"));
+                new ParserError(current.Location, $"{member} - not implemented at '{text}'"));
+        }
+
+
+        public DiagnosticException Internal(Token current, string text, [CallerMemberName] string? member = null)
+        {
+            return new DiagnosticException(
+                new ParserError(current.Location, $"internal - {text} (in {member})"));
         }
 
         public DiagnosticException Unexpected(Lex expected, Token unexpected)
