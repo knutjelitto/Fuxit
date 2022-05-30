@@ -15,7 +15,8 @@ namespace Fux
 
             var builder = new Builder();
             //builder.Build(new Package("check/check", "1.0.0"));
-            builder.Build(Package.Latest("elm/browser"));
+            //builder.Build(Package.Latest("elm/browser"));
+            builder.Build(Package.Latest("elm/url"));
 #else
             var errors = new ErrorBag();
 
