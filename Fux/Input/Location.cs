@@ -30,7 +30,7 @@ namespace Fux.Input
 
         public override string ToString()
         {
-            return $"{Source.Name}({Line},{Column})";
+            return $"{Source.Path}({Line},{Column})";
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Fux
             var lexer = new Lexer(errors, source);
             var liner = new Liner2(errors, lexer);
 
-            var tokName = Path.GetFileNameWithoutExtension(source.Name) + "-tok.txt";
+            var tokName = Path.GetFileNameWithoutExtension(source.Display) + "-tok.txt";
 
             using (var writer = tokName.Writer())
             {
@@ -107,10 +107,22 @@ namespace Fux
             var liner = new Liner(errors, lexer);
             var parser = new Parser(errors, liner);
 
-            var astName = Path.GetFileNameWithoutExtension(source.Name) + "-ast.txt";
+            var astName = Path.GetFileNameWithoutExtension(source.Display) + "-ast.txt";
 
             using (var writer = astName.Writer())
             {
+#if true
+                try
+                {
+                    var module = parser.Module();
+
+                    module.PP(writer);
+                }
+                catch (DiagnosticException diagnostic)
+                {
+                    errors.Add(diagnostic);
+                }
+#else
                 while (true)
                 {
                     Tokens line = liner.GetLine();
@@ -153,6 +165,7 @@ namespace Fux
 
                     break;
                 }
+#endif
             }
         }
     }

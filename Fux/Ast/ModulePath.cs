@@ -19,7 +19,12 @@ namespace Fux.Ast
 
         public override string ToString()
         {
-            return String.Join(" . ", Names);
+            return string.Join(".", Names);
+        }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{this}");
         }
     }
 }

@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Text.Json;
 
 using Semver;
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace Fux.ElmPackages
 {
@@ -96,14 +88,12 @@ namespace Fux.ElmPackages
 
         public Package Package { get; }
 
-        public string Type { get; }
-        public string Name { get; }
-        public string Summary { get; }
-        public string License { get; }
-        public SemVersion Version { get; }
+        public string Name { get; } = string.Empty;
+        public string Summary { get; } = string.Empty;
+        public string License { get; } = string.Empty;
+        public SemVersion Version { get; } = new(0);
         public List<ExposedGroup> Exposed { get; } = new();
         public IEnumerable<ExposedModule> Modules => Exposed.SelectMany(e => e);
-        public Dependency ElmVersion { get; }
         public List<Dependency> Dependencies { get; } = new();
         public List<Dependency> TestDependencies { get; } = new();
     }

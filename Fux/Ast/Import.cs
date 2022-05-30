@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Input;
+﻿using Fux.Input;
 
 namespace Fux.Ast
 {
@@ -26,9 +20,23 @@ namespace Fux.Ast
         public override string ToString()
         {
             var alias = Alias == null ? "" : $" as {Alias}";
-            var exposed = Exposed == null ? "" : $" exposing {Exposed}";
+            var exposed = Exposed == null ? "" : $" {Lex.Weak.Exposing} {Exposed}";
 
             return $"import {Path}{alias}{exposed}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"import {Path}");
+            if (Alias != null)
+            {
+                writer.Write($" alias {Alias}");
+            }
+            if (Exposed != null)
+            {
+                writer.Write($" {Lex.Weak.Exposing} {Exposed}");
+            }
+            writer.WriteLine();
         }
     }
 }

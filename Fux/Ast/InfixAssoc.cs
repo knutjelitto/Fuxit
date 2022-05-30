@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Ast
+﻿namespace Fux.Ast
 {
     internal class InfixAssoc
     {
@@ -15,9 +9,9 @@ namespace Fux.Ast
 
         public string Name { get; }
 
-        public static readonly InfixAssoc None = new InfixAssoc("non");
-        public static readonly InfixAssoc Left = new InfixAssoc("left");
-        public static readonly InfixAssoc Right = new InfixAssoc("right");
+        public static readonly InfixAssoc None = new("non");
+        public static readonly InfixAssoc Left = new("left");
+        public static readonly InfixAssoc Right = new("right");
 
         public static InfixAssoc? From(string name)
         {

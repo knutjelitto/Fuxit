@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Fux.Input;
+
 namespace Fux.Ast
 {
     internal class ArrowExpression : InfixExpression
@@ -20,6 +22,13 @@ namespace Fux.Ast
             var from = Lhs.IsAtomic ? Lhs.ToString() : $"({Lhs})";
             var to = Rhs.IsAtomic ? Rhs.ToString() : (Rhs is ArrowExpression ? Rhs.ToString() : $"({Rhs})");
             return $"{from} {Op.Text} {to}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            Lhs.PP(writer);
+            writer.Write($" {Lex.Arrow} ");
+            Rhs.PP(writer);
         }
     }
 }

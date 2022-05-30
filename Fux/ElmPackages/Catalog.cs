@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
+﻿using System.Collections;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 using Semver;
 
@@ -29,13 +23,20 @@ namespace Fux.ElmPackages
             return references.Where(p => p.Name == dependency.Name && dependency.Match(p.Version)).OrderByDescending(p => p.Version).First();
         }
 
+        public Package Latest(string packageName)
+        {
+            return references
+                .Where(p => p.Name == packageName)
+                .OrderByDescending(p => p.Version).First();
+        }
+
         public static Catalog Instance => catalog ??= GetCatalog();
 
         private static Catalog GetCatalog()
         {
             byte[] bytes;
 
-            var filePath = ElmCache.Instance.FilePath(Filename);
+            var filePath = ElmCache.FilePath(Filename);
 
             if (!File.Exists(filePath))
             {
@@ -53,11 +54,7 @@ namespace Fux.ElmPackages
 
         private static Catalog Decode(byte[] bytes)
         {
-            var json = Encoding.UTF8.GetString(bytes);
-
-            var doc = JsonDocument.Parse(json);
-
-            var element = doc.RootElement;
+            var element = bytes.GetRootElement();
 
             Assert(element.ValueKind == JsonValueKind.Object);
 

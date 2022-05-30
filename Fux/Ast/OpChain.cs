@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Ast
 {
-    internal class OpChain : Expression
+    internal class OpChain
     {
         public OpChain(Expression first, IReadOnlyList<OpExpr> rest)
         {
@@ -16,8 +16,6 @@ namespace Fux.Ast
 
         public Expression First { get; }
         public IReadOnlyList<OpExpr> Rest { get; }
-
-        public override bool IsAtomic => throw new NotImplementedException();
 
         public Expression Resolve()
         {

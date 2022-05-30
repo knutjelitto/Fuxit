@@ -15,7 +15,7 @@ namespace Fux.Errors
 
         public override IEnumerable<string> Report()
         {
-            yield return $"{Location.Source.Name}({Location.Line},{Location.Column}): {Message}";
+            yield return $"{Location.Source.Path}({Location.Line},{Location.Column}): {Message}";
         }
     }
 }

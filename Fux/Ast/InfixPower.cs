@@ -8,7 +8,7 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class InfixPower : Expression
+    internal class InfixPower
     {
         public InfixPower(Token number)
         {
@@ -18,8 +18,6 @@ namespace Fux.Ast
         }
 
         public Token Number { get; }
-
-        public override bool IsAtomic => true;
 
         public override string ToString() => $"{Number}";
     }

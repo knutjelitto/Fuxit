@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Fux.ElmPackages
 {
@@ -26,7 +22,7 @@ namespace Fux.ElmPackages
         {
             byte[] bytes;
 
-            var filePath = Path.Combine(ElmCache.Instance.FilePath(reference.ToString(), Filename));
+            var filePath = Path.Combine(ElmCache.FilePath(reference.ToString(), Filename));
 
             if (!File.Exists(filePath))
             {
@@ -44,15 +40,15 @@ namespace Fux.ElmPackages
 
         public static Endpoint Decode(Package reference, byte[] bytes)
         {
-            var json = Encoding.UTF8.GetString(bytes);
+            var content = bytes.GetRootElement();
 
-            var content = JsonDocument.Parse(json).RootElement;
+            Assert(content.ValueKind == JsonValueKind.Object);
 
             var properties = content.EnumerateObject().ToList();
 
             Assert(properties.Count == 2);
-            Assert(properties[0].Name == "url");
-            Assert(properties[1].Name == "hash");
+            Assert(properties[0].Name == "url" && properties[0].Value.ValueKind == JsonValueKind.String);
+            Assert(properties[1].Name == "hash" && properties[1].Value.ValueKind == JsonValueKind.String);
 
             return new Endpoint(reference, properties[0].Value.GetString()!, properties[1].Value.GetString()!);
         }
@@ -63,16 +59,15 @@ namespace Fux.ElmPackages
 
             Console.Write($"download {requestUri} ...");
 
-            using (var request = new HttpClient())
-            {
-                var response = request.GetAsync(requestUri, HttpCompletionOption.ResponseContentRead).Result;
+            using var request = new HttpClient();
+            
+            var response = request.GetAsync(requestUri, HttpCompletionOption.ResponseContentRead).Result;
 
-                var bytes = response.Content.ReadAsByteArrayAsync().Result;
+            var bytes = response.Content.ReadAsByteArrayAsync().Result;
 
-                Console.WriteLine();
+            Console.WriteLine();
 
-                return bytes;
-            }
+            return bytes;
         }
 
     }

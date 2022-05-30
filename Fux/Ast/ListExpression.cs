@@ -30,5 +30,21 @@ namespace Fux.Ast
             var joined = string.Join(" , ", Expressions);
             return $"{Left} {joined} {Right}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{Lex.LBracket}");
+            var more = false;
+            foreach (var expression in Expressions)
+            {
+                if (more)
+                {
+                    writer.Write($"{Lex.Comma} ");
+                }
+                more = true;
+                expression.PP(writer);
+            }
+            writer.Write($"{Lex.RBracket}");
+        }
     }
 }

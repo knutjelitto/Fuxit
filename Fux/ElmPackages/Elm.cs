@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
@@ -11,13 +6,12 @@ namespace Fux.ElmPackages
     {
         private const string File = "elm.json";
 
+        public string Type { get; protected set; } = string.Empty;
+        public Dependency ElmVersion { get; protected set; } = new("elm-version", new(new(0)));
+
         public static Elm From(Package package, byte[] bytes)
         {
-            var json = Encoding.UTF8.GetString(bytes);
-
-            var document = JsonDocument.Parse(json);
-
-            var element = document.RootElement;
+            var element = bytes.GetRootElement();
 
             Assert(element.ValueKind == JsonValueKind.Object);
 
@@ -40,6 +34,19 @@ namespace Fux.ElmPackages
             }
 
             throw new InvalidOperationException($"can not decode elm file");
+        }
+
+        public static byte[] Download(Package package)
+        {
+            var requestUri = $"https://package.elm-lang.org/packages/{package}/elm.json";
+
+            using var request = new HttpClient();
+            
+            var response = request.GetAsync(requestUri, HttpCompletionOption.ResponseContentRead).Result;
+
+            var bytes = response.Content.ReadAsByteArrayAsync().Result;
+
+            return bytes;
         }
     }
 }

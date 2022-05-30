@@ -13,7 +13,7 @@ namespace Fux.ElmPackages
             Package = package;
             Name = name;
             FileName = $"src/{Name.Replace('.', '/')}.elm";
-            FullFileName = Path.Combine(Package.Root, FileName).Replace('\\', '/');
+            FullFileName = Folder.Combine(Package.Root, FileName);
         }
 
         public Package Package { get; }

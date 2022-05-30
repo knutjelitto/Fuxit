@@ -2,18 +2,20 @@
 
 namespace Fux.Ast
 {
-    internal abstract class Symbol : Atom
+    internal class Eof : Expression
     {
-        public Symbol(Token token)
+        public Eof(Token token)
         {
             Token = token;
         }
+
+        public override bool IsAtomic => true;
 
         public Token Token { get; }
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{Token}");
+            writer.WriteLine(Lex.EOF);
         }
     }
 }

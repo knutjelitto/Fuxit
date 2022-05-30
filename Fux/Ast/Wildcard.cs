@@ -18,5 +18,10 @@ namespace Fux.Ast
         {
             return $"{Token}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{Lex.Wildcard}");
+        }
     }
 }

@@ -33,5 +33,10 @@
                 writer.Write($"{value}");
             }
         }
+
+        public static void WriteLine(this Writer writer, object obj)
+        {
+            writer.WriteLine(obj.ToString() ?? throw new ArgumentNullException(nameof(obj)));
+        }
     }
 }

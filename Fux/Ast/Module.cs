@@ -1,28 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Ast
+﻿namespace Fux.Ast
 {
     internal class Module : Expression
     {
-        public Module(Header header, Imports imports, IEnumerable<Expression> declaration)
+        public Module(Header header, IEnumerable<Expression> expressions)
         {
             Header = header;
-            Imports = imports;
-            Declarations = declaration;
+            Expressions = expressions.ToArray();
         }
 
         public Header Header { get; }
-        public Imports Imports { get; }
-        public IEnumerable<Expression> Declarations { get; }
+        public IReadOnlyList<Expression> Expressions { get; }
         public override bool IsAtomic => false;
 
         public override string ToString()
         {
             return $"{Header}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            Header.PP(writer);
+            foreach (var expression in Expressions)
+            {
+                writer.WriteLine();
+                expression.PP(writer);
+                if (writer.LineRunning)
+                {
+                    writer.WriteLine();
+                }
+                Assert(!writer.LineRunning);
+            }
+            writer.WriteLine();
         }
     }
 }

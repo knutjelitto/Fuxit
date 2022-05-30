@@ -15,7 +15,7 @@ namespace Fux.Input
         private int lineOffset = 1;
 
         public ConsoleSource()
-            : base("<console>")
+            : base("<console>", "/dev/con")
         {
         }
 

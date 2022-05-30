@@ -14,7 +14,8 @@ namespace Fux
             //ProvideTest();
 
             var builder = new Builder();
-            builder.Build(new Package("elm-explorations/test", "1.2.2"));
+            //builder.Build(new Package("check/check", "1.0.0"));
+            builder.Build(Package.Latest("elm/browser"));
 #else
             var errors = new ErrorBag();
 
@@ -57,22 +58,6 @@ namespace Fux
 #endif
 
             WaitForKey();
-        }
-
-        static void ProvideTest()
-        {
-            var catalog = Catalog.Instance;
-
-            foreach (var package in catalog)
-            {
-                if (!(package.Name.StartsWith("elm/") || package.Name.StartsWith("elm-explorations/")))
-                {
-                    continue;
-                }
-
-                package.ProvideTest();
-            }
-
         }
     }
 }

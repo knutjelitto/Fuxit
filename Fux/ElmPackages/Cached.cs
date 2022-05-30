@@ -22,7 +22,7 @@ namespace Fux.ElmPackages
 
         protected static string CachePath(Package reference, string file)
         {
-            var path = ElmCache.Instance.FilePath(reference.ToString(), file);
+            var path = ElmCache.FilePath(reference.ToString(), file);
 
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 

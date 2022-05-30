@@ -37,10 +37,14 @@ namespace Fux
                     {
                         Console.WriteLine($"    {file,-20} ({file.FileName})");
 
-                        var source = new StringSource(file.FileName, File.ReadAllText(file.FullFileName));
+                        var source = new StringSource(file.FileName, file.FullFileName, File.ReadAllText(file.FullFileName));
 
                         compiler.Compile(source);
                     }
+                }
+                else
+                {
+                    throw new NotImplementedException();
                 }
             }
         }

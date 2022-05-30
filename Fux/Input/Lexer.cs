@@ -37,6 +37,7 @@ namespace Fux.Input
 
         private int Current => Source.Ensure(Offset);
         private int Next => Source.Ensure(Offset + 1);
+        private int NextNext => Source.Ensure(Offset + 2);
         private int Previous => Source.Ensure(Offset - 1);
 
         private int At(int offset) => Source.Ensure(Offset + offset);
@@ -99,6 +100,8 @@ namespace Fux.Input
                     return LineComment();
                 case '-' when Next.IsDigit():
                     return Build(Number());
+                case '-' when Next == '>' && !NextNext.IsSymbol():
+                    return Build(Lex.Arrow, 2);
                 case '"':
                     return String();
                 case '_':

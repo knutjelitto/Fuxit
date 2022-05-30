@@ -8,14 +8,16 @@ namespace Fux.Input
 {
     public abstract class Source : ISource
     {
-        protected Source(string name)
+        protected Source(string display, string path)
         {
-            Name = name;
+            Display = display;
+            Path = path;
             Text = new List<char>();
             Lines = new List<int> { 0 };
         }
 
-        public string Name { get; }
+        public string Display { get; }
+        public string Path { get; }
         public abstract bool EOS { get; }
         public abstract bool GetNext(out char rune);
         public List<char> Text { get; }
@@ -44,7 +46,7 @@ namespace Fux.Input
         {
             var text = File.ReadAllText(filename, Encoding.UTF8);
 
-            return new StringSource(filename, text);
+            return new StringSource(System.IO.Path.GetFileName(filename), filename, text);
         }
 
         public void NextLine(int offset)

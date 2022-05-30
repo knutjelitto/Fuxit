@@ -23,8 +23,30 @@ namespace Fux.Ast
 
         public override string ToString()
         {
-            var cases = string.Join(" ", Cases.Select(x => $"{Lex.GroupOpen} {x.ToString()} {Lex.GroupClose}"));
+            var cases = string.Join(" ", Cases.Select(x => $"{Lex.GroupOpen} {x} {Lex.GroupClose}"));
             return $"case {Pattern} of {cases}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            if (writer.LineRunning)
+            {
+                writer.WriteLine();
+            }
+            writer.Write($"{Lex.KwCase} ");
+            Pattern.PP(writer);
+            writer.WriteLine($" {Lex.KwOf}");
+            writer.Indent(() =>
+            {
+                foreach (var casee in Cases)
+                {
+                    casee.PP(writer);
+                    if (writer.LineRunning)
+                    {
+                        writer.WriteLine();
+                    }
+                }
+            });
         }
     }
 }

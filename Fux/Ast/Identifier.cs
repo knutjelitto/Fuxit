@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Input;
+﻿using Fux.Input;
 
 namespace Fux.Ast
 {
@@ -18,6 +12,11 @@ namespace Fux.Ast
         public override string ToString()
         {
             return $"{Token}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{Token}");
         }
     }
 }

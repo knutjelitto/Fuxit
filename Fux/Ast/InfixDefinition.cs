@@ -27,5 +27,10 @@ namespace Fux.Ast
         {
             return $"infix {Assoc} {Power} {Op} = {Implementation}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.WriteLine($"{this}");
+        }
     }
 }

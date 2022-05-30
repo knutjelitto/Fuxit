@@ -4,7 +4,7 @@
     {
         private Token? current = null;
 
-        private TokenList tokens = new();
+        private readonly TokenList allTokens = new();
 
         public Liner(ErrorBag errors, Lexer lexer)
         {
@@ -22,7 +22,7 @@
         {
             if (Current.EOF)
             {
-                Assert(tokens.Last().Lex == Lex.EOF);
+                Assert(allTokens[^1].Lex == Lex.EOF);
                 return new Tokens().Add(Current);
             }
 
@@ -101,6 +101,12 @@
                     continue;
                 }
                 else if (parent.EndsWith(Lex.Define))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.Arrow))
                 {
                     parent.Append(line);
 
@@ -262,6 +268,12 @@
 
                     continue;
                 }
+                else if (line.StartsWith(Lex.Arrow))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
                 else if (line.StartsWith(Lex.KwIn))
                 {
                     parent.Append(line);
@@ -292,13 +304,13 @@
         private Token CreateNextToken()
         {
             var whites = new Whites();
-            var current = tokens.Add(Lexer.GetNext());
+            var current = allTokens.Add(Lexer.GetNext());
 
             while (!current.EOF && current.White)
             {
                 whites.Add(current);
 
-                current = tokens.Add(Lexer.GetNext());
+                current = allTokens.Add(Lexer.GetNext());
             }
 
             return current.TransferWhites(whites);

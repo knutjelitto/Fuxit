@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
 
 namespace Fux.Input
 {
     internal class TokensCursor
     {
-        public TokensCursor(Tokens tokens)
+        public TokensCursor(ParserErrors error, Tokens tokens)
         {
             Assert(tokens.Count > 0);
             Offset = 0;
+            Error = error;
             Tokens = tokens;
         }
 
         public int Offset { get; private set; }
-        public int TokenCount => Tokens.Count;
+        public ParserErrors Error { get; }
+        public Tokens Tokens { get; }
+        public bool StartsAtomic => More() && Current.Lex.StartsAtomic;
 
         public Token Current
         {
@@ -27,8 +26,6 @@ namespace Fux.Input
                 return Tokens[Offset];
             }
         }
-
-        public Tokens Tokens { get; }
 
         public Token Advance()
         {
@@ -43,14 +40,16 @@ namespace Fux.Input
             return Offset < Tokens.Count;
         }
 
-        public Token Last()
+
+        public Token Swallow(Lex lexKind, [CallerMemberName] string? member = null)
         {
-            return Tokens.Last();
+            if (this.Is(lexKind))
+            {
+                return Advance();
+            }
+
+            throw Error.Unexpected(lexKind, this.At(), member);
         }
 
-        public Token Second()
-        {
-            return Tokens.Skip(1).First();
-        }
     }
 }

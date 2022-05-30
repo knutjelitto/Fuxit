@@ -2,6 +2,13 @@
 {
     public class Writer : IDisposable
     {
+        private readonly TextWriter sink;
+        private readonly bool owns;
+        private int level;
+        private bool indentPending = true;
+        private bool lineRunning = false;
+        private readonly string prefix;
+
         public Writer(TextWriter sink, int? indent = null, bool owns = false)
         {
             this.sink = sink;
@@ -24,6 +31,8 @@
 
 
         public int Indentation => prefix.Length * level;
+        
+        public bool LineRunning => lineRunning;
 
         public string Filename { get; }
 
@@ -35,7 +44,8 @@
         public void WriteLine()
         {
             sink.WriteLine();
-            pending = true;
+            indentPending = true;
+            lineRunning = false;
         }
 
         public void WriteLine(string text)
@@ -46,16 +56,17 @@
 
         public void Write(string text)
         {
-            if (pending)
+            if (indentPending)
             {
                 for (var i = 0; i < level; i++)
                 {
                     sink.Write(prefix);
-                    pending = false;
                 }
+                indentPending = false;
             }
 
             sink.Write(text);
+            lineRunning = true;
         }
 
         public void Plus()
@@ -121,11 +132,5 @@
                 writer.Minus();
             }
         }
-
-        private readonly TextWriter sink;
-        private readonly bool owns;
-        private int level;
-        private bool pending = true;
-        private readonly string prefix;
     }
 }

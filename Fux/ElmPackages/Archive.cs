@@ -22,7 +22,7 @@ namespace Fux.ElmPackages
         {
             byte[] bytes;
 
-            var filePath = Path.Combine(ElmCache.Instance.FilePath(endpoint.Reference.ToString(), Filename));
+            var filePath = Path.Combine(ElmCache.FilePath(endpoint.Reference.ToString(), Filename));
 
             if (!File.Exists(filePath))
             {

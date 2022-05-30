@@ -23,5 +23,10 @@ namespace Fux.Ast
         {
             return $"type {Expression}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.WriteLine($"{this}");
+        }
     }
 }

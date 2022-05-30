@@ -31,14 +31,14 @@ namespace Fux.ElmPackages
         public Elm Elm => elm ??= GetElm();
         public string Root => Temp.ElmPath(FullName);
 
+        public static Package Latest(string packageName)
+        {
+            return Catalog.Instance.Latest(packageName);
+        }
+
         public override string ToString()
         {
             return FullName;
-        }
-
-        public void ProvideTest()
-        {
-            Provide();
         }
 
         private Elm GetElm()

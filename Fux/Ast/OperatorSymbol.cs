@@ -45,7 +45,7 @@ namespace Fux.Ast
 
             public override Expression Combine(Expression lhs, Expression rhs)
             {
-                return new SelectExpr(this, lhs, rhs);
+                return new SelectExpression(this, lhs, rhs);
             }
         }
     }

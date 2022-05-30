@@ -30,5 +30,21 @@ namespace Fux.Ast
             }
             return $"{Left} {tuple} {Right}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{Lex.LParent}");
+            var more = false;
+            foreach (var expression in Expressions)
+            {
+                if (more)
+                {
+                    writer.Write($"{Lex.Comma} ");
+                }
+                more = true;
+                expression.PP(writer);
+            }
+            writer.Write($"{Lex.RParent}");
+        }
     }
 }

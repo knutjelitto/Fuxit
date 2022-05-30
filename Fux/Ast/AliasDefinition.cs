@@ -21,5 +21,10 @@ namespace Fux.Ast
         {
             return $"type alias {Declaration}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.WriteLine($"{this}");
+        }
     }
 }

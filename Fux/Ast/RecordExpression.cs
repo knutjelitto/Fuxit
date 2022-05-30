@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Input;
+﻿using Fux.Input;
 
 namespace Fux.Ast
 {
@@ -29,6 +23,27 @@ namespace Fux.Ast
                 return $"{Left} {joined} {Right}";
             }
             return $"{Left} {joined} {Right}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{Lex.LBrace} ");
+            var more = false;
+            foreach (var expression in Expressions)
+            {
+                if (more)
+                {
+                    writer.WriteLine();
+                    writer.Write($"{Lex.Comma} ");
+                }
+                more = true;
+                expression.PP(writer);
+            }
+            if (writer.LineRunning)
+            {
+                writer.WriteLine();
+            }
+            writer.WriteLine($"{Lex.RBrace}");
         }
     }
 }

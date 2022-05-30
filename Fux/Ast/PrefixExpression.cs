@@ -23,5 +23,10 @@ namespace Fux.Ast
         {
             return $"{Op.Text} {Rhs}";
         }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{this}");
+        }
     }
 }

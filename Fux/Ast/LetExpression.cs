@@ -23,10 +23,48 @@ namespace Fux.Ast
         public override bool IsAtomic => true;
 
         public override string ToString()
-    {
+        {
             string joined = string.Join(" ", LetExpressions.Select(x => $"{Lex.GroupOpen} {x.ToString()} {Lex.GroupClose}"));
 
             return $"let {joined} in {InExpression}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            if (writer.LineRunning)
+            {
+                writer.WriteLine();
+                writer.Indent(Write);
+            }
+            else
+            {
+                Write();
+            }
+
+            void Write()
+            {
+                writer.WriteLine(Lex.KwLet);
+                writer.Indent(() =>
+                {
+                    foreach (var expr in LetExpressions)
+                    {
+                        expr.PP(writer);
+                        if (writer.LineRunning)
+                        {
+                            writer.WriteLine();
+                        }
+                    }
+                });
+                writer.WriteLine(Lex.KwIn);
+                writer.Indent(() =>
+                {
+                    InExpression.PP(writer);
+                });
+                if (writer.LineRunning)
+                {
+                    writer.WriteLine();
+                }
+            }
         }
     }
 }

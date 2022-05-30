@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Input;
+﻿using Fux.Input;
 
 namespace Fux.Ast
 {
@@ -20,7 +14,14 @@ namespace Fux.Ast
 
         public override string ToString()
         {
-            return $"{Lhs} {Op.Text} {Rhs}";
+            return $"{Lhs} {Lex.Colon} {Rhs}";
+        }
+
+        public override void PP(Writer writer)
+        {
+            Lhs.PP(writer);
+            writer.Write($" {Lex.Colon} ");
+            Rhs.PP(writer);
         }
     }
 }

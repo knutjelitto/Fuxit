@@ -9,8 +9,8 @@ namespace Fux.Input
 {
     internal class StringSource : Source
     {
-        public StringSource(string name, string content)
-            : base(name)
+        public StringSource(string display, string path, string content)
+            : base(display, path)
         {
             Content = content;
             TextOffset = 0;
@@ -23,7 +23,7 @@ namespace Fux.Input
 
         public override Source Clone()
         {
-            return new StringSource(Name, Content);
+            return new StringSource(Display, Path, Content);
         }
 
         public override bool GetNext(out char rune)
@@ -39,7 +39,7 @@ namespace Fux.Input
 
         public override string ToString()
         {
-            return $"source({Name})";
+            return $"source({Display})";
         }
     }
 }
