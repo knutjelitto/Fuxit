@@ -21,6 +21,11 @@ namespace Fux.Input
 
         public override bool EOS => TextOffset >= Content.Length;
 
+        public override Source Clone()
+        {
+            return new StringSource(Name, Content);
+        }
+
         public override bool GetNext(out char rune)
         {
             if (!EOS)
@@ -30,6 +35,11 @@ namespace Fux.Input
             }
             rune = '\0';
             return false;
+        }
+
+        public override string ToString()
+        {
+            return $"source({Name})";
         }
     }
 }

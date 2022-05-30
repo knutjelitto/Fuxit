@@ -4,28 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Fux.Input;
-
 namespace Fux.Ast
 {
-    internal class Definition : Expression
+    internal class TypeOrExpr : Expression
     {
-        public Definition(Token define, Expression lhs, Expression rhs)
+        public TypeOrExpr(OperatorSymbol op, Expression lhs, Expression rhs)
         {
-            Define = define;
+            Op = op;
             Lhs = lhs;
             Rhs = rhs;
         }
 
         public override bool IsAtomic => true;
 
-        public Token Define { get; }
+        public OperatorSymbol Op { get; }
         public Expression Lhs { get; }
         public Expression Rhs { get; }
 
         public override string ToString()
         {
-            return $"{Lhs} {Define} {Rhs}";
+            var lhs = Lhs.IsAtomic ? Lhs.ToString() : $"({Lhs})";
+            var rhs = Rhs.IsAtomic ? Rhs.ToString() : $"({Rhs})";
+            return $"{lhs} | {rhs}";
         }
     }
 }

@@ -21,6 +21,11 @@ namespace Fux.Input
 
         public override bool EOS => false;
 
+        public override Source Clone()
+        {
+            return new ConsoleSource();
+        }
+
         public override bool GetNext(out char rune)
         {
             if (lineOffset > line.Length)

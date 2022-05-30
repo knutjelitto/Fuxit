@@ -21,6 +21,8 @@ namespace Fux.Input
         public List<char> Text { get; }
         public List<int> Lines { get; }
 
+        public abstract Source Clone();
+
         public char Ensure(int offset)
         {
             while (offset >= Text.Count)

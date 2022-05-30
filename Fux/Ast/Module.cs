@@ -8,7 +8,7 @@ namespace Fux.Ast
 {
     internal class Module : Expression
     {
-        public Module(Header header, IReadOnlyList<Import> imports, IEnumerable<Expression> declaration)
+        public Module(Header header, Imports imports, IEnumerable<Expression> declaration)
         {
             Header = header;
             Imports = imports;
@@ -16,7 +16,7 @@ namespace Fux.Ast
         }
 
         public Header Header { get; }
-        public IReadOnlyList<Import> Imports { get; }
+        public Imports Imports { get; }
         public IEnumerable<Expression> Declarations { get; }
         public override bool IsAtomic => false;
 

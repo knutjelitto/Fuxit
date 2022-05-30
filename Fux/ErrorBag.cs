@@ -9,6 +9,7 @@ namespace Fux
     internal class ErrorBag
     {
         private readonly List<DiagnosticException> exceptions = new();
+        private readonly int few = 10;
 
         public bool Ok => exceptions.Count == 0;
 
@@ -31,7 +32,7 @@ namespace Fux
                     }
                 }
 
-                if (++count == 10)
+                if (++count == few)
                     break;
             }
         }

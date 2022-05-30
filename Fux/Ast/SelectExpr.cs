@@ -8,7 +8,7 @@ namespace Fux.Ast
 {
     internal class SelectExpr : Expression
     {
-        public SelectExpr(Operator op, Expression from, Expression to)
+        public SelectExpr(OperatorSymbol op, Expression from, Expression to)
         {
             Op = op;
             From = from;
@@ -17,7 +17,7 @@ namespace Fux.Ast
 
         public override bool IsAtomic => true;
 
-        public Operator Op { get; }
+        public OperatorSymbol Op { get; }
         public Expression From { get; }
         public Expression To { get; }
 
@@ -25,7 +25,7 @@ namespace Fux.Ast
         {
             var from = From.IsAtomic ? From.ToString() : $"({From})";
             var to = To.IsAtomic ? To.ToString() : $"({To})";
-            return $"{from}.{to}";
+            return $"{from} . {to}";
         }
     }
 }

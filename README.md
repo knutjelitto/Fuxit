@@ -1,10 +1,14 @@
 # Fux
 
-My functional programming language
+My functional programming language (currently more an [Elm](https://elm-lang.org/))
 
 #
 
 ### Inspirations
 
-[Koka Book](https://koka-lang.github.io/koka/doc/book.html)  
+[Elm](https://elm-lang.org/)
+
+[C# HM](https://github.com/shff/csharp-hindley-milner)
+
+[Koka Book](https://koka-lang.github.io/koka/doc/book.html)
 [Koka (github)](https://github.com/koka-lang)

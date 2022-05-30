@@ -2,7 +2,7 @@
 {
     internal class Lex
     {
-        private Lex(string name)
+        private Lex(string name, bool isKeyword = false)
         {
             Name = name;
         }
@@ -42,22 +42,21 @@
         public static Lex Space = new("_sp_");
         public static Lex LineComment = new("_line-comment_");
         public static Lex BlockComment = new("_block-comment_");
-        public static Lex LayoutStart = new("«");
-        public static Lex LayoutEnd = new("»");
+
         public static Lex GroupOpen = new("⟦");
         public static Lex GroupClose = new("⟧");
 
         public static Lex LowerId = new("_lower-id_");
         public static Lex UpperId = new("_upper-id_");
-        public static Lex Operator = new("_operator_");
+        public static Lex OperatorId = new("_operator-id_");
         public static Lex Wildcard = new("_wildcard_");
+        public static Lex Operator = new("_operator_");
 
         public static Lex Number = new("_number_");
         public static Lex String = new("_string_");
 
         public static Lex Colon = new(":");
-        public static Lex Assign = new Lex("=");
-        public static Lex Semicolon = new(";");
+        public static Lex Define = new("=");
         public static Lex Comma = new(",");
 
         public static Lex LParent = new("(");
@@ -67,15 +66,16 @@
         public static Lex LBracket = new("[");
         public static Lex RBracket = new("]");
 
-        public static Lex KwModule = new("module");
-        public static Lex KwExposing = new("exposing");
-        public static Lex KwImport = new("import");
-        public static Lex KwType = new("type");
-        public static Lex KwIf = new("if");
-        public static Lex KwThen = new("then");
-        public static Lex KwElse = new("else");
-        public static Lex KwLet = new("let");
-        public static Lex KwIn = new("in");
-        public static Lex KwCase = new("case");
+        public static Lex KwModule = new("module", isKeyword: true);
+        public static Lex KwImport = new("import", isKeyword: true);
+        public static Lex KwInfix = new("infix", isKeyword: true);
+        public static Lex KwType = new("type", isKeyword: true);
+        public static Lex KwIf = new("if", isKeyword: true);
+        public static Lex KwThen = new("then", isKeyword: true);
+        public static Lex KwElse = new("else", isKeyword: true);
+        public static Lex KwLet = new("let", isKeyword: true);
+        public static Lex KwIn = new("in", isKeyword: true);
+        public static Lex KwCase = new("case", isKeyword: true);
+        public static Lex KwOf = new("of", isKeyword: true);
     }
 }

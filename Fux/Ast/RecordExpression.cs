@@ -23,12 +23,12 @@ namespace Fux.Ast
 
         public override string ToString()
         {
-            var tuple = string.Join(", ", Expressions);
+            var joined = string.Join(" , ", Expressions);
             if (Expressions.Count == 1 && Expressions[0].IsAtomic)
             {
-                return $"{Left}{tuple}{Right}";
+                return $"{Left} {joined} {Right}";
             }
-            return $"{Left}{tuple}{Right}";
+            return $"{Left} {joined} {Right}";
         }
     }
 }

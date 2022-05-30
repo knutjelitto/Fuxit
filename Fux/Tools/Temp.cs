@@ -5,16 +5,27 @@ namespace Fux.Tools
 {
     public static class Temp
     {
-        public static string TempPath(string top)
+        private static string GetPath(string which, params string[] paths)
         {
-            var path = Path.Combine(Environment.CurrentDirectory, "../../../../Temp");
-            Assert(Directory.Exists(path));
-            var outPath = Path.GetFullPath(Path.Combine(path, top));
+            var path = Path.Combine(Environment.CurrentDirectory, $"../../../../{which}");
+            Assert(Path.GetFileName(Path.GetDirectoryName(new DirectoryInfo(path).FullName)) == "Fux");
+            Directory.CreateDirectory(path);
+            var outPath = Path.GetFullPath(Path.Combine(path, Path.Combine(paths)));
             if (!Directory.Exists(outPath))
             {
                 _ = Directory.CreateDirectory(outPath);
             }
-            return outPath;
+            return outPath.Replace('\\', '/');
+        }
+
+        public static string TempPath(string top)
+        {
+            return GetPath("Temp", top);
+        }
+
+        public static string ElmPath(params string[] paths)
+        {
+            return GetPath("Elm", paths);
         }
     }
 }

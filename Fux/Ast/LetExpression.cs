@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+
+using Fux.Input;
 
 namespace Fux.Ast
 {
@@ -17,6 +20,13 @@ namespace Fux.Ast
         public IReadOnlyList<Expression> LetExpressions { get; }
         public Expression InExpression { get; }
 
-        public override bool IsAtomic => false;
+        public override bool IsAtomic => true;
+
+        public override string ToString()
+    {
+            string joined = string.Join(" ", LetExpressions.Select(x => $"{Lex.GroupOpen} {x.ToString()} {Lex.GroupClose}"));
+
+            return $"let {joined} in {InExpression}";
+        }
     }
 }

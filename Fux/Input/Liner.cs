@@ -4,24 +4,38 @@
     {
         private Token? current = null;
 
+        private TokenList tokens = new();
+
         public Liner(ErrorBag errors, Lexer lexer)
         {
+            Errors = errors;
             Lexer = lexer;
             Error = new ParserErrors(errors);
         }
 
+        public ErrorBag Errors { get; }
         public Lexer Lexer { get; }
 
         public ParserErrors Error { get; }
 
-        public Line GetLine()
+        public Tokens GetLine()
         {
-            if (Current.Lex == Lex.EOF)
+            if (Current.EOF)
             {
-                return new Line(Current);
+                Assert(tokens.Last().Lex == Lex.EOF);
+                return new Tokens().Add(Current);
             }
 
-            return ParseLine();
+            try
+            {
+                return ParseLine();
+            }
+            catch (DiagnosticException diagnostic)
+            {
+                Errors.Add(diagnostic);
+
+                return new Tokens();
+            }
         }
 
         private Token Current
@@ -45,51 +59,246 @@
             return token;
         }
 
-        private Line ParseLine()
+        private Tokens ParseLine()
         {
             var starter = Current;
 
-            var line = new Line();
             var tokens = new Tokens();
 
             while (!Current.EOF && Current.Line == starter.Line)
             {
                 var token = Consume();
 
-                line.AddToken(token);
                 tokens.Add(token);
             }
 
             if (!Current.EOF && Current.Column > starter.Column)
             {
-                ParseLines(line, tokens);
+                ParseLines(tokens);
             }
 
-            line.Compress();
-
-            return line;
+            return tokens;
         }
 
-        private void ParseLines(Line parent, Tokens tokens)
+        private void ParseLines(Tokens parent)
         {
             var starter = Current;
 
             while (!Current.EOF && Current.Column == starter.Column)
             {
-                parent.AddIndent(ParseLine());
+                var line = ParseLine();
+
+                if (parent.EndsWith(Lex.Operator))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.Colon))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.Define))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.KwIn))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.KwOf))
+                {
+                    parent.AppendGrouped(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.KwIf))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.KwThen))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.KwElse))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.EndsWith(Lex.LParent))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwModule))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwImport))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwOf))
+                {
+                    parent.AppendGrouped(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwIf))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwThen))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwElse))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwIn))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwLet))
+                {
+                    parent.AppendGrouped(line);
+
+                    continue;
+                }
+                else if (parent.StartsWith(Lex.KwCase))
+                {
+                    parent.AppendGrouped(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.KwOf))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.Operator))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.LParent))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.LBrace))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.LBracket))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.RParent))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.RBrace))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.RBracket))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.Comma))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.Colon))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.Define))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.KwIn))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.StartsWith(Lex.KwElse))
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else if (line.IsAtomic)
+                {
+                    parent.Append(line);
+
+                    continue;
+                }
+                else
+                {
+                    Assert(false);
+
+                    throw new NotImplementedException();
+                }
             }
         }
 
         private Token CreateNextToken()
         {
             var whites = new Whites();
-            var current = Lexer.GetNext();
+            var current = tokens.Add(Lexer.GetNext());
 
             while (!current.EOF && current.White)
             {
                 whites.Add(current);
 
-                current = Lexer.GetNext();
+                current = tokens.Add(Lexer.GetNext());
             }
 
             return current.TransferWhites(whites);

@@ -16,39 +16,41 @@ namespace Fux.Ast
 
         private Infix()
         {
-            Add("=", 10, Assoc.None);
-            Add(":", 10, Assoc.None);
-
             Add("|", 20, Assoc.None);
 
-            Add("->", 30, Assoc.None, Operator.Arrow);
+            Add("->", 30, Assoc.None, OperatorSymbol.Arrow);
 
-            Add("<|", 40, Assoc.Left);
-            Add("|>", 40, Assoc.Left);
+            Add("<|", 100, Assoc.Right);
+            Add("|>", 100, Assoc.Left);
 
-            Add("==", 100, Assoc.None);
-            Add("!=", 100, Assoc.None);
-            Add("/=", 100, Assoc.None);
+            Add("||", 120, Assoc.Right);
+            Add("&&", 130, Assoc.Right);
 
-            Add("<", 110, Assoc.None);
-            Add("<=", 110, Assoc.None);
-            Add(">", 110, Assoc.None);
-            Add(">=", 110, Assoc.None);
+            Add("==", 140, Assoc.None);
+            Add("!=", 140, Assoc.None);
+            Add("/=", 140, Assoc.None);
 
-            Add("||", 120, Assoc.Left);
-            Add("&&", 130, Assoc.Left);
+            Add("<", 140, Assoc.None);
+            Add("<=", 140, Assoc.None);
+            Add(">", 140, Assoc.None);
+            Add(">=", 140, Assoc.None);
 
-            Add("+", 140, Assoc.Left);
-            Add("++", 140, Assoc.Left);
-            Add("::", 140, Assoc.Left);
-            Add("-", 140, Assoc.Left);
+            Add("++", 150, Assoc.Right);
 
-            Add("*", 150, Assoc.Left);
-            Add("/", 150, Assoc.Left);
-            Add("//", 150, Assoc.Left);
-            Add("%", 150, Assoc.Left);
+            Add("+", 160, Assoc.Left);
+            Add("-", 160, Assoc.Left);
+            Add("::", 160, Assoc.Left);
 
-            Add(".", 1000, Assoc.Left, Operator.Select);
+            Add("*", 170, Assoc.Left);
+            Add("/", 170, Assoc.Left);
+            Add("//", 170, Assoc.Left);
+
+            Add("^", 180, Assoc.Right);
+
+            Add("<<", 190, Assoc.Left);
+            Add(">>", 190, Assoc.Right);
+
+            Add(".", 1000, Assoc.Left, OperatorSymbol.Select);
         }
 
         public Prec this[string name]
@@ -59,23 +61,23 @@ namespace Fux.Ast
             }
         }
 
-        public Operator Create(Token token)
+        public OperatorSymbol Create(Token token)
         {
             if (precs.TryGetValue(token.Text, out var prec) && prec.Create != null)
             {
                 return prec.Create(token);
             }
-            return new Operator(token);
+            return new OperatorSymbol(token);
         }
 
-        private void Add(string name, int prio, Assoc assoc, Func<Token,Operator>? create = null)
+        private void Add(string name, int prio, Assoc assoc, Func<Token,OperatorSymbol>? create = null)
         {
             precs.Add(name, new Prec(name, prio, assoc, create));
         }
 
         public class Prec
         {
-            public Prec(string name, int prio, Assoc assoc, Func<Token, Operator>? create = null)
+            public Prec(string name, int prio, Assoc assoc, Func<Token, OperatorSymbol>? create = null)
             {
                 Name = name;
                 Precedence = prio;
@@ -86,7 +88,7 @@ namespace Fux.Ast
             public string Name { get; }
             public int Precedence { get; }
             public Assoc Assoc { get; }
-            public Func<Token, Operator>? Create { get; }
+            public Func<Token, OperatorSymbol>? Create { get; }
         }
 
         public enum Assoc

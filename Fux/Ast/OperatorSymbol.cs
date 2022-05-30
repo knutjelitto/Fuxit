@@ -8,9 +8,9 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class Operator : Symbol
+    internal class OperatorSymbol : Symbol
     {
-        public Operator(Token token) : base(token)
+        public OperatorSymbol(Token token) : base(token)
         {
         }
 
@@ -23,23 +23,23 @@ namespace Fux.Ast
 
         public virtual Expression Combine(Expression lhs, Expression rhs)
         {
-            return new ApplicationExpression(this, lhs, rhs);
+            return new InfixExpression(this, lhs, rhs);
         }
 
-        public static Operator Arrow(Token token) => new ArrowOp(token);
-        public static Operator Select(Token token) => new SelectOp(token);
+        public static OperatorSymbol Arrow(Token token) => new ArrowOp(token);
+        public static OperatorSymbol Select(Token token) => new SelectOp(token);
 
-        public class ArrowOp : Operator
+        public class ArrowOp : OperatorSymbol
         {
             public ArrowOp(Token token) : base(token) { }
 
             public override Expression Combine(Expression lhs, Expression rhs)
             {
-                return new ArrowExpr(this, lhs, rhs);
+                return new ArrowExpression(this, lhs, rhs);
             }
         }
-        
-        public class SelectOp : Operator
+
+        public class SelectOp : OperatorSymbol
         {
             public SelectOp(Token token) : base(token) { }
 

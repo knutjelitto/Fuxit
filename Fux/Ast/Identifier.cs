@@ -12,6 +12,7 @@ namespace Fux.Ast
     {
         public Identifier(Token token) : base(token)
         {
+            Assert(token.Lex == Lex.LowerId || token.Lex == Lex.UpperId || token.Lex == Lex.OperatorId);
         }
 
         public override string ToString()

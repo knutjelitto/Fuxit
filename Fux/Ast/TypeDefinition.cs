@@ -10,24 +10,18 @@ namespace Fux.Ast
 {
     internal class TypeDefinition : Expression
     {
-        public TypeDefinition(Token type, Expression lhs, Token defineToken, Expression rhs)
+        public TypeDefinition(Expression expression)
         {
-            TypeToken = type;
-            Lhs = lhs;
-            DefineToken = defineToken;
-            Rhs = rhs;
+            Expression = expression;
         }
 
         public override bool IsAtomic => true;
 
-        public Token TypeToken { get; }
-        public Expression Lhs { get; }
-        public Token DefineToken { get; }
-        public Expression Rhs { get; }
+        public Expression Expression { get; }
 
         public override string ToString()
         {
-            return $"{Lhs} {TypeToken} {Rhs}";
+            return $"type {Expression}";
         }
     }
 }

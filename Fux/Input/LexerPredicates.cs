@@ -8,21 +8,13 @@ namespace Fux.Input
 {
     internal static class LexerPredicates
     {
-        private static readonly HashSet<int> specials = new()
-        {
-            '{', '}',
-            '(', ')',
-            '[', ']',
-            '|', ';', ',',
-        };
-
         private static readonly HashSet<int> symbols = new()
         {
-            '+', '-', '*', '/', '%', '^',
-            '$', '&', 
-            '~', '!', '\\', '#',
-            '=', '.', ':', '?',
-            '<', '>', '|',
+            '+',  '-',  '*',  '/',
+            '%',  '^',  '$',  '&',
+            '~',  '!',  '\\', '#',
+            '=',  '.',  ':',  '?',
+            '<',  '>',  '|',
         };
 
         public static bool IsCharacter(this int rune) => IsUnicode(rune) && !IsControl(rune) && !IsSurrogate(rune) && !IsBidi(rune);
@@ -37,7 +29,5 @@ namespace Fux.Input
         public static bool IsPosDigit(this int rune) => '1' <= rune && rune <= '9';
         public static bool IsHexDigit(this int rune) => 'a' <= rune && rune <= 'f' || 'A' <= rune && rune <= 'F' || IsDigit(rune);
         public static bool IsSymbol(this int rune) => symbols.Contains(rune);
-        public static bool IsSpecial(this int rune) => specials.Contains(rune);
-
     }
 }

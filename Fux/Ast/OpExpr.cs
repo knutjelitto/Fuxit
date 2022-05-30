@@ -8,13 +8,13 @@ namespace Fux.Ast
 {
     internal class OpExpr
     {
-        public OpExpr(Operator op, Expression expression)
+        public OpExpr(OperatorSymbol op, Expression expression)
         {
             Op = op;
             Expression = expression;
         }
 
-        public Operator Op { get; }
+        public OperatorSymbol Op { get; }
         public Expression Expression { get; }
 
         public override string ToString()

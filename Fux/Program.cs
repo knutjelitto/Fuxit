@@ -1,4 +1,8 @@
-﻿using Fux.Input;
+﻿using Fux.ElmPackages;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable CS0162 // Unreachable code detected
+#pragma warning disable IDE0051 // Remove unused private members
 
 namespace Fux
 {
@@ -6,20 +10,40 @@ namespace Fux
     {
         static void Main(string[] args)
         {
+#if true
+            //ProvideTest();
+
+            var builder = new Builder();
+            builder.Build(new Package("elm-explorations/test", "1.2.2"));
+#else
             var errors = new ErrorBag();
 
             if (args.Length == 1 && args[0] == "repl")
             {
-                RunRepl(errors, new ConsoleSource());
+                //RunRepl(errors, new ConsoleSource());
             }
             else
             {
-                RunModule(errors, Source.FromFile(@"src/core/Array.elm"));
-                RunModule(errors, Source.FromFile(@"src/core/Basics.elm"));
-                RunModule(errors, Source.FromFile(@"src/core/Bitwise.elm"));
-                RunModule(errors, Source.FromFile(@"src/core/Char.elm"));
+                RunModule(errors, "src/core/Tester.elm");
 
-                //RunModule(errors, Source.FromFile(@"src/core/Tester.fux"));
+                RunModule(errors, "src/core/Array.elm");
+                RunModule(errors, "src/core/Basics.elm");
+                RunModule(errors, "src/core/Bitwise.elm");
+                RunModule(errors, "src/core/Char.elm");
+                RunModule(errors, "src/core/Debug.elm");
+                RunModule(errors, "src/core/Dict.elm");
+                RunModule(errors, "src/core/List.elm");
+                RunModule(errors, "src/core/Maybe.elm");
+                RunModule(errors, "src/core/Platform.elm");
+                RunModule(errors, "src/core/Platform/Cmd.elm");
+                RunModule(errors, "src/core/Platform/Sub.elm");
+                RunModule(errors, "src/core/Process.elm");
+                RunModule(errors, "src/core/Result.elm");
+                RunModule(errors, "src/core/Set.elm");
+                RunModule(errors, "src/core/String.elm");
+                RunModule(errors, "src/core/Task.elm");
+                RunModule(errors, "src/core/Tuple.elm");
+
 
                 if (!errors.Ok)
                 {
@@ -30,8 +54,25 @@ namespace Fux
                     }
                 }
             }
+#endif
 
             WaitForKey();
+        }
+
+        static void ProvideTest()
+        {
+            var catalog = Catalog.Instance;
+
+            foreach (var package in catalog)
+            {
+                if (!(package.Name.StartsWith("elm/") || package.Name.StartsWith("elm-explorations/")))
+                {
+                    continue;
+                }
+
+                package.ProvideTest();
+            }
+
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Fux.Input;
+
 namespace Fux.Ast
 {
     internal class Import : Expression
@@ -20,5 +22,13 @@ namespace Fux.Ast
         public Expression? Exposed { get; }
 
         public override bool IsAtomic => false;
+
+        public override string ToString()
+        {
+            var alias = Alias == null ? "" : $" as {Alias}";
+            var exposed = Exposed == null ? "" : $" exposing {Exposed}";
+
+            return $"import {Path}{alias}{exposed}";
+        }
     }
 }

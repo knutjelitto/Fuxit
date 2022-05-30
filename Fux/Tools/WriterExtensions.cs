@@ -17,5 +17,21 @@
         {
             return new Writer(File(filename), indent);
         }
+
+        public static void Join<T>(this Writer writer, string separator, IEnumerable<T> values)
+        {
+            var more = false;
+
+            foreach (var value in values)
+            {
+                if (more)
+                {
+                    writer.Write(separator);
+                }
+                more = true;
+
+                writer.Write($"{value}");
+            }
+        }
     }
 }

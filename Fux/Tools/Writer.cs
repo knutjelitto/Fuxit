@@ -7,6 +7,8 @@
             this.sink = sink;
             this.owns = owns;
             prefix = new string(' ', indent ?? 4);
+
+            Filename = "<unknown>";
         }
 
         public Writer(int? indent = null)
@@ -17,7 +19,13 @@
         public Writer(string filename, int? indent = null)
             : this(new StreamWriter(filename), indent, true)
         {
+            Filename = filename;
         }
+
+
+        public int Indentation => prefix.Length * level;
+
+        public string Filename { get; }
 
         public static Writer Console()
         {
@@ -50,8 +58,6 @@
             sink.Write(text);
         }
 
-        public int Indentation => prefix.Length * level;
-
         public void Plus()
         {
             level += 1;
@@ -59,7 +65,8 @@
 
         public void Minus()
         {
-            level = Math.Max(0, level - 1);
+            //level = Math.Max(0, level - 1);
+            level -= 1;
         }
 
         public IDisposable Indent()

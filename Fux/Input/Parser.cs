@@ -1,85 +1,112 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using Fux.Ast;
 
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
 
 namespace Fux.Input
 {
     internal class Parser
     {
-        public Parser(ErrorBag errors, Line line)
+        public Parser(ErrorBag errors, Liner liner)
         {
             Error = new ParserErrors(errors);
-            Line = line;
+            Liner = liner;
         }
 
         public ParserErrors Error { get; }
-        public Line Line { get; private set; }
+        public Liner Liner { get; }
 
-        public Expression Outer(LineCursor cursor)
+        public Module Module()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Expression Outer()
+        {
+            var line = Liner.GetLine();
+            var cursor = new TokensCursor(line);
+
+            return Outer(cursor);
+        }
+
+        public Expression Outer(TokensCursor cursor)
         {
             Expression? outer = null;
 
-            if (cursor.Is(Lex.KwModule))
+            if (cursor.Is(Lex.KwModule) || cursor.Is("effect"))
             {
-                outer = Header(cursor);
+                outer = TopHeader(cursor);
             }
             else if (cursor.Is(Lex.KwImport))
             {
-                outer = Import(cursor);
+                outer = TopImport(cursor);
+            }
+            else if (cursor.Is(Lex.KwInfix))
+            {
+                outer = TopInfix(cursor);
             }
             else if (cursor.Is(Lex.KwType))
             {
-                outer = Type(cursor);
+                outer = TopType(cursor);
             }
             else
             {
-                var lhs = Expression(cursor);
-
-                if (cursor.Is(Lex.Colon))
-                {
-                    outer = Annotation(cursor, lhs);
-                }
-                else if (cursor.Is(Lex.Assign))
-                {
-                    outer = Definition(cursor, lhs);
-                }
-            }
-
-            if (outer == null)
-            {
-                throw Error.NotImplemented(cursor.At());
+                outer = Expression(cursor);
             }
 
             if (cursor.More())
             {
-                throw Error.Internal(cursor.At(), "continuation with token not implemented");
+                throw Error.Internal(cursor.At(), $"can not continue at token '{cursor.At()}'");
             }
 
             return outer;
         }
 
-        private Expression Header(LineCursor cursor)
+        private Expression TopHeader(TokensCursor cursor)
         {
-            var kwModule = Swallow(cursor, Lex.KwModule);
-            var name = new Identifier(Swallow(cursor, Lex.UpperId));
-            var kwExposing = Swallow(cursor, Lex.KwExposing);
+            var effect = false;
+            if (cursor.Is("effect"))
+            {
+                //TODO: what's an effect?
+                cursor.Advance();
+                effect = true;
+            }
+            Swallow(cursor, Lex.KwModule);
 
-            var tuple = Tuple(cursor);
+            var path = Path(cursor);
 
-            return new Header(name, tuple);
+            RecordExpression? where = null;
+            if (cursor.Is("where"))
+            {
+                cursor.Advance();
 
+                //TODO: what's a where?
+                where = RecordLiteral(cursor);
+            }
+
+            TupleExpression? tuple = null;
+
+            if (cursor.Is("exposing"))
+            {
+                Swallow(cursor, Lex.LowerId);
+                tuple = TupleLiteral(cursor);
+            }
+
+            return new Header(path, effect, where, tuple);
         }
 
-        public Import Import(LineCursor cursor)
+        public Import TopImport(TokensCursor cursor)
         {
-            var kwImport = Swallow(cursor, Lex.KwImport);
-            var path = Expression(cursor);
+            var importTok = Swallow(cursor, Lex.KwImport);
+
+            var path = Path(cursor);
 
             Expression? alias = null;
 
-            if (cursor.More() && cursor.At().Text == "as")
+            if (cursor.Is("as"))
             {
                 cursor.Advance();
 
@@ -88,7 +115,7 @@ namespace Fux.Input
 
             Expression? exposed = null;
 
-            if (cursor.More() && cursor.At().Text == "exposing")
+            if (cursor.Is("exposing"))
             {
                 cursor.Advance();
 
@@ -98,147 +125,75 @@ namespace Fux.Input
             return new Import(path, alias, exposed);
         }
 
-        public TypeDefinition Type(LineCursor cursor)
+        private ModulePath Path(TokensCursor cursor)
+        {
+            var names = new List<Identifier>();
+
+            do
+            {
+                if (cursor.Is(Lex.LowerId) || cursor.Is(Lex.UpperId))
+                {
+                    var name = new Identifier(cursor.Advance());
+                    names.Add(name);
+                }
+
+                if (cursor.Is("."))
+                {
+                    Swallow(cursor, Lex.Operator);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            while (true);
+
+            return new ModulePath(names);
+        }
+
+        public InfixDefinition TopInfix(TokensCursor cursor)
+        {
+            var infixTok = Swallow(cursor, Lex.KwInfix);
+            var assocTok = Swallow(cursor, Lex.LowerId);
+            var assoc = InfixAssoc.From(assocTok.Text);
+            if (assoc == null)
+            {
+                throw Error.IllegalInfixAssoc(assocTok);
+            }
+            var prioTok = Swallow(cursor, Lex.Number);
+            var power = new InfixPower(prioTok);
+            var operatorTok = Swallow(cursor, Lex.OperatorId);
+            var operatorSymbol = new Identifier(operatorTok);
+            var defineTok = Swallow(cursor, Lex.Define);
+            var implementatioTok = Swallow(cursor, Lex.LowerId);
+            var implementationSymbol = new Identifier(implementatioTok);
+
+            return new InfixDefinition(assoc, power, operatorSymbol, implementationSymbol);
+        }
+
+        public Expression TopType(TokensCursor cursor)
         {
             var kwType = Swallow(cursor, Lex.KwType);
 
-            var lhs = Expression(cursor);
+            var alias = false;
+            if (cursor.Is("alias"))
+            {
+                Swallow(cursor, Lex.LowerId);
+                alias = true;
+            }
 
-            var kwDefine = Swallow(cursor, Lex.Assign);
+            var expression = Expression(cursor);
 
-            var rhs = Expression(cursor);
-
-            return new TypeDefinition(kwType, lhs, kwDefine, rhs);
+            return alias ? new AliasDefinition(expression) : new TypeDefinition(expression);
         }
 
-        public Definition Definition(LineCursor cursor, Expression lhs)
-        {
-            var kwDefine = Swallow(cursor, Lex.Assign);
-
-            Expression rhs;
-
-            if (cursor.More())
-            {
-                rhs = Expression(cursor);
-            }
-            else
-            {
-                rhs = Inner(cursor);
-            }
-
-            return new Definition(kwDefine, lhs, rhs);
-        }
-
-        public Annotation Annotation(LineCursor cursor, Expression lhs)
-        {
-            var kwColon = Swallow(cursor, Lex.Colon);
-
-            var rhs = Expression(cursor);
-
-            return new Annotation(kwColon, lhs, rhs);
-        }
-
-        public Expression Inner(LineCursor cursor)
-        {
-            if (cursor.More())
-            {
-                throw Error.Internal(cursor.At(), "expected end in token sequence");
-            }
-
-            Assert(cursor.LineCount > 0);
-
-            var first = cursor[0];
-
-            if (first.Is(Lex.KwLet))
-            {
-                return Let(cursor);
-            }
-            else if (first.Is(Lex.KwIf))
-            {
-                return If(cursor);
-            }
-
-            throw Error.NotImplemented(first.At());
-        }
-
-        public Expression If(LineCursor cursor)
-        {
-            if (cursor.LineCount == 0)
-            {
-                throw Error.Internal(cursor.Last(), "expected inner lines");
-            }
-
-            var iff = cursor[0];
-
-            throw Error.NotImplemented(iff.At());
-        }
-
-        public Expression Let(LineCursor cursor)
-        {
-            if (cursor.LineCount != 2)
-            {
-                throw Error.Internal(cursor.Last(), "expected two inner lines");
-            }
-
-            var let = cursor[0];
-            var inn = cursor[1];
-
-            if (!let.Is(Lex.KwLet) || let.TokenCount != 1)
-            {
-                throw Error.Internal(let.At(), $"expected '{Lex.KwLet}' as sole token on line");
-            }
-
-            var letExpressions = new List<Expression>();
-
-            for (var i = 0; i < let.LineCount; ++i)
-            {
-                var letLine = let[i];
-
-                var expression = Expression(letLine);
-
-                letExpressions.Add(expression);
-            }
-
-            var inExpression = KwIn(inn);
-
-            return new LetExpression(letExpressions, inExpression);
-        }
-
-        private Expression KwIn(LineCursor inn)
-        {
-            var kwIn = Swallow(inn, Lex.KwIn);
-
-            Expression expression;
-
-            if (inn.More())
-            {
-                if (inn.LineCount > 0)
-                {
-                    throw Error.Internal(inn.At(), $"continuation on inner lines not implemented");
-                }
-
-                expression = Expression(inn);
-            }
-            else
-            {
-                if (inn.LineCount != 1)
-                {
-                    throw Error.Internal(kwIn, $"only one inner line implemented");
-                }
-
-                expression = Expression(inn[0]);
-            }
-
-            return expression;
-        }
-
-        private TupleExpression Tuple(LineCursor cursor)
+        private TupleExpression TupleLiteral(TokensCursor cursor)
         {
             var left = Swallow(cursor, Lex.LParent);
 
             var expressions = new List<Expression>();
 
-            while (cursor.At().Lex != Lex.RParent)
+            while (cursor.IsNot(Lex.RParent))
             {
                 expressions.Add(Expression(cursor));
 
@@ -255,16 +210,100 @@ namespace Fux.Input
             return new TupleExpression(left, right, expressions);
         }
 
-        private Expression Expression(LineCursor cursor)
+        private RecordExpression RecordLiteral(TokensCursor cursor)
         {
-            if (cursor.Is(Lex.KwIf))
+            var left = Swallow(cursor, Lex.LBrace);
+
+            var expressions = new List<Expression>();
+
+            while (cursor.At().Lex != Lex.RBrace)
             {
-                return InlineIf(cursor);
+                expressions.Add(Expression(cursor));
+
+                if (cursor.IsNot(Lex.RBrace))
+                {
+                    Swallow(cursor, Lex.Comma);
+
+                    continue;
+                }
             }
-            return Operator(cursor);
+
+            var right = Swallow(cursor, Lex.RBrace);
+
+            return new RecordExpression(left, right, expressions);
         }
 
-        private Expression InlineIf(LineCursor cursor)
+
+        private ListExpression ListLiteral(TokensCursor cursor)
+        {
+            var left = Swallow(cursor, Lex.LBracket);
+
+            var expressions = new List<Expression>();
+
+            while (cursor.At().Lex != Lex.RBracket)
+{
+                expressions.Add(Expression(cursor));
+
+                if (cursor.IsNot(Lex.RBracket))
+                {
+                    Swallow(cursor, Lex.Comma);
+                }
+            }
+
+            var right = Swallow(cursor, Lex.RBracket);
+
+            return new ListExpression(left, right, expressions);
+        }
+
+        private Expression Expression(TokensCursor cursor)
+        {
+            var lhs = Definition(cursor);
+
+            if (cursor.Is(Lex.Colon))
+            {
+                var colon = new OperatorSymbol(Swallow(cursor, Lex.Colon));
+                var rhs = Definition(cursor);
+
+                return new AnnotateExpression(colon, lhs, rhs);
+            }
+
+            return lhs;
+        }
+
+        private Expression Definition(TokensCursor cursor)
+        {
+            var lhs = Sequence(cursor);
+
+            if (cursor.Is(Lex.Define))
+            {
+                var colon = new OperatorSymbol(Swallow(cursor, Lex.Define));
+                var rhs = Sequence(cursor);
+
+                return new DefineExpression(colon, lhs, rhs);
+            }
+
+            return lhs;
+        }
+
+        private Expression Sequence(TokensCursor cursor)
+        {
+            var first = Operator(cursor);
+
+            var rest = new List<Expression>();
+            while (IsAtomStart(cursor))
+            {
+                rest.Add(Operator(cursor));
+            }
+
+            if (rest.Count > 0)
+            {
+                return new ApplicationExpression(first, rest.ToArray());
+            }
+
+            return first;
+        }
+
+        private Expression InlineIf(TokensCursor cursor)
         {
             var kwIf = Swallow(cursor, Lex.KwIf);
             var condition = Expression(cursor);
@@ -276,7 +315,41 @@ namespace Fux.Input
             return new IfExpression(condition, whenTrue, whenFalse);
         }
 
-        private Expression Operator(LineCursor cursor)
+        private Expression InlineLet(TokensCursor cursor)
+        {
+            var kwLet = Swallow(cursor, Lex.KwLet);
+            var lets = new List<Expression>();
+            while (cursor.IsNot(Lex.KwIn))
+            {
+                var let = Operator(cursor);
+
+                lets.Add(let);
+            }
+            var kwIn = Swallow(cursor, Lex.KwIn);
+            var expression = Expression(cursor);
+
+            return new LetExpression(lets, expression);
+        }
+
+        private Expression InlineCase(TokensCursor cursor)
+        {
+            var kwCase = Swallow(cursor, Lex.KwCase);
+            var pattern = Expression(cursor);
+            var kwOf = Swallow(cursor, Lex.KwOf);
+
+            var cases = new List<Expression>();
+
+            while (IsAtomStart(cursor))
+            {
+                var expression = Operator(cursor);
+
+                cases.Add(expression);
+            }
+
+            return new CaseExpression(pattern, cases);
+        }
+
+        private Expression Operator(TokensCursor cursor)
         {
             var lhs = Prefix(cursor);
 
@@ -301,50 +374,38 @@ namespace Fux.Input
             return new OpChain(lhs, rest).Resolve();
         }
 
-        private Expression Prefix(LineCursor cursor)
+        private Expression Prefix(TokensCursor cursor)
         {
             Expression app;
 
-            if (cursor.At().IsOperator())
+            if (cursor.IsOperator())
             {
-                var op = new Operator(cursor.Advance());
+                var op = new OperatorSymbol(cursor.Advance());
                 var argument = Prefix(cursor);
 
-                app = new ApplicationExpression(op, argument);
+                app = new PrefixExpression(op, argument);
             }
             else
             {
-                app = Sequence(cursor);
+                app = Atom(cursor);
             }
 
             return app;
         }
 
-        private Expression Sequence(LineCursor cursor)
+        private Expression Atom(TokensCursor cursor)
         {
-            var first = Atom(cursor);
+            Assert(IsAtomStart(cursor));
 
-            var rest = new List<Expression>();
-            while (IsAtomStart(cursor))
-            {
-                rest.Add(Atom(cursor));
-            }
-
-            if (rest.Count > 0)
-            {
-                return new ApplicationExpression(first, rest.ToArray());
-            }
-
-            return first;
-        }
-
-        private Expression Atom(LineCursor cursor)
-        {
             if (cursor.Is(Lex.LowerId))
             {
                 return new Identifier(cursor.Advance());
             }
             else if (cursor.Is(Lex.UpperId))
+            {
+                return new Identifier(cursor.Advance());
+            }
+            else if (cursor.Is(Lex.OperatorId))
             {
                 return new Identifier(cursor.Advance());
             }
@@ -356,6 +417,22 @@ namespace Fux.Input
             {
                 return new NumberLiteral(cursor.Advance());
             }
+            else if (cursor.Is(Lex.String))
+            {
+                return new StringLiteral(cursor.Advance());
+            }
+            else if (cursor.Is(Lex.KwIf))
+            {
+                return InlineIf(cursor);
+            }
+            else if (cursor.Is(Lex.KwLet))
+            {
+                return InlineLet(cursor);
+            }
+            else if (cursor.Is(Lex.KwCase))
+            {
+                return InlineCase(cursor);
+            }
             else if (cursor.Is(Lex.GroupOpen))
             {
                 var open = Swallow(cursor, Lex.GroupOpen);
@@ -365,21 +442,34 @@ namespace Fux.Input
             }
             else if (cursor.Is(Lex.LParent))
             {
-                return Tuple(cursor);
+                return TupleLiteral(cursor);
+            }
+            else if (cursor.Is(Lex.LBrace))
+            {
+                return RecordLiteral(cursor);
+            }
+            else if (cursor.Is(Lex.LBracket))
+            {
+                return ListLiteral(cursor);
             }
 
             throw Error.NotImplemented(cursor.At());
         }
 
 
-        private bool IsAtomStart(LineCursor cursor)
+        private bool IsAtomStart(TokensCursor cursor)
         {
             return cursor.More() &&
-                (  cursor.Is(Lex.Number)
-                || cursor.Is(Lex.String)
+                (  false
                 || cursor.Is(Lex.LowerId)
                 || cursor.Is(Lex.UpperId)
+                || cursor.Is(Lex.OperatorId)
                 || cursor.Is(Lex.Wildcard)
+                || cursor.Is(Lex.Number)
+                || cursor.Is(Lex.String)
+                || cursor.Is(Lex.KwIf)
+                || cursor.Is(Lex.KwLet)
+                || cursor.Is(Lex.KwCase)
                 || cursor.Is(Lex.LParent)
                 || cursor.Is(Lex.LBracket)
                 || cursor.Is(Lex.LBrace)
@@ -388,14 +478,14 @@ namespace Fux.Input
         }
 
 
-        private Token Swallow(LineCursor cursor, Lex lexKind)
+        private Token Swallow(TokensCursor cursor, Lex lexKind, [CallerMemberName]string? member = null)
         {
             if (cursor.Is(lexKind))
             {
                 return cursor.Advance();
             }
 
-            throw Error.Unexpected(lexKind, cursor.At());
+            throw Error.Unexpected(lexKind, cursor.At(), member);
         }
     }
 }

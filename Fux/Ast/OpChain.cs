@@ -58,7 +58,6 @@ namespace Fux.Ast
                     }
                 }
                 lhs = op.Combine(lhs, rhs);
-                //lhs = new ApplicationExpression(op, lhs, rhs);
             }
 
             return lhs;

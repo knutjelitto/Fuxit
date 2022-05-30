@@ -8,24 +8,26 @@ using Fux.Input;
 
 namespace Fux.Ast
 {
-    internal class Annotation : Expression
+    internal class DefineExpression : Expression
     {
-        public Annotation(Token colon, Expression lhs, Expression rhs)
+        public DefineExpression(OperatorSymbol op, Expression lhs, Expression rhs)
         {
-            Colon = colon;
+            Assert(op.Token.Lex == Lex.Define);
+
+            Op = op;
             Lhs = lhs;
             Rhs = rhs;
         }
 
         public override bool IsAtomic => true;
 
-        public Token Colon { get; }
+        public OperatorSymbol Op { get; }
         public Expression Lhs { get; }
         public Expression Rhs { get; }
 
         public override string ToString()
         {
-            return $"{Lhs} {Colon} {Rhs}";
+            return $"{Lhs} {Op.Text} {Rhs}";
         }
     }
 }

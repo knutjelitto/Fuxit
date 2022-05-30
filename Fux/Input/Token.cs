@@ -10,7 +10,7 @@ namespace Fux.Input
     [DebuggerDisplay("{Dbg()}")]
     internal class Token
     {
-        private Whites? whitesBefore = new();
+        private Whites whitesBefore = new();
 
         public Token(Lex lex, ILocation location)
         {
@@ -27,6 +27,8 @@ namespace Fux.Input
         public ILocation Location { get; }
         public int Column => Location.Column;
         public int Line => Location.Line;
+
+        public int Index { get; set; } = -1;
 
         public bool White => Lex == Lex.Newline || Lex == Lex.Space || Lex == Lex.BlockComment || Lex == Lex.LineComment;
         public bool Newline => Lex == Lex.Newline;

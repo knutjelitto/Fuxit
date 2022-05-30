@@ -9,9 +9,8 @@ namespace Fux.Input
         static Lexer()
         {
             AddKw("module", Lex.KwModule);
-            AddKw("exposing", Lex.KwExposing);
             AddKw("import", Lex.KwImport);
-
+            AddKw("infix", Lex.KwInfix);
             AddKw("type", Lex.KwType);
 
             AddKw("if", Lex.KwIf);
@@ -22,6 +21,7 @@ namespace Fux.Input
             AddKw("in", Lex.KwIn);
 
             AddKw("case", Lex.KwCase);
+            AddKw("of", Lex.KwOf);
         }
 
         public Lexer(ErrorBag errors, Source source)
@@ -89,14 +89,12 @@ namespace Fux.Input
                     return Build(Lex.LBracket, 1);
                 case ']':
                     return Build(Lex.RBracket, 1);
-                case ';':
-                    return Build(Lex.Semicolon, 1);
-                case ',':
-                    return Build(Lex.Comma, 1);
                 case ':' when !Next.IsSymbol():
                     return Build(Lex.Colon, 1);
                 case '=' when !Next.IsSymbol():
-                    return Build(Lex.Assign, 1);
+                    return Build(Lex.Define, 1);
+                case ',':
+                    return Build(Lex.Comma, 1);
                 case '-' when Next == '-':
                     return LineComment();
                 case '-' when Next.IsDigit():
@@ -149,7 +147,7 @@ namespace Fux.Input
 
                 if (At(offset) == ')')
                 {
-                    var token = Build(Lex.LowerId, offset + 1);
+                    var token = Build(Lex.OperatorId, offset + 1);
 
                     return token;
                 }
@@ -346,7 +344,7 @@ namespace Fux.Input
                 return current;
             }
 
-            throw new NotImplementedException($"can't match current character");
+            throw Error.Unexpected(Current);
         }
 
         private int Swallow(int rune)

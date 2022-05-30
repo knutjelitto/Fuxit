@@ -20,19 +20,9 @@ namespace Fux.Ast
 
         public override string ToString()
         {
-            var exprs = string.Join(" ", Expressions);
+            var joined = string.Join(" ", Expressions);
 
-            if (Symbol.ToString() == "(:)")
-            {
-                Assert(Expressions.Count == 2);
-                return $"{Expressions[0]} : {Expressions[1]}";
-            }
-            if (Symbol.ToString() == "(=)")
-            {
-                Assert(Expressions.Count == 2);
-                return $"{Expressions[0]} = {Expressions[1]}";
-            }
-            return $"(apply {Symbol} {exprs})";
+            return $"{Symbol} {joined}";
         }
     }
 }

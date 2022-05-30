@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
+using Fux.Ast;
+
 namespace Fux.Input
 {
     internal class ParserErrors : InputErrors
@@ -30,14 +32,15 @@ namespace Fux.Input
             );
         }
 
-        public DiagnosticException Unexpected(Lex expected, Token unexpected)
+        public DiagnosticException Unexpected(Lex expected, Token unexpected, [CallerMemberName] string? member = null)
         {
+            var context = member == null ? "" : $" (in {member})";
             return Add(
-                new ParserError(unexpected.Location, $"unexpected {unexpected.Lex.PP()} (expecting {expected.PP()})")
+                new ParserError(unexpected.Location, $"unexpected {unexpected.Lex.PP()} (expecting {expected.PP()}){context}")
             );
         }
 
-        public DiagnosticException Unexpected(Token unexpected, string? context)
+        public DiagnosticException Unexpected(Token unexpected, string? context = null)
         {
             context = context == null ? "" : $" (in {context})";
             return Add(
@@ -49,6 +52,13 @@ namespace Fux.Input
         {
             return Add(
                 new ParserError(first.Location, $"first lexeme on line can not preceeded by a comment")
+            );
+        }
+
+        public DiagnosticException IllegalInfixAssoc(Token assoc)
+        {
+            return Add(
+                new ParserError(assoc.Location, $"illegal infix associativity '{assoc.Text}' (known are {InfixAssoc.KnownAssocs})")
             );
         }
     }

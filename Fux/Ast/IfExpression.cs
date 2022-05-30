@@ -19,11 +19,11 @@ namespace Fux.Ast
         public Expression IfTrue { get; }
         public Expression IfFalse { get; }
 
-        public override bool IsAtomic => false;
+        public override bool IsAtomic => true;
 
         public override string ToString()
         {
-            return $"(if {Condition} then {IfTrue} else {IfFalse})";
+            return $"if {Condition} then {IfTrue} else {IfFalse}";
         }
     }
 }

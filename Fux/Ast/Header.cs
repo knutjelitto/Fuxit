@@ -8,21 +8,27 @@ namespace Fux.Ast
 {
     internal class Header : Expression
     {
-        public Header(Expression name, TupleExpression exports)
+        public Header(ModulePath path, bool isEffect, RecordExpression? where, TupleExpression? exports)
         {
-            Name = name;
+            Path = path;
+            IsEffect = isEffect;
+            Where = where;
             Exports = exports;
         }
 
-        public Expression Name { get; }
-        public TupleExpression Exports { get; }
+        public ModulePath Path { get; }
+        public bool IsEffect { get; }
+        public RecordExpression? Where { get; }
+        public TupleExpression? Exports { get; }
 
         public override bool IsAtomic => false;
 
         public override string ToString()
         {
-            var exports = string.Join(", ", Exports);
-            return $"module {Name} exposing ( {exports} )";
+            var effect = IsEffect ? "effect " : "";
+            var where = Where != null ? $" where {Where}" : "";
+            var exports = Exports == null ? "" : $" exposing {Exports}";
+            return $"{effect}module {Path}{where}{exports}";
         }
     }
 }
