@@ -65,16 +65,6 @@
         {
             var starter = Current;
 
-            var end = tokens.Count > 0 && IsEndCombiner(tokens.Last());
-            var start = IsStartCombiner(starter);
-
-            var flat = false && (end || start);
-
-            if (!flat)
-            {
-                tokens.Begin(starter);
-            }
-
             while (!Current.EOF && Current.Line == starter.Line)
             {
                 var token = Consume();
@@ -84,12 +74,7 @@
 
             if (!Current.EOF && Current.Column > starter.Column)
             {
-                ParseLines(tokens);
-            }
-
-            if (!flat)
-            {
-                tokens.End();
+                ParseIndented(tokens);
             }
 
             return tokens;
@@ -101,37 +86,51 @@
                 || token.Lex == Lex.Comma
                 || token.Lex == Lex.Colon
                 || token.Lex == Lex.Define
-                || token.Lex == Lex.LBrace
-                || token.Lex == Lex.RBrace
-                || token.Lex == Lex.KwThen
-                || token.Lex == Lex.KwElse
+                || token.Lex == Lex.Operator
                 ;
         }
 
-        private bool IsStartCombiner(Token token)
-        {
-            return false
-                || IsCombiner(token)
-                || token.Lex == Lex.LParent
-                ;
-        }
-
-        private bool IsEndCombiner(Token token)
+        private bool IsFirstCombiner(Token token)
         {
             return false
                 || IsCombiner(token)
                 || token.Lex == Lex.RParent
-                || token.Lex == Lex.KwIn
+                || token.Lex == Lex.RBrace
+                || token.Lex == Lex.RBracket
                 ;
         }
 
-        private void ParseLines(Tokens tokens)
+        private bool IsLastCombiner(Token token)
+        {
+            return false
+                || IsCombiner(token)
+                || token.Lex == Lex.LParent
+                || token.Lex == Lex.LBrace
+                || token.Lex == Lex.LBracket
+                ;
+        }
+
+        private void ParseIndented(Tokens tokens)
         {
             var starter = Current;
 
-            while (!Current.EOF && Current.Column == starter.Column)
+            var last = IsLastCombiner(tokens.Last());
+            var first = IsFirstCombiner(starter);
+            var flat = true && (last || first);
+
+            if (!flat)
             {
-                var line = ParseLine(tokens);
+                tokens.Begin(starter);
+            }
+
+            while (!Current.EOF && Current.Column == starter.Column || IsLastCombiner(tokens.Last()) || IsFirstCombiner(Current))
+            {
+                _ = ParseLine(tokens);
+            }
+
+            if (!flat)
+            {
+                tokens.End();
             }
         }
 

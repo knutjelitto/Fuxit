@@ -25,28 +25,5 @@ namespace Fux.Ast
         {
             return new InfixExpression(this, lhs, rhs);
         }
-
-        public static OperatorSymbol Arrow(Token token) => new ArrowOp(token);
-        public static OperatorSymbol Select(Token token) => new SelectOp(token);
-
-        public class ArrowOp : OperatorSymbol
-        {
-            public ArrowOp(Token token) : base(token) { }
-
-            public override Expression Combine(Expression lhs, Expression rhs)
-            {
-                return new ArrowExpression(this, lhs, rhs);
-            }
-        }
-
-        public class SelectOp : OperatorSymbol
-        {
-            public SelectOp(Token token) : base(token) { }
-
-            public override Expression Combine(Expression lhs, Expression rhs)
-            {
-                return new SelectExpression(this, lhs, rhs);
-            }
-        }
     }
 }

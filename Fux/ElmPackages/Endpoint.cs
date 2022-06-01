@@ -7,18 +7,18 @@ namespace Fux.ElmPackages
     {
         public static readonly string Filename = "endpoint.json";
 
-        private Endpoint(Package reference, string url, string hash)
+        private Endpoint(ElmPackage reference, string url, string hash)
         {
             Reference = reference;
             Url = url;
             Hash = hash;
         }
 
-        public Package Reference { get; }
+        public ElmPackage Reference { get; }
         public string Url { get; }
         public string Hash { get; }
 
-        public static Endpoint Get(Package reference)
+        public static Endpoint Get(ElmPackage reference)
         {
             byte[] bytes;
 
@@ -38,7 +38,7 @@ namespace Fux.ElmPackages
             return Decode(reference, bytes);
         }
 
-        public static Endpoint Decode(Package reference, byte[] bytes)
+        public static Endpoint Decode(ElmPackage reference, byte[] bytes)
         {
             var content = bytes.GetRootElement();
 
@@ -53,7 +53,7 @@ namespace Fux.ElmPackages
             return new Endpoint(reference, properties[0].Value.GetString()!, properties[1].Value.GetString()!);
         }
 
-        public static byte[] Download(Package reference)
+        public static byte[] Download(ElmPackage reference)
         {
             var requestUri = $"https://package.elm-lang.org/packages/{reference}/endpoint.json";
 

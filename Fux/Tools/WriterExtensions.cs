@@ -6,7 +6,7 @@
 
         public static string File(string filename)
         {
-            var path = Path.Combine(Temp.TempPath(top), filename);
+            var path = Folder.Combine(Temp.TempPath(top), filename);
             var dir = Path.GetDirectoryName(path)!;
             Directory.CreateDirectory(dir);
 

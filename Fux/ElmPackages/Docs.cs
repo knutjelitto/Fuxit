@@ -9,7 +9,7 @@ namespace Fux.ElmPackages
 {
     internal class Docs
     {
-        public static Docs Get(Package reference)
+        public static Docs Get(ElmPackage reference)
         {
             throw new NotImplementedException();
         }

@@ -19,7 +19,7 @@
         {
             var from = Lhs.IsAtomic ? Lhs.ToString() : $"({Lhs})";
             var to = Rhs.IsAtomic ? Rhs.ToString() : $"({Rhs})";
-            return $"{from} . {to}";
+            return $"{from}.{to}";
         }
 
         public override void PP(Writer writer)

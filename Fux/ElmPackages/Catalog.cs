@@ -5,25 +5,25 @@ using Semver;
 
 namespace Fux.ElmPackages
 {
-    internal class Catalog : IReadOnlyList<Package>
+    internal class Catalog : IReadOnlyList<ElmPackage>
     {
-        private readonly List<Package> references;
+        private readonly List<ElmPackage> references;
 
         public static readonly string Filename = "catalog.json";
 
         private static Catalog? catalog = null;
 
-        private Catalog(List<Package> references)
+        private Catalog(List<ElmPackage> references)
         {
             this.references = references;
         }
 
-        public Package Find(Dependency dependency)
+        public ElmPackage Find(Dependency dependency)
         {
             return references.Where(p => p.Name == dependency.Name && dependency.Match(p.Version)).OrderByDescending(p => p.Version).First();
         }
 
-        public Package Latest(string packageName)
+        public ElmPackage Latest(string packageName)
         {
             return references
                 .Where(p => p.Name == packageName)
@@ -58,7 +58,7 @@ namespace Fux.ElmPackages
 
             Assert(element.ValueKind == JsonValueKind.Object);
 
-            var references = new List<Package>();
+            var references = new List<ElmPackage>();
 
             foreach (var item in element.EnumerateObject())
             {
@@ -66,7 +66,7 @@ namespace Fux.ElmPackages
 
                 foreach (var version in item.Value.EnumerateArray().Select(elem => elem.GetString()!))
                 {
-                    var reference = new Package(name, SemVersion.Parse(version, SemVersionStyles.Any));
+                    var reference = new ElmPackage(name, SemVersion.Parse(version, SemVersionStyles.Any));
 
                     references.Add(reference);
                 }
@@ -96,8 +96,8 @@ namespace Fux.ElmPackages
 
 
         public int Count => references.Count;
-        public Package this[int index] => references[index];
-        public IEnumerator<Package> GetEnumerator() => references.GetEnumerator();
+        public ElmPackage this[int index] => references[index];
+        public IEnumerator<ElmPackage> GetEnumerator() => references.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

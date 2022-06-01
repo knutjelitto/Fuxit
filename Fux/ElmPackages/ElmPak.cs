@@ -6,7 +6,7 @@ namespace Fux.ElmPackages
 {
     internal class ElmPak : Elm
     {
-        public ElmPak(Package package, JsonElement element)
+        public ElmPak(ElmPackage package, JsonElement element)
         {
             Package = package;
      
@@ -35,7 +35,7 @@ namespace Fux.ElmPackages
                         {
                             if (property.Value.ValueKind == JsonValueKind.Array)
                             {
-                                Exposed.Add(new ExposedGroup("", ParseArray(property.Value)));
+                                Exposed.Add(new ElmModuleGroup("", ParseArray(property.Value)));
                             }
                             else if (property.Value.ValueKind == JsonValueKind.Object)
                             {
@@ -50,17 +50,17 @@ namespace Fux.ElmPackages
                             {
                                 foreach (var property in element.EnumerateObject())
                                 {
-                                    Exposed.Add(new ExposedGroup(property.Name, ParseArray(property.Value)));
+                                    Exposed.Add(new ElmModuleGroup(property.Name, ParseArray(property.Value)));
                                 }
                             }
 
-                            IEnumerable<ExposedModule> ParseArray(JsonElement element)
+                            IEnumerable<ElmModule> ParseArray(JsonElement element)
                             {
                                 Assert(element.ValueKind == JsonValueKind.Array);
 
                                 foreach (var property in element.EnumerateArray())
                                 {
-                                    yield return new ExposedModule(Package, property.GetString()!);
+                                    yield return new ElmModule(Package, property.GetString()!);
                                 }
                             }
                         }
@@ -86,14 +86,14 @@ namespace Fux.ElmPackages
             }
         }
 
-        public Package Package { get; }
+        public ElmPackage Package { get; }
 
         public string Name { get; } = string.Empty;
         public string Summary { get; } = string.Empty;
         public string License { get; } = string.Empty;
         public SemVersion Version { get; } = new(0);
-        public List<ExposedGroup> Exposed { get; } = new();
-        public IEnumerable<ExposedModule> Modules => Exposed.SelectMany(e => e);
+        public List<ElmModuleGroup> Exposed { get; } = new();
+        public IEnumerable<ElmModule> ExposedModules => Exposed.SelectMany(e => e);
         public List<Dependency> Dependencies { get; } = new();
         public List<Dependency> TestDependencies { get; } = new();
     }

@@ -9,8 +9,8 @@ namespace Fux.Input
 {
     internal class StringSource : Source
     {
-        public StringSource(string display, string path, string content)
-            : base(display, path)
+        public StringSource(string display, string fullPath, string content)
+            : base(display, fullPath)
         {
             Content = content;
             TextOffset = 0;

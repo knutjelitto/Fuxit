@@ -8,7 +8,7 @@ namespace Fux.Ast
 {
     internal class InfixDefinition : Expression
     {
-        public InfixDefinition(InfixAssoc assoc, InfixPower power, Identifier op, Identifier implementation)
+        public InfixDefinition(InfixAssoc assoc, InfixPower power, Identifier op, Expression implementation)
         {
             Assoc = assoc;
             Power = power;
@@ -21,7 +21,7 @@ namespace Fux.Ast
         public InfixAssoc Assoc { get; }
         public InfixPower Power { get; }
         public Identifier Op { get; }
-        public Identifier Implementation { get; }
+        public Expression Implementation { get; }
 
         public override string ToString()
         {

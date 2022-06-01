@@ -18,8 +18,6 @@ namespace Fux.Ast
         {
             Add("|", 20, Assoc.None);
 
-            Add("->", 30, Assoc.None, OperatorSymbol.Arrow);
-
             Add("<|", 100, Assoc.Right);
             Add("|>", 100, Assoc.Left);
 
@@ -49,8 +47,6 @@ namespace Fux.Ast
 
             Add("<<", 190, Assoc.Left);
             Add(">>", 190, Assoc.Right);
-
-            Add(".", 1000, Assoc.Left, OperatorSymbol.Select);
         }
 
         public Prec this[string name]

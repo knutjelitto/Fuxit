@@ -13,7 +13,7 @@ namespace Fux.Input
             return cursor.More() && cursor.Current.Lex == lex;
         }
 
-        public static bool Is(this TokensCursor cursor, string text)
+        public static bool IsWeak(this TokensCursor cursor, string text)
         {
             return cursor.More() && cursor.Current.Text == text;
         }

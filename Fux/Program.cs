@@ -1,4 +1,5 @@
-﻿using Fux.ElmPackages;
+﻿using Fux.Building;
+using Fux.ElmPackages;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CS0162 // Unreachable code detected
@@ -10,55 +11,70 @@ namespace Fux
     {
         static void Main(string[] args)
         {
-#if true
-            //ProvideTest();
-
-            var builder = new Builder();
-            //builder.Build(new Package("check/check", "1.0.0"));
-            //builder.Build(Package.Latest("elm/browser"));
-            builder.Build(Package.Latest("elm/url"));
-#else
-            var errors = new ErrorBag();
-
-            if (args.Length == 1 && args[0] == "repl")
+            try
             {
-                //RunRepl(errors, new ConsoleSource());
-            }
-            else
-            {
-                RunModule(errors, "src/core/Tester.elm");
+                Test();
 
-                RunModule(errors, "src/core/Array.elm");
-                RunModule(errors, "src/core/Basics.elm");
-                RunModule(errors, "src/core/Bitwise.elm");
-                RunModule(errors, "src/core/Char.elm");
-                RunModule(errors, "src/core/Debug.elm");
-                RunModule(errors, "src/core/Dict.elm");
-                RunModule(errors, "src/core/List.elm");
-                RunModule(errors, "src/core/Maybe.elm");
-                RunModule(errors, "src/core/Platform.elm");
-                RunModule(errors, "src/core/Platform/Cmd.elm");
-                RunModule(errors, "src/core/Platform/Sub.elm");
-                RunModule(errors, "src/core/Process.elm");
-                RunModule(errors, "src/core/Result.elm");
-                RunModule(errors, "src/core/Set.elm");
-                RunModule(errors, "src/core/String.elm");
-                RunModule(errors, "src/core/Task.elm");
-                RunModule(errors, "src/core/Tuple.elm");
+                var builder = new Builder();
 
-
-                if (!errors.Ok)
+#if false
+                var x = Catalog.Instance.Where(p => p.Name.StartsWith("elm/")).Select(p => p.Name).Distinct();
+                foreach (var package in x)
                 {
-                    using (var writer = Writer.Console())
+                    Console.WriteLine($"{package}");
+                    builder.Build(ElmPackage.Latest(package));
+                }
+#endif
+
+                builder.Build(ElmPackage.Latest("elm/core"));
+                //builder.Build(ElmPackage.Latest("elm/json"));
+                //builder.Build(ElmPackage.Latest("elm/html"));
+                //builder.Build(ElmPackage.Latest("elm/browser"));
+                //builder.Build(ElmPackage.Latest("elm/url"));
+            }
+            catch (DiagnosticException diagnostics)
+            {
+                foreach (var diagnostic in diagnostics.Diagnostics)
+                {
+                    foreach (var line in diagnostic.Report())
                     {
-                        writer.WriteLine("=== errors ===");
-                        errors.ReportFirstFew(writer);
+                        Console.WriteLine($"{line}");
                     }
                 }
             }
-#endif
 
             WaitForKey();
+        }
+
+        private static void Test()
+        {
+            const string test = @"module test
+
+test =
+    ( { model
+        | history = newHistory
+        , expandoMsg = Expando.merge userMsg model.expandoMsg
+      }
+    )
+
+test =
+  case test of
+    test ->
+        case test of
+          test ->
+            ( { model
+                | history = newHistory
+                , expandoMsg = Expando.merge userMsg model.expandoMsg
+              }
+            , Cmd.batch [ commands, scroll model.popout ]
+            )
+";
+        
+            var builder = new Builder();
+
+            var s = new StringSource("test", "test", test);
+
+            builder.Compiler.ParseModule(s);
         }
     }
 }

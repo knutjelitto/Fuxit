@@ -6,18 +6,21 @@ using System.Threading.Tasks;
 
 namespace Fux.ElmPackages
 {
-    internal class ExposedModule
+    internal class ElmModule
     {
-        public ExposedModule(Package package, string name)
+        public ElmModule(ElmPackage package, string name)
         {
             Package = package;
             Name = name;
+            NiceName = Package.FullName + "/" + Name.Replace('.', '/');
             FileName = $"src/{Name.Replace('.', '/')}.elm";
-            FullFileName = Folder.Combine(Package.Root, FileName);
+            FullFileName = Folder.Combine(Package.RootPath, FileName);
         }
 
-        public Package Package { get; }
+        public ElmPackage Package { get; }
         public string Name { get; }
+
+        public string NiceName { get; }
         public string FileName { get; }
         public string FullFileName { get; }
 

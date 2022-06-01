@@ -1,8 +1,8 @@
 ﻿namespace Fux.Ast
 {
-    internal class Module : Expression
+    internal class AstModule : Expression
     {
-        public Module(Header header, IEnumerable<Expression> expressions)
+        public AstModule(Header header, IEnumerable<Expression> expressions)
         {
             Header = header;
             Expressions = expressions.ToArray();
@@ -11,6 +11,8 @@
         public Header Header { get; }
         public IReadOnlyList<Expression> Expressions { get; }
         public override bool IsAtomic => false;
+
+        public IEnumerable<Import> Imports => Expressions.OfType<Import>();
 
         public override string ToString()
         {

@@ -43,7 +43,7 @@ namespace Fux.Ast
 
             void Write()
             {
-                writer.WriteLine(Lex.KwLet);
+                writer.WriteLine(Lex.HardKwLet);
                 writer.Indent(() =>
                 {
                     foreach (var expr in LetExpressions)
@@ -55,7 +55,7 @@ namespace Fux.Ast
                         }
                     }
                 });
-                writer.WriteLine(Lex.KwIn);
+                writer.WriteLine(Lex.HardKwIn);
                 writer.Indent(() =>
                 {
                     InExpression.PP(writer);

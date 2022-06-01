@@ -9,7 +9,7 @@ namespace Fux.ElmPackages
         public string Type { get; protected set; } = string.Empty;
         public Dependency ElmVersion { get; protected set; } = new("elm-version", new(new(0)));
 
-        public static Elm From(Package package, byte[] bytes)
+        public static Elm From(ElmPackage package, byte[] bytes)
         {
             var element = bytes.GetRootElement();
 
@@ -36,7 +36,7 @@ namespace Fux.ElmPackages
             throw new InvalidOperationException($"can not decode elm file");
         }
 
-        public static byte[] Download(Package package)
+        public static byte[] Download(ElmPackage package)
         {
             var requestUri = $"https://package.elm-lang.org/packages/{package}/elm.json";
 

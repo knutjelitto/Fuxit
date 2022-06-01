@@ -49,8 +49,8 @@ namespace Fux.Input
             Lex == Lex.RBrace ||
             Lex == Lex.LBrace ||
             Lex == Lex.RBracket ||
-            Lex == Lex.KwThen ||
-            Lex == Lex.KwElse ||
+            Lex == Lex.HardKwThen ||
+            Lex == Lex.HardKwElse ||
             Lex == Lex.Comma;
 
         public bool EndContinuation =>
@@ -58,8 +58,8 @@ namespace Fux.Input
             Lex == Lex.LParent ||
             Lex == Lex.LBrace ||
             Lex == Lex.LBracket ||
-            Lex == Lex.KwThen ||
-            Lex == Lex.KwElse ||
+            Lex == Lex.HardKwThen ||
+            Lex == Lex.HardKwElse ||
             Lex == Lex.Comma;
 
         public Token TransferWhites(Whites whites)

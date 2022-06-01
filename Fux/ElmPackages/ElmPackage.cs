@@ -10,17 +10,17 @@ using Semver;
 
 namespace Fux.ElmPackages
 {
-    internal class Package
+    internal class ElmPackage
     {
         private Elm? elm = null;
 
-        public Package(string name, SemVersion version)
+        public ElmPackage(string name, SemVersion version)
         {
             Name = name;
             Version = version;
         }
 
-        public Package(string name, string version)
+        public ElmPackage(string name, string version)
             : this(name, SemVersion.Parse(version, SemVersionStyles.Strict))
         {
         }
@@ -29,9 +29,9 @@ namespace Fux.ElmPackages
         public SemVersion Version { get; }
         public string FullName => $"{Name}/{Version}";
         public Elm Elm => elm ??= GetElm();
-        public string Root => Temp.ElmPath(FullName);
+        public string RootPath => Temp.ElmPath(FullName);
 
-        public static Package Latest(string packageName)
+        public static ElmPackage Latest(string packageName)
         {
             return Catalog.Instance.Latest(packageName);
         }
@@ -43,7 +43,7 @@ namespace Fux.ElmPackages
 
         private Elm GetElm()
         {
-            var elmFile = Path.Combine(Root, "elm.json").Replace('\\', '/');
+            var elmFile = Path.Combine(RootPath, "elm.json").Replace('\\', '/');
 
             if (!File.Exists(elmFile))
             {

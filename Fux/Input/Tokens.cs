@@ -49,15 +49,15 @@ namespace Fux.Input
             {
                 Append(tokens);
             }
-            else if (tokens.StartsWith(Lex.KwIf))
+            else if (tokens.StartsWith(Lex.HardKwIf))
             {
                 Append(tokens);
             }
-            else if (tokens.StartsWith(Lex.KwThen))
+            else if (tokens.StartsWith(Lex.HardKwThen))
             {
                 Append(tokens);
             }
-            else if (tokens.StartsWith(Lex.KwElse))
+            else if (tokens.StartsWith(Lex.HardKwElse))
             {
                 Append(tokens);
             }
@@ -112,7 +112,7 @@ namespace Fux.Input
         {
             get
             {
-                return tokens.Count % 2 == 1 && tokens.Count(token => token.IsOperator() && token.Text == ".") == tokens.Count / 2;
+                return tokens.Count % 2 == 1 && tokens.Count(token => token.Lex == Lex.Dot) == tokens.Count / 2;
             }
         }
 

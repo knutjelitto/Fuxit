@@ -72,6 +72,13 @@
                 tokens.Add(token);
             }
 
+            while (!Current.EOF && (Current.Lex == Lex.RParent || Current.Lex == Lex.RBrace || Current.Lex == Lex.RBracket))
+            {
+                var token = Consume();
+
+                tokens.Add(token);
+            }
+
             if (!Current.EOF && Current.Column > starter.Column)
             {
                 ParseLines(tokens);
@@ -112,31 +119,31 @@
 
                     continue;
                 }
-                else if (parent.EndsWith(Lex.KwIn))
+                else if (parent.EndsWith(Lex.HardKwIn))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.EndsWith(Lex.KwOf))
+                else if (parent.EndsWith(Lex.HardKwOf))
                 {
                     parent.AppendGrouped(line);
 
                     continue;
                 }
-                else if (parent.EndsWith(Lex.KwIf))
+                else if (parent.EndsWith(Lex.HardKwIf))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.EndsWith(Lex.KwThen))
+                else if (parent.EndsWith(Lex.HardKwThen))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.EndsWith(Lex.KwElse))
+                else if (parent.EndsWith(Lex.HardKwElse))
                 {
                     parent.Append(line);
 
@@ -148,61 +155,61 @@
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwModule))
+                else if (parent.StartsWith(Lex.HardKwModule))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwImport))
+                else if (parent.StartsWith(Lex.HardKwImport))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwOf))
+                else if (parent.StartsWith(Lex.HardKwOf))
                 {
                     parent.AppendGrouped(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwIf))
+                else if (parent.StartsWith(Lex.HardKwIf))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwThen))
+                else if (parent.StartsWith(Lex.HardKwThen))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwElse))
+                else if (parent.StartsWith(Lex.HardKwElse))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwIn))
+                else if (parent.StartsWith(Lex.HardKwIn))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwLet))
+                else if (parent.StartsWith(Lex.HardKwLet))
                 {
                     parent.AppendGrouped(line);
 
                     continue;
                 }
-                else if (parent.StartsWith(Lex.KwCase))
+                else if (parent.StartsWith(Lex.HardKwCase))
                 {
                     parent.AppendGrouped(line);
 
                     continue;
                 }
-                else if (line.StartsWith(Lex.KwOf))
+                else if (line.StartsWith(Lex.HardKwOf))
                 {
                     parent.Append(line);
 
@@ -274,13 +281,13 @@
 
                     continue;
                 }
-                else if (line.StartsWith(Lex.KwIn))
+                else if (line.StartsWith(Lex.HardKwIn))
                 {
                     parent.Append(line);
 
                     continue;
                 }
-                else if (line.StartsWith(Lex.KwElse))
+                else if (line.StartsWith(Lex.HardKwElse))
                 {
                     parent.Append(line);
 

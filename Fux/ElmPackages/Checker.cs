@@ -7,7 +7,7 @@ namespace Fux.ElmPackages
 {
     internal class Checker
     {
-        public void DownloadDocsJson(Package reference)
+        public void DownloadDocsJson(ElmPackage reference)
         {
             var requestUri = $"https://package.elm-lang.org/packages/{reference}/docs.json";
 

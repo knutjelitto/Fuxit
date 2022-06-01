@@ -8,20 +8,20 @@ namespace Fux.Input
 
         static Lexer()
         {
-            AddKw("module", Lex.KwModule);
-            AddKw("import", Lex.KwImport);
-            AddKw("infix", Lex.KwInfix);
-            AddKw("type", Lex.KwType);
+            AddKw("module", Lex.HardKwModule);
+            AddKw("import", Lex.HardKwImport);
+            AddKw("infix", Lex.HardKwInfix);
+            AddKw("type", Lex.HardKwType);
 
-            AddKw("if", Lex.KwIf);
-            AddKw("then", Lex.KwThen);
-            AddKw("else", Lex.KwElse);
+            AddKw("if", Lex.HardKwIf);
+            AddKw("then", Lex.HardKwThen);
+            AddKw("else", Lex.HardKwElse);
 
-            AddKw("let", Lex.KwLet);
-            AddKw("in", Lex.KwIn);
+            AddKw("let", Lex.HardKwLet);
+            AddKw("in", Lex.HardKwIn);
 
-            AddKw("case", Lex.KwCase);
-            AddKw("of", Lex.KwOf);
+            AddKw("case", Lex.HardKwCase);
+            AddKw("of", Lex.HardKwOf);
         }
 
         public Lexer(ErrorBag errors, Source source)
@@ -90,6 +90,8 @@ namespace Fux.Input
                     return Build(Lex.LBracket, 1);
                 case ']':
                     return Build(Lex.RBracket, 1);
+                case '.' when !Next.IsSymbol():
+                    return Build(Lex.Dot, 1);
                 case ':' when !Next.IsSymbol():
                     return Build(Lex.Colon, 1);
                 case '=' when !Next.IsSymbol():

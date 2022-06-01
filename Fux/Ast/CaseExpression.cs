@@ -33,9 +33,9 @@ namespace Fux.Ast
             {
                 writer.WriteLine();
             }
-            writer.Write($"{Lex.KwCase} ");
+            writer.Write($"{Lex.HardKwCase} ");
             Pattern.PP(writer);
-            writer.WriteLine($" {Lex.KwOf}");
+            writer.WriteLine($" {Lex.HardKwOf}");
             writer.Indent(() =>
             {
                 foreach (var casee in Cases)

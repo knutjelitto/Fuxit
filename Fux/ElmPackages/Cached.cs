@@ -9,18 +9,18 @@ namespace Fux.ElmPackages
 {
     internal abstract class Cached
     {
-        protected Cached(Package reference, string name)
+        protected Cached(ElmPackage reference, string name)
         {
             Reference = reference;
             Name = name;
         }
 
-        public Package Reference { get; }
+        public ElmPackage Reference { get; }
         public string Name { get; }
 
-        protected static bool IsCached(Package reference, string file) => File.Exists(CachePath(reference, file));
+        protected static bool IsCached(ElmPackage reference, string file) => File.Exists(CachePath(reference, file));
 
-        protected static string CachePath(Package reference, string file)
+        protected static string CachePath(ElmPackage reference, string file)
         {
             var path = ElmCache.FilePath(reference.ToString(), file);
 
@@ -29,7 +29,7 @@ namespace Fux.ElmPackages
             return path;
         }
 
-        protected static JsonDocument Load(Package reference, string file)
+        protected static JsonDocument Load(ElmPackage reference, string file)
         {
             var bytes = File.ReadAllBytes(CachePath(reference, file));
 
@@ -38,7 +38,7 @@ namespace Fux.ElmPackages
             return JsonDocument.Parse(json);
         }
 
-        protected static byte[] Download(Package reference, string file)
+        protected static byte[] Download(ElmPackage reference, string file)
         {
             var requestUri = $"https://package.elm-lang.org/packages/{reference}/{file}";
 

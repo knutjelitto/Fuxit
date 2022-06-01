@@ -52,19 +52,19 @@ namespace Fux.Ast
 
                 void Write()
                 {
-                    writer.WriteLine($"{Lex.KwIf}");
+                    writer.WriteLine($"{Lex.HardKwIf}");
                     writer.Indent(() =>
                     {
                         Condition.PP(writer);
                     });
                     writer.WriteLine();
-                    writer.WriteLine($"{Lex.KwThen}");
+                    writer.WriteLine($"{Lex.HardKwThen}");
                     writer.Indent(() =>
                     {
                         IfTrue.PP(writer);
                     });
                     writer.WriteLine();
-                    writer.WriteLine($"{Lex.KwElse}");
+                    writer.WriteLine($"{Lex.HardKwElse}");
                     writer.Indent(() =>
                     {
                         IfFalse.PP(writer);
@@ -74,7 +74,7 @@ namespace Fux.Ast
             }
             else
             {
-                writer.Write($"{Lex.KwIf} {Condition} {Lex.KwThen} {IfTrue} {Lex.KwElse} {IfFalse}");
+                writer.Write($"{Lex.HardKwIf} {Condition} {Lex.HardKwThen} {IfTrue} {Lex.HardKwElse} {IfFalse}");
             }
         }
     }

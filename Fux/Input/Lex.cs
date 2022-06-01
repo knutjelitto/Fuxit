@@ -59,6 +59,7 @@
         public static Lex Number = new("_number_", startsAtomic: true);
         public static Lex String = new("_string_", startsAtomic: true);
 
+        public static Lex Dot = new(".");
         public static Lex Colon = new(":");
         public static Lex Define = new("=");
         public static Lex Comma = new(",");
@@ -71,21 +72,22 @@
         public static Lex LBracket = new("[", startsAtomic: true);
         public static Lex RBracket = new("]");
 
-        public static Lex KwModule = new("module", isKeyword: true);
-        public static Lex KwImport = new("import", isKeyword: true);
-        public static Lex KwInfix = new("infix", isKeyword: true);
-        public static Lex KwType = new("type", isKeyword: true);
-        public static Lex KwIf = new("if", isKeyword: true, startsAtomic: true);
-        public static Lex KwThen = new("then", isKeyword: true);
-        public static Lex KwElse = new("else", isKeyword: true);
-        public static Lex KwLet = new("let", isKeyword: true, startsAtomic: true);
-        public static Lex KwIn = new("in", isKeyword: true);
-        public static Lex KwCase = new("case", isKeyword: true, startsAtomic: true);
-        public static Lex KwOf = new("of", isKeyword: true);
+        public static Lex HardKwModule = new("module", isKeyword: true);
+        public static Lex HardKwImport = new("import", isKeyword: true);
+        public static Lex HardKwInfix = new("infix", isKeyword: true);
+        public static Lex HardKwType = new("type", isKeyword: true);
+        public static Lex HardKwIf = new("if", isKeyword: true, startsAtomic: true);
+        public static Lex HardKwThen = new("then", isKeyword: true);
+        public static Lex HardKwElse = new("else", isKeyword: true);
+        public static Lex HardKwLet = new("let", isKeyword: true, startsAtomic: true);
+        public static Lex HardKwIn = new("in", isKeyword: true);
+        public static Lex HardKwCase = new("case", isKeyword: true, startsAtomic: true);
+        public static Lex HardKwOf = new("of", isKeyword: true);
 
         public static class Weak
         {
             public const string Exposing = "exposing";
+            public const string Effect = "effect";
         }
     }
 }
