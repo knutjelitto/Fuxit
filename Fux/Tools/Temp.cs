@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-namespace Fux.Tools
+﻿namespace Fux.Tools
 {
     public static class Temp
     {

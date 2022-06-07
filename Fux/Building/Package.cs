@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.ElmPackages;
+﻿using Fux.ElmPackages;
 
 namespace Fux.Building
 {
@@ -24,10 +18,10 @@ namespace Fux.Building
         public string FullName => elm.FullName;
         public string RootPath => Temp.ElmPath(FullName);
 
-
         public IReadOnlyList<Package> Dependencies => dependencies;
         public IReadOnlyList<Module> Exposed => exposed;
         public IReadOnlyList<Module> Intern => intern;
+        public IEnumerable<Module> Modules => exposed.Concat(intern);
 
         public void AddDependency(Package dependency)
         {
@@ -72,11 +66,11 @@ namespace Fux.Building
             return module;
         }
 
-        private Module? FindIntern(string importPath)
+        private Module? FindIntern(string name)
         {
             Module? module = null;
 
-            var name = importPath.Replace('.', '/');
+            Assert(!name.Contains('/'));
 
             module = exposed.FirstOrDefault(m => m.Name == name);
 
@@ -86,7 +80,7 @@ namespace Fux.Building
 
                 if (module == null)
                 {
-                    var partPath = $"src/{name}";
+                    var partPath = $"src/{name.Replace('.', '/')}";
 
                     var fullPath = Folder.Combine(RootPath, partPath) + ".elm";
 
@@ -109,14 +103,10 @@ namespace Fux.Building
 
             return module;
         }
-        
+
         private Module? FindExtern(string importPath)
         {
-            var name = importPath.Replace('.', '/');
-
-            var module = exposed.FirstOrDefault(m => m.Name == name);
-
-            return module;
+            return exposed.FirstOrDefault(m => m.Name == importPath);
         }
 
         public override string ToString() => FullName;

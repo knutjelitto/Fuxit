@@ -1,5 +1,10 @@
 ﻿using Fux.Building;
 using Fux.ElmPackages;
+using Fux.Tests;
+
+using Semver;
+
+using Phases = Fux.Building.Phases;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CS0162 // Unreachable code detected
@@ -17,20 +22,35 @@ namespace Fux
 
                 var builder = new Builder();
 
-#if false
-                var x = Catalog.Instance.Where(p => p.Name.StartsWith("elm/")).Select(p => p.Name).Distinct();
-                foreach (var package in x)
+                if (false)
                 {
-                    Console.WriteLine($"{package}");
-                    builder.Build(ElmPackage.Latest(package));
+                    builder.Load(ElmPackage.Latest("elm/http"));
                 }
-#endif
+                else
+                {
+                    builder.Load(ElmPackage.Latest("elm/browser"));
+                    builder.Load(ElmPackage.Latest("elm/bytes"));
+                    builder.Load(ElmPackage.Latest("elm/core"));
+                    builder.Load(ElmPackage.Latest("elm/file"));
+                    builder.Load(ElmPackage.Latest("elm/html"));
+                    builder.Load(ElmPackage.Latest("elm/http"));
+                    builder.Load(ElmPackage.Latest("elm/json"));
+                    builder.Load(ElmPackage.Latest("elm/parser"));
+                    builder.Load(ElmPackage.Latest("elm/project-metadata-utils"));
+                    builder.Load(ElmPackage.Latest("elm/random"));
+                    builder.Load(ElmPackage.Latest("elm/regex"));
+                    builder.Load(ElmPackage.Latest("elm/svg"));
+                    builder.Load(ElmPackage.Latest("elm/url"));
+                    builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
-                builder.Build(ElmPackage.Latest("elm/core"));
-                //builder.Build(ElmPackage.Latest("elm/json"));
-                //builder.Build(ElmPackage.Latest("elm/html"));
-                //builder.Build(ElmPackage.Latest("elm/browser"));
-                //builder.Build(ElmPackage.Latest("elm/url"));
+                    //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));
+                    builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
+                    builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
+                    //builder.Load(ElmPackage.Latest("elm-explorations/test"));
+                    builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
+                }
+
+                builder.Build();
             }
             catch (DiagnosticException diagnostics)
             {
@@ -48,33 +68,24 @@ namespace Fux
 
         private static void Test()
         {
-            const string test = @"module test
-
-test =
-    ( { model
-        | history = newHistory
-        , expandoMsg = Expando.merge userMsg model.expandoMsg
-      }
-    )
-
-test =
-  case test of
-    test ->
-        case test of
-          test ->
-            ( { model
-                | history = newHistory
-                , expandoMsg = Expando.merge userMsg model.expandoMsg
-              }
-            , Cmd.batch [ commands, scroll model.popout ]
-            )
-";
-        
             var builder = new Builder();
+            var collector = new Phases.Collector();
 
-            var s = new StringSource("test", "test", test);
+            var parse = new Phases.Parse(builder.Errors, collector, new Package(new ElmPackage("test", new SemVersion(0))));
 
-            builder.Compiler.ParseModule(s);
+            foreach (var source in Tester.All())
+            {
+                parse.Make(source);
+            }
+#if false
+            var x = Catalog.Instance.Where(p => p.Name.StartsWith("elm/")).Select(p => p.Name).Distinct();
+            foreach (var package in x)
+            {
+                Console.WriteLine($"{package}");
+                builder.Build(ElmPackage.Latest(package));
+            }
+#endif
+
         }
     }
 }

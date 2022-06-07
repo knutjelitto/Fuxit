@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal static class ParserExtensions
     {
         public static bool Is(this TokensCursor cursor, Lex lex)
         {
             return cursor.More() && cursor.Current.Lex == lex;
+        }
+
+        public static bool IsIdentifier(this TokensCursor cursor)
+        {
+            return cursor.More() &&
+                (cursor.Current.Lex == Lex.LowerId || cursor.Current.Lex == Lex.UpperId || cursor.Current.Lex == Lex.OperatorId);
         }
 
         public static bool IsWeak(this TokensCursor cursor, string text)

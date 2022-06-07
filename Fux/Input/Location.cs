@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal class Location : ILocation
     {
@@ -23,6 +16,7 @@ namespace Fux.Input
         public int Length { get; }
         public int Next => Offset + Length;
 
+        public string Name => Source.Display;
         public int Line => (lineColumn ??= Source.GetLineColumn(Offset)).line;
         public int Column => (lineColumn ??= Source.GetLineColumn(Offset)).column;
 

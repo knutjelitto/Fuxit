@@ -1,11 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal class StringSource : Source
     {

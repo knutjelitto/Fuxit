@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
@@ -60,7 +59,7 @@ namespace Fux.ElmPackages
             Console.Write($"download {requestUri} ...");
 
             using var request = new HttpClient();
-            
+
             var response = request.GetAsync(requestUri, HttpCompletionOption.ResponseContentRead).Result;
 
             var bytes = response.Content.ReadAsByteArrayAsync().Result;

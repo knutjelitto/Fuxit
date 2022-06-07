@@ -10,6 +10,7 @@ namespace Fux.Input
         {
             AddKw("module", Lex.HardKwModule);
             AddKw("import", Lex.HardKwImport);
+            AddKw("as", Lex.HardKwAs);
             AddKw("infix", Lex.HardKwInfix);
             AddKw("type", Lex.HardKwType);
 
@@ -95,17 +96,25 @@ namespace Fux.Input
                 case ':' when !Next.IsSymbol():
                     return Build(Lex.Colon, 1);
                 case '=' when !Next.IsSymbol():
-                    return Build(Lex.Define, 1);
+                    return Build(Lex.Assign, 1);
                 case ',':
                     return Build(Lex.Comma, 1);
+                case '|' when !Next.IsSymbol():
+                    return Build(Lex.Bar, 1);
+                case '\\' when !Next.IsSymbol():
+                    return Build(Lex.Lambda, 1);
                 case '-' when Next == '-':
                     return LineComment();
                 case '-' when Next.IsDigit():
                     return Build(Number());
                 case '-' when Next == '>' && !NextNext.IsSymbol():
                     return Build(Lex.Arrow, 2);
+                case '"' when Next == '"' && NextNext == '"':
+                    return LongString();
                 case '"':
                     return String();
+                case '\'':
+                    return Char();
                 case '_':
                     return Wildcard();
                 default:
@@ -264,7 +273,7 @@ namespace Fux.Input
             Assert(Current == '"');
             Offset += 1;
 
-            while(Current != '"')
+            while (Current != '"')
             {
                 switch (Current)
                 {
@@ -282,7 +291,7 @@ namespace Fux.Input
                             {
                                 throw new NotImplementedException("unexpected end in string literal");
                             }
-                            throw new NotImplementedException("illegal character in string literal");
+                            throw Error.Unexpected(Current, "string literal");
                         }
                         break;
                 }
@@ -293,6 +302,64 @@ namespace Fux.Input
             Offset += 1;
 
             return Build(Lex.String);
+        }
+
+        private Token LongString()
+        {
+            Assert(Current == '"');
+            Offset += 1;
+            Assert(Current == '"');
+            Offset += 1;
+            Assert(Current == '"');
+            Offset += 1;
+
+            while (Current != '"' || Next != '"' || NextNext != '"')
+            {
+                Offset += 1;
+            }
+
+            Assert(Current == '"');
+            Offset += 1;
+            Assert(Current == '"');
+            Offset += 1;
+            Assert(Current == '"');
+            Offset += 1;
+
+            return Build(Lex.String);
+        }
+
+        private Token Char()
+        {
+            Assert(Current == '\'');
+            Offset += 1;
+            Assert(Current != '\'');
+
+            switch (Current)
+            {
+                case '\\':
+                    Escape();
+                    break;
+                default:
+                    if (Current.IsCharacter())
+                    {
+                        Offset += 1;
+                    }
+                    else
+                    {
+                        if (Current == '\0')
+                        {
+                            throw new NotImplementedException("unexpected end in string literal");
+                        }
+                        throw new NotImplementedException("illegal character in string literal");
+                    }
+                    break;
+            }
+
+            Assert(Current == '\'');
+
+            Offset += 1;
+
+            return Build(Lex.Char);
         }
 
         private void Escape()

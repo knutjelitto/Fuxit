@@ -1,7 +1,4 @@
-﻿using Fux.Ast;
-using Fux.Input;
-
-namespace Fux
+﻿namespace Fux
 {
     internal class Runner
     {

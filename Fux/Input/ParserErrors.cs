@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Ast;
+﻿using System.Runtime.CompilerServices;
 
 namespace Fux.Input
 {
@@ -16,7 +9,7 @@ namespace Fux.Input
         {
         }
 
-        public DiagnosticException NotImplemented(Token current, [CallerMemberName]string? member = null)
+        public DiagnosticException NotImplemented(Token current, [CallerMemberName] string? member = null)
         {
             var text = string.IsNullOrEmpty(current.Text) ? current.Lex.Name : current.Text;
             return Add(

@@ -1,6 +1,4 @@
-﻿using Fux.Tools;
-
-namespace Fux.Errors
+﻿namespace Fux.Errors
 {
     public sealed class InternalError : Error
     {
@@ -12,7 +10,7 @@ namespace Fux.Errors
         public string Message { get; }
 
         public override IEnumerable<string> Report()
-{
+        {
             yield return $"internal error: {Message}";
         }
     }

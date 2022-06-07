@@ -6,6 +6,7 @@
         int Offset { get; }
         int Length { get; }
         int Next { get; }
+        string Name { get; }
         int Line { get; }
         int Column { get; }
 

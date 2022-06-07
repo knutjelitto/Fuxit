@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     [DebuggerDisplay("{Dbg()}")]
     internal class Token
@@ -28,6 +21,10 @@ namespace Fux.Input
         public int Column => Location.Column;
         public int Line => Location.Line;
 
+        public int Indent { get; set; } = 0;
+        public bool First { get; set; } = false;
+        public bool Last { get; set; } = false;
+        public bool Both => First && Last;
         public int Index { get; set; } = -1;
 
         public bool White => Lex == Lex.Newline || Lex == Lex.Space || Lex == Lex.BlockComment || Lex == Lex.LineComment;
@@ -40,6 +37,7 @@ namespace Fux.Input
             Lex == Lex.LowerId ||
             Lex == Lex.UpperId ||
             Lex == Lex.Number ||
+            Lex == Lex.Char ||
             Lex == Lex.String;
 
         public bool StartContinuation =>

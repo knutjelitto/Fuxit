@@ -20,6 +20,10 @@ namespace Fux.ElmPackages
 
         public ElmPackage Find(Dependency dependency)
         {
+            if (dependency.Name == "elm/core")
+            {
+                Assert(true);
+            }
             return references.Where(p => p.Name == dependency.Name && dependency.Match(p.Version)).OrderByDescending(p => p.Version).First();
         }
 

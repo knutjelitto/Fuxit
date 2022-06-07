@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.IO.Compression;
 
 using Semver;
 
@@ -27,7 +21,7 @@ namespace Fux.ElmPackages
 
         public string Name { get; }
         public SemVersion Version { get; }
-        public string FullName => $"{Name}/{Version}";
+        public string FullName => $"{Name.ToLower()}/{Version}";
         public Elm Elm => elm ??= GetElm();
         public string RootPath => Temp.ElmPath(FullName);
 

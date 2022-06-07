@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Semver;
+﻿using Semver;
 
 namespace Fux.ElmPackages
 {
@@ -31,7 +25,7 @@ namespace Fux.ElmPackages
         public bool Match(SemVersion version)
         {
             bool min = InclMin ? Min <= version : Min < version;
-            bool max = InclMax ? version <= Max : Max < version;
+            bool max = InclMax ? version <= Max : version < Max;
 
             return min && max;
         }
@@ -53,7 +47,7 @@ namespace Fux.ElmPackages
                 var includeMin = parts[1] == "<=";
                 Assert(parts[2] == "v");
                 Assert(parts[3] == "<" || parts[3] == "<=");
-                var includeMax = parts[1] == "<=";
+                var includeMax = parts[3] == "<=";
                 var max = SemVersion.Parse(parts[4], SemVersionStyles.Strict);
 
                 return new Constraint(min, includeMin, max, includeMax);
@@ -64,6 +58,18 @@ namespace Fux.ElmPackages
             }
 
             throw new InvalidOperationException();
+        }
+
+        public override string ToString()
+        {
+            if (Min == Max && InclMin && InclMax)
+            {
+                return $"{Min}";
+            }
+
+            var lower = InclMin ? "<=" : "<";
+            var upper = InclMax ? "<=" : "<";
+            return $"{Min} {lower} v {upper} {Max}";
         }
     }
 }

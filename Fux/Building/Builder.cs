@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Fux.Building.Phases;
 using Fux.ElmPackages;
 using Fux.Input;
+using Fux.Tools;
 
 using Semver;
 
@@ -16,8 +12,6 @@ namespace Fux.Building
     internal class Builder
     {
         public readonly SemVersion CurrentElmVersion = new(0, 19, 0);
-        private readonly Dictionary<string, ElmPackage> index = new();
-        private readonly List<ElmPackage> dependencies = new();
 
         private readonly ErrorBag errors;
         private readonly Loaded loaded;
@@ -25,33 +19,41 @@ namespace Fux.Building
         public Builder()
         {
             errors = new ErrorBag();
-            Compiler = new Compiler(errors);
             loaded = new Loaded();
         }
 
-        public Compiler Compiler { get; }
+        public ErrorBag Errors => errors;
 
-        public void Build(ElmPackage elmPackage)
+        public void Load(ElmPackage elmPackage)
         {
-            var package = loaded.Register(elmPackage);
+            var _ = loaded.Register(elmPackage);
+        }
 
-            Console.WriteLine($"building {package}");
+        public void Build()
+        {
+            var collector = new Collector();
 
-            foreach (var dependency in package.Dependencies)
+            Build(package => new Parse(Errors, collector, package));
+            Build(package => new Declare(Errors, collector, package));
+
+            collector.Write();
+        }
+
+        private void Build(Func<Package, Phase> phase)
+        {
+            foreach (var package in loaded)
             {
-                build(dependency);
-            }
-
-            build(package);
-
-            void build(Package package)
-            {
-                Console.WriteLine($"  with {package}");
-
-                Compiler.Compile(package);
+                Build(package, phase(package));
             }
         }
 
-        public ErrorBag Errors => errors;
+        private void Build(Package package, Phase phase)
+        {
+            Console.Write($"building {phase.Package,-40}");
+
+            Console.Write($"{phase.Name,-10} [");
+            phase.Make();
+            Console.WriteLine("]");
+        }
     }
 }

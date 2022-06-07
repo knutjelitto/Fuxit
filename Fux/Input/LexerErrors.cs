@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal class LexerErrors : InputErrors
     {
@@ -16,10 +10,11 @@ namespace Fux.Input
 
         public Lexer Lexer { get; }
 
-        public DiagnosticException Unexpected(int rune)
+        public DiagnosticException Unexpected(int rune, string? context = null)
         {
+            context = context == null ? string.Empty : $" (in {context})";
             return Add(
-                new LexerError(Location, $"unexpected character `{(char)rune}´")
+                new LexerError(Location, $"unexpected character `{(char)rune}´{context}")
             );
         }
 

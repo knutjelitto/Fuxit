@@ -29,16 +29,17 @@
             Filename = filename;
         }
 
+        public int IndentationLevel => level;
 
         public int Indentation => prefix.Length * level;
-        
-        public bool LineRunning => lineRunning;
+
+        public bool LinePending => lineRunning;
 
         public string Filename { get; }
 
-        public static Writer Console()
+        public static Writer Console(int? indent = 4)
         {
-            return new Writer(System.Console.Out);
+            return new Writer(System.Console.Out, indent);
         }
 
         public void WriteLine()
@@ -52,6 +53,14 @@
         {
             Write(text);
             WriteLine();
+        }
+
+        public void EndLine()
+        {
+            if (LinePending)
+            {
+                WriteLine();
+            }
         }
 
         public void Write(string text)

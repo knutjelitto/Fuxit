@@ -9,7 +9,7 @@ namespace Fux.ElmPackages
         public ElmPak(ElmPackage package, JsonElement element)
         {
             Package = package;
-     
+
             Assert(element.ValueKind == JsonValueKind.Object);
 
             foreach (var property in element.EnumerateObject())

@@ -1,6 +1,4 @@
-﻿using Fux.Input;
-
-namespace Fux.Errors
+﻿namespace Fux.Errors
 {
     public class SemanticError : LocatedMessageError
     {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Semver;
+﻿using Semver;
 
 namespace Fux.ElmPackages
 {
@@ -12,6 +6,10 @@ namespace Fux.ElmPackages
     {
         public Dependency(string name, Constraint constraint)
         {
+            if (name.Contains('.'))
+            {
+                Assert(false);
+            }
             Name = name;
             Constraint = constraint;
         }
@@ -22,6 +20,11 @@ namespace Fux.ElmPackages
         public bool Match(SemVersion version)
         {
             return Constraint.Match(version);
+        }
+
+        public override string ToString()
+        {
+            return $"{Name}({Constraint})";
         }
     }
 }

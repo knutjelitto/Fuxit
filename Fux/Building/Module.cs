@@ -1,4 +1,6 @@
-﻿namespace Fux.Building
+﻿using System.Text;
+
+namespace Fux.Building
 {
     internal class Module
     {
@@ -6,26 +8,30 @@
         {
             Package = package;
             Name = name;
-            Js = js;
-            NickName = Package.FullName + "/" + Name.Replace('.', '/');
+            IsJs = js;
+
+            var pathName = Name.Replace('.', '/');
             var ext = js ? "js" : "elm";
-            FileName = $"src/{Name.Replace('.', '/')}.{ext}";
+            NickName = Package.FullName + "/" + pathName;
+            FileName = $"src/{pathName}.{ext}";
             FullFileName = Folder.Combine(Package.RootPath, FileName);
         }
 
         public Package Package { get; }
         public string Name { get; }
-        public bool Js { get; }
-        public bool Elm => !Js;
+        public bool IsJs { get; }
+        public bool IsElm => !IsJs;
         public string NickName { get; }
         public string FileName { get; }
         public string FullFileName { get; }
 
-        public AstModule? Ast { get; set; } = null;
-
+        public bool Parsed { get; set; } = false;
+        public ModuleAst? Ast { get; set; } = null;
+        public ModuleScope Scope { get; } = new();
+        
         public Source GetSource()
         {
-            return new StringSource(NickName, FullFileName, File.ReadAllText(FullFileName));
+            return new StringSource(NickName, FullFileName, File.ReadAllText(FullFileName, Encoding.UTF8));
         }
 
         public override string ToString() => Name;

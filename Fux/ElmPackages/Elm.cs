@@ -41,7 +41,7 @@ namespace Fux.ElmPackages
             var requestUri = $"https://package.elm-lang.org/packages/{package}/elm.json";
 
             using var request = new HttpClient();
-            
+
             var response = request.GetAsync(requestUri, HttpCompletionOption.ResponseContentRead).Result;
 
             var bytes = response.Content.ReadAsByteArrayAsync().Result;

@@ -17,6 +17,13 @@ namespace Fux.Input
         public Tokens Tokens { get; }
         public bool StartsAtomic => More() && Current.Lex.StartsAtomic;
 
+        public int State => Offset;
+
+        public void Reset(int state)
+        {
+            Offset = state;
+        }
+
         public Token Current
         {
             get
@@ -25,6 +32,36 @@ namespace Fux.Input
 
                 return Tokens[Offset];
             }
+        }
+
+        public TokensCursor Sub()
+        {
+            Assert(Current.First);
+
+            var subs = new Tokens();
+
+            var indent = Current.Indent;
+
+            while (More() && Current.Indent == indent)
+            {
+                var current = Current;
+
+                subs.Add(Advance());
+
+                if (current.Last)
+                {
+                    break;
+                }
+            }
+
+            Assert(subs.Last().Last);
+
+            while (More() && Current.Indent > indent)
+            {
+                subs.Add(Advance());
+            }
+
+            return new TokensCursor(Error, subs);
         }
 
         public Token Advance()
@@ -40,7 +77,6 @@ namespace Fux.Input
             return Offset < Tokens.Count;
         }
 
-
         public Token Swallow(Lex lexKind, [CallerMemberName] string? member = null)
         {
             if (this.Is(lexKind))
@@ -49,6 +85,27 @@ namespace Fux.Input
             }
 
             throw Error.Unexpected(lexKind, this.At(), member);
+        }
+
+        public bool SwallowIf(Lex lexKind)
+        {
+            if (this.Is(lexKind))
+            {
+                Advance();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public override string ToString()
+        {
+            if (More())
+            {
+                return Current.Dbg();
+            }
+            return "<EOF>";
         }
 
     }

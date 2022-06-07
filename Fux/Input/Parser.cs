@@ -1,6 +1,7 @@
 ﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable CS0219 // Variable is assigned but its value is never used
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
+#pragma warning disable IDE0028 // Simplify collection initialization
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Fux.Input
 {
@@ -15,11 +16,9 @@ namespace Fux.Input
         public ParserErrors Error { get; }
         public Liner Liner { get; }
 
-        public AstModule Module()
+        public ModuleAst Module()
         {
-            var header = (Header)Outer();
-
-            var importList = new List<Import>();
+            var header = (ModuleDecl)Outer();
 
             var expressions = new List<Expression>();
 
@@ -37,7 +36,7 @@ namespace Fux.Input
                 }
             }
 
-            return new AstModule(header, expressions);
+            return new ModuleAst(header, expressions);
         }
 
         public Expression Outer()
@@ -62,7 +61,7 @@ namespace Fux.Input
             }
             else if (cursor.Is(Lex.HardKwInfix))
             {
-                outer = TopInfix(cursor);
+                outer = TopInfixDecl(cursor);
             }
             else if (cursor.Is(Lex.HardKwType))
             {
@@ -74,7 +73,7 @@ namespace Fux.Input
             }
             else
             {
-                outer = Expression(cursor);
+                outer = Declaration(cursor);
             }
 
             if (cursor.More())
@@ -85,7 +84,7 @@ namespace Fux.Input
             return outer;
         }
 
-        private Header TopHeader(TokensCursor cursor)
+        private ModuleDecl TopHeader(TokensCursor cursor)
         {
             var effect = false;
             if (cursor.IsWeak(Lex.Weak.Effect))
@@ -96,7 +95,7 @@ namespace Fux.Input
             }
             cursor.Swallow(Lex.HardKwModule);
 
-            var path = Path(cursor);
+            var path = Identifier(cursor);
 
             RecordExpression? where = null;
             if (cursor.IsWeak("where"))
@@ -104,76 +103,102 @@ namespace Fux.Input
                 cursor.Advance();
 
                 //TODO: what's a where?
-                where = RecordLiteral(cursor);
+                where = RecordLiteral(cursor) as RecordExpression;
             }
 
-            TupleExpression? tuple = null;
+            TupleExpr? tuple = null;
+
+            Exposing? exposing = null;
 
             if (cursor.IsWeak(Lex.Weak.Exposing))
             {
-                cursor.Swallow(Lex.LowerId);
-                tuple = TupleLiteral(cursor);
+                exposing = Exposing(cursor);
             }
 
-            return new Header(path, effect, where, tuple);
+            return new ModuleDecl(path, effect, where, exposing);
         }
 
-        public Import TopImport(TokensCursor cursor)
+        public ImportDecl TopImport(TokensCursor cursor)
         {
             cursor.Swallow(Lex.HardKwImport);
 
-            var path = Path(cursor);
+            var path = Identifier(cursor);
 
-            Expression? alias = null;
+            Identifier? alias = null;
 
-            if (cursor.IsWeak("as"))
+            if (cursor.SwallowIf(Lex.HardKwAs))
             {
-                cursor.Advance();
+                alias = Identifier(cursor);
 
-                alias = Expression(cursor);
+                Assert(alias.IsMulti(Lex.UpperId));
             }
 
-            Expression? exposed = null;
+            Exposing? exposing = null;
 
             if (cursor.IsWeak(Lex.Weak.Exposing))
             {
-                cursor.Advance();
-
-                exposed = Expression(cursor);
+                exposing = Exposing(cursor);
             }
 
-            return new Import(path, alias, exposed);
+            return new ImportDecl(path, alias, exposing);
         }
 
-        private static ModulePath Path(TokensCursor cursor)
+        private Exposing Exposing(TokensCursor cursor)
         {
-            var names = new List<Identifier>();
+            Assert(cursor.IsWeak(Lex.Weak.Exposing));
+            cursor.Swallow(Lex.LowerId);
+
+            if (cursor.IsWeak(Lex.Weak.ExposeAll))
+            {
+                cursor.Swallow(Lex.OperatorId);
+
+                return new ExposingAll();
+            }
+
+            cursor.Swallow(Lex.LParent);
+
+            var exposed = new List<Exposed>();
 
             do
             {
-                if (cursor.Is(Lex.LowerId) || cursor.Is(Lex.UpperId))
+                if (cursor.Is(Lex.LowerId))
                 {
-                    var name = new Identifier(cursor.Advance());
-                    names.Add(name);
+                    var name = new Identifier(cursor.Swallow(Lex.LowerId));
+                    exposed.Add(new ExposedVar(name));
                 }
-
-                if (cursor.Is(Lex.Dot))
+                else if (cursor.Is(Lex.UpperId))
                 {
-                    cursor.Swallow(Lex.Dot);
+                    var name = new Identifier(cursor.Swallow(Lex.UpperId));
+                    var inclusive = false;
+                    if (cursor.IsWeak(Lex.Weak.ExposeAll))
+                    {
+                        cursor.Swallow(Lex.OperatorId);
+                        inclusive = true;
+                    }
+                    exposed.Add(new ExposedType(name, inclusive));
+                }
+                else if (cursor.Is(Lex.OperatorId))
+                {
+                    var name = new Identifier(cursor.Swallow(Lex.OperatorId));
+                    exposed.Add(new ExposedVar(name));
                 }
                 else
                 {
-                    break;
+                    Assert(false);
+                    throw Error.Unexpected(cursor.Current);
                 }
             }
-            while (true);
+            while (cursor.SwallowIf(Lex.Comma));
 
-            return new ModulePath(names);
+            cursor.Swallow(Lex.RParent);
+
+            return new ExposingSome(exposed);
+
         }
 
-        public InfixDefinition TopInfix(TokensCursor cursor)
+        public InfixDecl TopInfixDecl(TokensCursor cursor)
         {
-            var infixTok = cursor.Swallow(Lex.HardKwInfix);
+            cursor.Swallow(Lex.HardKwInfix);
             var assocTok = cursor.Swallow(Lex.LowerId);
             var assoc = InfixAssoc.From(assocTok.Text);
             if (assoc == null)
@@ -184,10 +209,10 @@ namespace Fux.Input
             var power = new InfixPower(prioTok);
             var operatorTok = cursor.Swallow(Lex.OperatorId);
             var operatorSymbol = new Identifier(operatorTok);
-            var defineTok = cursor.Swallow(Lex.Define);
-            var definition = Expression(cursor);
+            var defineTok = cursor.Swallow(Lex.Assign);
+            var definition = new Identifier(cursor.Swallow(Lex.LowerId));
 
-            return new InfixDefinition(assoc, power, operatorSymbol, definition);
+            return new InfixDecl(assoc, power, operatorSymbol, definition);
         }
 
         public Expression TopType(TokensCursor cursor)
@@ -201,14 +226,254 @@ namespace Fux.Input
                 alias = true;
             }
 
-            var expression = Expression(cursor);
+            Assert(cursor.Is(Lex.UpperId));
 
-            return alias ? new AliasDefinition(expression) : new TypeDefinition(expression);
+            var name = new Identifier(cursor.Swallow(Lex.UpperId));
+
+            var parameterList = new List<Identifier>();
+
+            while (cursor.IsNot(Lex.Assign))
+            {
+                Assert(cursor.Is(Lex.LowerId));
+
+                var parameter = new Identifier(cursor.Swallow(Lex.LowerId));
+
+                parameterList.Add(parameter);
+            }
+
+            var assign = cursor.Swallow(Lex.Assign);
+
+            if (alias)
+            {
+                var def = Type(cursor);
+
+                return new AliasDecl(name, new TypeParameters(parameterList), def);
+            }
+
+            var ctors = new List<Type.Constructor>();
+
+            ctors.Add(Constructor(cursor));
+
+            while (cursor.SwallowIf(Lex.Bar))
+            {
+                ctors.Add(Constructor(cursor));
+            }
+
+            return new TypeDecl(name, new TypeParameters(parameterList), new Constructors(ctors));
         }
 
-        private TupleExpression TupleLiteral(TokensCursor cursor)
+        public Expression Declaration(TokensCursor cursor, bool inner = false)
         {
-            var left = cursor.Swallow(Lex.LParent);
+            var left = Pattern(cursor);
+
+            if (cursor.Is(Lex.Assign))
+            {
+                if (inner)
+                {
+                    cursor.Swallow(Lex.Assign);
+
+                    var expression = Expression(cursor);
+
+                    return new LetAssign(left, expression);
+                }
+                else
+                {
+                    Assert(left[0] is Identifier id && id.IsSingle(Lex.LowerId));
+
+                    var name = (Identifier)left[0];
+                    var parameters = new Parameters(left.Skip(1));
+
+                    Assert(name.IsSingle(Lex.LowerId));
+
+                    cursor.Swallow(Lex.Assign);
+
+                    var expression = Expression(cursor);
+
+                    return new VarDecl(name, parameters, expression);
+                }
+            }
+            else if (cursor.SwallowIf(Lex.Colon))
+            {
+                Assert(left.Count == 1 && left[0] is Identifier);
+
+                var name = (Identifier)left[0];
+
+                Assert(name.IsSingle(Lex.LowerId));
+
+                var type = Type(cursor);
+
+                return new TypeHint(name, type);
+            }
+            else
+            {
+                throw Error.NotImplemented(cursor.Current);
+            }
+
+            throw new NotImplementedException();
+        }
+
+        private Type.Constructor Constructor(TokensCursor cursor)
+        {
+            Assert(cursor.Is(Lex.UpperId));
+
+            var name = Identifier(cursor);
+
+            Assert(name.IsMulti(Lex.UpperId));
+
+            var arguments = new List<Type>();
+
+            do
+            {
+                while (cursor.More()
+                    && cursor.IsNot(Lex.Bar)
+                    && cursor.IsNot(Lex.RParent)
+                    && cursor.IsNot(Lex.Comma)
+                    && cursor.IsNot(Lex.RBrace)
+                    && cursor.IsNot(Lex.Arrow))
+                {
+                    var argument = TypeArgument(cursor);
+
+                    arguments.Add(argument);
+                }
+            }
+            while (cursor.More()
+                && cursor.IsNot(Lex.Bar)
+                && cursor.IsNot(Lex.RParent)
+                && cursor.IsNot(Lex.Comma)
+                && cursor.IsNot(Lex.RBrace)
+                && cursor.IsNot(Lex.Arrow));
+
+
+            return new Type.Constructor(name, new TypeArguments(arguments));
+        }
+
+        private Type TypeArgument(TokensCursor cursor)
+        {
+            if (cursor.Is(Lex.LowerId))
+            {
+                var name = Identifier(cursor);
+
+                Assert(name.IsSingle(Lex.LowerId));
+
+                return new Type.Parameter(name);
+            }
+            else if (cursor.Is(Lex.UpperId))
+            {
+                var name = Identifier(cursor);
+
+                Assert(name.IsMulti(Lex.UpperId));
+
+                return new Type.Concrete(name);
+            }
+            else if (cursor.Is(Lex.LParent))
+            {
+                return Type(cursor);
+            }
+            else if (cursor.Is(Lex.LBrace))
+            {
+                return Type(cursor);
+            }
+            else
+            {
+                Assert(true);
+            }
+
+            Assert(false);
+            throw new NotImplementedException();
+        }
+
+        private Identifier Identifier(TokensCursor cursor)
+        {
+            var tokens = new List<Token>();
+
+            do
+            {
+                if (cursor.IsIdentifier())
+                {
+                    tokens.Add(cursor.Advance());
+                }
+                else
+                {
+                    throw Error.Unexpected(cursor.Current);
+                }
+            }
+            while (cursor.SwallowIf(Lex.Dot));
+
+            return new Identifier(tokens);
+        }
+
+        private Type Type(TokensCursor cursor)
+        {
+            var type = BaseType(cursor);
+
+            if (cursor.SwallowIf(Lex.Arrow))
+            {
+                type = new Type.Function(type, Type(cursor));
+            }
+
+            return type;
+        }
+
+        private Type BaseType(TokensCursor cursor)
+        {
+            if (cursor.Is(Lex.LParent))
+            {
+                cursor.Swallow(Lex.LParent);
+
+                var types = new List<Type>();
+
+                if (cursor.IsNot(Lex.RParent))
+                {
+                    do
+                    {
+                        var type = Type(cursor);
+
+                        types.Add(type);
+                    }
+                    while (cursor.SwallowIf(Lex.Comma));
+                }
+
+                cursor.Swallow(Lex.RParent);
+
+                if (types.Count == 0)
+                {
+                    return new Type.Unit();
+                }
+                else if (types.Count == 1)
+                {
+                    var type = types[0];
+                    type.Protect = true;
+                    return type;
+                }
+                else
+                {
+                    return new Type.Tuple(types);
+                }
+            }
+            else if (cursor.Is(Lex.LBrace))
+            {
+                return RecordType(cursor);
+            }
+            else if (cursor.Is(Lex.UpperId))
+            {
+                return Constructor(cursor);
+            }
+            else if (cursor.Is(Lex.LowerId))
+            {
+                var name = Identifier(cursor);
+
+                Assert(name.IsSingle(Lex.LowerId));
+
+                return new Type.Parameter(name);
+            }
+
+            Assert(false);
+            throw new NotImplementedException();
+        }
+
+        private Expression TupleLiteral(TokensCursor cursor)
+        {
+            cursor.Swallow(Lex.LParent);
 
             var expressions = new List<Expression>();
 
@@ -216,7 +481,7 @@ namespace Fux.Input
             {
                 expressions.Add(Expression(cursor));
 
-                if (cursor.At().Lex == Lex.Comma)
+                if (cursor.Is(Lex.Comma))
                 {
                     cursor.Advance();
 
@@ -224,43 +489,148 @@ namespace Fux.Input
                 }
             }
 
-            var right = cursor.Swallow(Lex.RParent);
+            cursor.Swallow(Lex.RParent);
 
-            return new TupleExpression(left, right, expressions);
+            if (expressions.Count == 0)
+            {
+                return new Unit();
+            }
+            else if (expressions.Count == 1)
+            {
+                var expression = expressions[0];
+                expression.Protect = true;
+                return expression;
+            }
+            else
+            {
+                return new TupleExpr(expressions);
+            }
         }
 
-        private RecordExpression RecordLiteral(TokensCursor cursor)
+        private Type RecordType(TokensCursor cursor)
         {
             var left = cursor.Swallow(Lex.LBrace);
 
-            var expressions = new List<Expression>();
+            var fields = new List<FieldDefine>();
 
-            while (cursor.IsNot(Lex.RBrace))
+            Type? baseType = null;
+
+            if (cursor.IsNot(Lex.RBrace))
             {
-                expressions.Add(Expression(cursor));
+                var state = cursor.State;
 
-                if (cursor.IsNot(Lex.RBrace))
+                baseType = Type(cursor);
+
+                Assert(baseType is Type.Parameter);
+
+                if (cursor.IsNot(Lex.Bar))
                 {
-                    cursor.Swallow(Lex.Comma);
-
-                    continue;
+                    baseType = null;
+                    cursor.Reset(state);
                 }
+                else
+                {
+                    cursor.Swallow(Lex.Bar);
+                }
+
+                do
+                {
+                    fields.Add(Field(cursor));
+                }
+                while (cursor.SwallowIf(Lex.Comma));
             }
 
-            var right = cursor.Swallow(Lex.RBrace);
+            cursor.Swallow(Lex.RBrace);
 
-            return new RecordExpression(left, right, expressions);
+            return new RecordDecl(baseType, fields.Cast<FieldDefine>());
+
+            FieldDefine Field(TokensCursor cursor)
+            {
+                var name = Identifier(cursor);
+                cursor.Swallow(Lex.Colon);
+                var type = Type(cursor);
+
+                return new FieldDefine(name, type);
+            }
         }
 
+        private Expression RecordLiteral(TokensCursor cursor)
+        {
+            var left = cursor.Swallow(Lex.LBrace);
 
-        private ListExpression ListLiteral(TokensCursor cursor)
+            var fields = new List<Field>();
+
+            var state = cursor.State;
+
+            if (cursor.Is(Lex.RBrace))
+            {
+                cursor.Swallow(Lex.RBrace);
+
+                return new RecordPattern(Enumerable.Empty<FieldPattern>());
+            }
+
+            Expression? baseName = Sequence(cursor);
+
+            if (cursor.IsNot(Lex.Bar))
+            {
+                baseName = null;
+                cursor.Reset(state);
+            }
+            else
+            {
+                var bar = cursor.Swallow(Lex.Bar);
+            }
+
+            do
+            {
+                fields.Add(Field(cursor));
+            }
+            while (cursor.SwallowIf(Lex.Comma));
+
+            cursor.Swallow(Lex.RBrace);
+
+            if (fields.All(f => f is FieldAssign))
+            {
+                Assert(baseName == null || baseName is Identifier);
+                return new RecordExpression((Identifier?)baseName, fields.Cast<FieldAssign>());
+            }
+            else if (fields.All(f => f is FieldPattern))
+            {
+                Assert(baseName == null);
+                return new RecordPattern(fields.Cast<FieldPattern>());
+            }
+
+            Assert(false);
+            throw new NotImplementedException();
+
+            Field Field(TokensCursor cursor)
+            {
+                var name = Sequence(cursor);
+
+                if (cursor.Is(Lex.Assign))
+                {
+                    Assert(name is Identifier);
+
+                    var assign = cursor.Swallow(Lex.Assign);
+                    var value = Expression(cursor);
+
+                    return new FieldAssign((Identifier)name, value);
+                }
+                else
+                {
+                    return new FieldPattern(name);
+                }
+            }
+        }
+
+        private ListExpr ListLiteral(TokensCursor cursor)
         {
             var left = cursor.Swallow(Lex.LBracket);
 
             var expressions = new List<Expression>();
 
             while (cursor.At().Lex != Lex.RBracket)
-{
+            {
                 expressions.Add(Expression(cursor));
 
                 if (cursor.IsNot(Lex.RBracket))
@@ -271,74 +641,8 @@ namespace Fux.Input
 
             var right = cursor.Swallow(Lex.RBracket);
 
-            return new ListExpression(left, right, expressions);
+            return new ListExpr(left, right, expressions);
         }
-
-        private Expression Expression(TokensCursor cursor)
-        {
-            var lhs = Definition(cursor);
-
-            if (cursor.Is(Lex.Colon))
-            {
-                var colon = new OperatorSymbol(cursor.Swallow(Lex.Colon));
-                var rhs = Definition(cursor);
-
-                return new AnnotateExpression(colon, lhs, rhs);
-            }
-
-            return lhs;
-        }
-
-        private Expression Definition(TokensCursor cursor)
-        {
-            var lhs = Arrowed(cursor);
-
-            if (cursor.Is(Lex.Define))
-            {
-                var colon = new OperatorSymbol(cursor.Swallow(Lex.Define));
-                var rhs = Arrowed(cursor);
-
-                return new DefineExpression(colon, lhs, rhs);
-            }
-
-            return lhs;
-        }
-
-        private Expression Arrowed(TokensCursor cursor)
-        {
-            var lhs = Sequence(cursor);
-
-            if (cursor.Is(Lex.Arrow))
-            {
-                var arrow = new OperatorSymbol(cursor.Swallow(Lex.Arrow));
-                var rhs = Arrowed(cursor);
-
-                return new ArrowExpression(arrow, lhs, rhs);
-            }
-
-            return lhs;
-        }
-
-        private Expression Sequence(TokensCursor cursor)
-        {
-            var expressions = new List<Expression>();
-
-            do
-            {
-                var expression = Operator(cursor);
-
-                expressions.Add(expression);
-            }
-            while (cursor.StartsAtomic);
-
-            if (expressions.Count == 1)
-            {
-                return expressions[0];
-            }
-
-            return new SequenceExpression(expressions);
-        }
-
         private Expression InlineIf(TokensCursor cursor)
         {
             var kwIf = cursor.Swallow(Lex.HardKwIf);
@@ -357,69 +661,101 @@ namespace Fux.Input
             var lets = new List<Expression>();
             while (cursor.IsNot(Lex.HardKwIn))
             {
-                var let = Operator(cursor);
+                var subCursor = cursor.Sub();
 
-                lets.Add(let);
+                var decl = Declaration(subCursor, true);
+
+                lets.Add(decl);
             }
             var kwIn = cursor.Swallow(Lex.HardKwIn);
             var expression = Expression(cursor);
 
-            return new LetExpression(lets, expression);
+            return new LetExpr(lets, expression);
         }
 
         private Expression InlineCase(TokensCursor cursor)
         {
-            var kwCase = cursor.Swallow(Lex.HardKwCase);
-            var pattern = Expression(cursor);
-            var kwOf = cursor.Swallow(Lex.HardKwOf);
+            cursor.Swallow(Lex.HardKwCase);
+            var expression = Expression(cursor);
+            cursor.Swallow(Lex.HardKwOf);
 
-            var cases = new List<Expression>();
+            var cases = new List<MatchCase>();
 
             while (cursor.StartsAtomic)
             {
-                var expression = Operator(cursor);
+                var subCursor = cursor.Sub();
 
-                cases.Add(expression);
+                var pattern = Pattern(subCursor);
+
+                subCursor.Swallow(Lex.Arrow);
+
+                var expr = Expression(subCursor);
+
+                var matchCase = new MatchCase(pattern, expr);
+
+                cases.Add(matchCase);
             }
 
-            return new CaseExpression(pattern, cases);
+            return new MatchExpr(expression, cases);
         }
 
-        private Expression Operator(TokensCursor cursor)
+        private SequenceExpr Pattern(TokensCursor cursor)
         {
-            var lhs = Prefix(cursor);
-
-            var rest = new List<OpExpr>();
-
-            while (cursor.Is(Lex.Operator))
-            {
-                var op = Infix.Instance.Create(cursor.Advance());
-
-                var rhs = Prefix(cursor);
-
-                var opExpr = new OpExpr(op, rhs);
-
-                rest.Add(opExpr);
-            }
-
-            if (rest.Count == 0)
-            {
-                return lhs;
-            }
-
-            return new OpChain(lhs, rest).Resolve();
+            return (SequenceExpr)Sequence(cursor, true);
         }
 
-        private Expression Prefix(TokensCursor cursor)
+        private Expression Expression(TokensCursor cursor)
+        {
+            return Sequence(cursor);
+        }
+
+        private Expression Sequence(TokensCursor cursor, bool always = false)
+        {
+            var expressions = new List<Expression>();
+
+            do
+            {
+                var expression = OperatorExpr(cursor);
+
+                expressions.Add(expression);
+            }
+            while (cursor.StartsAtomic);
+
+            Assert(expressions.Count >= 1);
+
+            if (!always && expressions.Count == 1)
+            {
+                return expressions[0];
+            }
+
+            return new SequenceExpr(expressions);
+        }
+
+
+        private Expression OperatorExpr(TokensCursor cursor)
+        {
+            var expr = PrefixExpr(cursor);
+
+            if (cursor.Is(Lex.Operator))
+            {
+                var op = new OperatorSymbol(cursor.Swallow(Lex.Operator));
+
+                expr = new InfixExpr(op, expr, OperatorExpr(cursor));
+            }
+
+            return expr;
+        }
+
+        private Expression PrefixExpr(TokensCursor cursor)
         {
             Expression app;
 
             if (cursor.IsOperator())
             {
                 var op = new OperatorSymbol(cursor.Advance());
-                var argument = Prefix(cursor);
+                var argument = PrefixExpr(cursor);
 
-                app = new PrefixExpression(op, argument);
+                app = new PrefixExpr(op, argument);
             }
             else
             {
@@ -431,8 +767,6 @@ namespace Fux.Input
 
         private Expression Compound(TokensCursor cursor)
         {
-            Assert(cursor.StartsAtomic);
-
             if (cursor.Is(Lex.HardKwIf))
             {
                 return InlineIf(cursor);
@@ -445,9 +779,22 @@ namespace Fux.Input
             {
                 return InlineCase(cursor);
             }
-            else 
+            else
             {
-                return Atom(cursor);
+                Assert(cursor.StartsAtomic);
+
+                var atom = Atom(cursor);
+
+                if (cursor.SwallowIf(Lex.HardKwAs))
+                {
+                    var alias = Identifier(cursor);
+
+                    Assert(alias.IsSingle(Lex.LowerId));
+
+                    atom.Alias = alias;
+                }
+
+                return atom;
             }
         }
 
@@ -459,9 +806,9 @@ namespace Fux.Input
 
             while (cursor.Is(Lex.Dot))
             {
-                var dot = cursor.Swallow(Lex.Dot);
+                cursor.Swallow(Lex.Dot);
 
-                atom = new SelectExpression(new OperatorSymbol(dot), atom, ParseAtom(cursor));
+                atom = new SelectExpr(atom, ParseAtom(cursor));
             }
 
             return atom;
@@ -470,34 +817,31 @@ namespace Fux.Input
             {
                 if (cursor.Is(Lex.LowerId))
                 {
-                    return new Identifier(cursor.Advance());
+                    return Identifier(cursor);
                 }
                 else if (cursor.Is(Lex.UpperId))
                 {
-                    return new Identifier(cursor.Advance());
+                    return Identifier(cursor);
                 }
                 else if (cursor.Is(Lex.OperatorId))
                 {
-                    return new Identifier(cursor.Advance());
+                    return Identifier(cursor);
                 }
                 else if (cursor.Is(Lex.Wildcard))
                 {
-                    return new Wildcard(cursor.Advance());
+                    return Wildcard(cursor);
                 }
                 else if (cursor.Is(Lex.Number))
                 {
-                    return new NumberLiteral(cursor.Advance());
+                    return NumberLiteral(cursor);
                 }
                 else if (cursor.Is(Lex.String))
                 {
-                    return new StringLiteral(cursor.Advance());
+                    return StringLiteral(cursor);
                 }
-                else if (cursor.Is(Lex.GroupOpen))
+                else if (cursor.Is(Lex.Char))
                 {
-                    var open = cursor.Swallow(Lex.GroupOpen);
-                    var expression = Expression(cursor);
-                    var close = cursor.Swallow(Lex.GroupClose);
-                    return expression;
+                    return CharLiteral(cursor);
                 }
                 else if (cursor.Is(Lex.LParent))
                 {
@@ -511,9 +855,64 @@ namespace Fux.Input
                 {
                     return ListLiteral(cursor);
                 }
+                else if (cursor.Is(Lex.Lambda))
+                {
+                    return Lambda(cursor);
+                }
 
                 throw Error.NotImplemented(cursor.At());
             }
+        }
+
+        private Expression Wildcard(TokensCursor cursor)
+        {
+            var token = cursor.Swallow(Lex.Wildcard);
+
+            return new Wildcard(token);
+        }
+
+        private Expression CharLiteral(TokensCursor cursor)
+        {
+            var token = cursor.Swallow(Lex.Char);
+
+            return new CharLiteral(token);
+        }
+
+        private Expression StringLiteral(TokensCursor cursor)
+        {
+            var token = cursor.Swallow(Lex.String);
+
+            return new StringLiteral(token);
+        }
+
+        private Expression NumberLiteral(TokensCursor cursor)
+        {
+            var token = cursor.Swallow(Lex.Number);
+
+            return new NumberLiteral(token);
+        }
+
+        private Expression Lambda(TokensCursor cursor)
+        {
+            return Scope(cursor, cursor =>
+            {
+                cursor.Swallow(Lex.Lambda);
+
+                var parameters = Pattern(cursor);
+
+                cursor.Swallow(Lex.Arrow);
+
+                var expr = Expression(cursor);
+
+                return new LambdaExpr(parameters, expr);
+            });
+        }
+
+        private T Scope<T>(TokensCursor cursor, Func<TokensCursor, T> parser)
+        {
+            var expression = parser(cursor);
+
+            return expression;
         }
     }
 }
