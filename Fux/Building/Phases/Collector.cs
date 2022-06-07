@@ -18,12 +18,14 @@ namespace Fux.Building.Phases
 
         public Stopwatch ParseTime { get; } = new();
         public Stopwatch DeclareTime { get; } = new();
+        public Stopwatch ResolveTime { get; } = new();
 
 
         public void Write()
         {
             Console.WriteLine($"parse  : {ParseTime.ElapsedMilliseconds} ms");
             Console.WriteLine($"declare: {DeclareTime.ElapsedMilliseconds} ms");
+            Console.WriteLine($"resolve: {ResolveTime.ElapsedMilliseconds} ms");
 
             Write("all-module.text", Module);
             Write("all-import.text", Import);

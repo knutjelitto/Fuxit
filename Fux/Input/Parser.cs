@@ -262,34 +262,32 @@ namespace Fux.Input
             return new TypeDecl(name, new TypeParameters(parameterList), new Constructors(ctors));
         }
 
-        public Expression Declaration(TokensCursor cursor, bool inner = false)
+        public Expression Declaration(TokensCursor cursor)
         {
             var left = Pattern(cursor);
 
             if (cursor.Is(Lex.Assign))
             {
-                if (inner)
+                if (left[0] is Identifier name && name.IsSingle(Lex.LowerId))
+                {
+                    cursor.Swallow(Lex.Assign);
+
+                    var parameters = new Parameters(left.Skip(1));
+
+                    Assert(name.IsSingle(Lex.LowerId));
+
+
+                    var expression = Expression(cursor);
+
+                    return new VarDecl(name, parameters, expression);
+                }
+                else
                 {
                     cursor.Swallow(Lex.Assign);
 
                     var expression = Expression(cursor);
 
                     return new LetAssign(left, expression);
-                }
-                else
-                {
-                    Assert(left[0] is Identifier id && id.IsSingle(Lex.LowerId));
-
-                    var name = (Identifier)left[0];
-                    var parameters = new Parameters(left.Skip(1));
-
-                    Assert(name.IsSingle(Lex.LowerId));
-
-                    cursor.Swallow(Lex.Assign);
-
-                    var expression = Expression(cursor);
-
-                    return new VarDecl(name, parameters, expression);
                 }
             }
             else if (cursor.SwallowIf(Lex.Colon))
@@ -663,7 +661,7 @@ namespace Fux.Input
             {
                 var subCursor = cursor.Sub();
 
-                var decl = Declaration(subCursor, true);
+                var decl = Declaration(subCursor);
 
                 lets.Add(decl);
             }

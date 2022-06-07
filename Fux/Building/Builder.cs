@@ -33,8 +33,9 @@ namespace Fux.Building
         {
             var collector = new Collector();
 
-            Build(package => new Parse(Errors, collector, package));
-            Build(package => new Declare(Errors, collector, package));
+            Build(package => new Phase0Parse(Errors, collector, package));
+            Build(package => new Phase1Declare(Errors, collector, package));
+            Build(package => new Phase2Resolve(Errors, collector, package));
 
             collector.Write();
         }

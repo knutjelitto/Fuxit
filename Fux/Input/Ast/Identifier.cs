@@ -14,7 +14,9 @@
         {
         }
 
-        public bool IsSingle(Lex lex) => this.Count == 1 && this[0].Lex == lex;
+        public TypeHint? TypeHint { get; set; } = null;
+
+        public bool IsSingle(Lex lex) => Count == 1 && this[0].Lex == lex;
         public bool IsMulti(Lex lex) => this.All(t => t.Lex == lex);
 
         public string SingleLower()

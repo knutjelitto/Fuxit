@@ -385,10 +385,13 @@ namespace Fux.Input
                     break;
                 case 'u':
                     Offset += 1;
-                    Swallow(rune => rune.IsHexDigit());
-                    Swallow(rune => rune.IsHexDigit());
-                    Swallow(rune => rune.IsHexDigit());
-                    Swallow(rune => rune.IsHexDigit());
+                    Swallow('{');
+                    do
+                    {
+                        Swallow(rune => rune.IsHexDigit());
+                    }
+                    while (Current != '}');
+                    Swallow('}');
                     break;
                 case 'U':
                     Offset += 1;

@@ -86,7 +86,7 @@
 
             public override void PP(Writer writer)
             {
-                throw new NotImplementedException();
+                writer.Write(ToString());
             }
         }
 
@@ -131,7 +131,7 @@
 
             public override void PP(Writer writer)
             {
-                writer.Write($"{ToString()}");
+                writer.Write(ToString());
             }
         }
     }

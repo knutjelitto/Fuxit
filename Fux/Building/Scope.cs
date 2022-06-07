@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Building
+﻿namespace Fux.Building
 {
     internal class Scope
     {
@@ -33,7 +27,7 @@ namespace Fux.Building
 
             if (hints.TryGetValue(name, out var hint))
             {
-                decl.Hint = hint;
+                decl.Name.TypeHint = hint;
                 hints.Remove(name);
             }
         }

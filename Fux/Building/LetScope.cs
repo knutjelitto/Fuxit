@@ -20,5 +20,21 @@ namespace Fux.Building
             identifiers.Add(parameter);
             identifiersIndex.Add(name, parameter);
         }
+
+        public void Add(Identifier identifier, Dictionary<string, TypeHint> hints)
+        {
+            var name = identifier.SingleLower();
+
+            Assert(!identifiersIndex.ContainsKey(name));
+
+            if (hints.TryGetValue(name, out var typeHint))
+            {
+                identifier.TypeHint = typeHint;
+                hints.Remove(name);
+            }
+
+            identifiers.Add(identifier);
+            identifiersIndex.Add(name, identifier);
+        }
     }
 }

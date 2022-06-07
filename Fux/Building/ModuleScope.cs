@@ -46,5 +46,21 @@ namespace Fux.Building
 
             aliases.Add(name, decl);
         }
+
+        public Declaration? ResolveType(Identifier identifier)
+        {
+            var name = identifier.SingleUpper();
+
+            if (types.TryGetValue(name, out var type))
+            {
+                return type;
+            }
+            else if (aliases.TryGetValue(name, out var alias))
+            {
+                return alias;
+            }
+
+            return null;
+        }
     }
 }

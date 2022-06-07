@@ -2,16 +2,15 @@
 #pragma warning disable CS0162 // Unreachable code detected
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
-
-using Fux.Input.Ast;
+#pragma warning disable IDE0063 // Use simple 'using' statement
 
 namespace Fux.Building.Phases
 {
-    internal class Declare : Phase
+    internal class Phase1Declare : Phase
     {
         public Collector Collector { get; }
 
-        public Declare(ErrorBag errors, Collector collector, Package package)
+        public Phase1Declare(ErrorBag errors, Collector collector, Package package)
             : base("declare", errors, package)
         {
             Collector = collector;
@@ -224,29 +223,75 @@ namespace Fux.Building.Phases
 
         private void ScopeLet(LetExpr let)
         {
+            var hints = new Dictionary<string, TypeHint>();
+
             foreach (var expr in let.LetExpressions)
             {
                 switch (expr)
                 {
+                    case VarDecl var:
+                        {
+                            Assert(hints.Count <= 1);
+                            var scope = new LetScope
+                            {
+                                Parent = let.Scope
+                            };
+                            let.Scope = scope;
+                            if (hints.Count == 1)
+                            {
+                                let.Scope.Add(var.Name, hints);
+                                Assert(hints.Count == 0);
+                            }
+                            else
+                            {
+                                let.Scope.Add(var.Name);
+                            }
+                        }
+                        break;
                     case LetAssign assign:
-                        var scope = new LetScope
                         {
-                            Parent = let.Scope
-                        };
-                        let.Scope = scope;
-                        foreach (var identifier in ExplodePattern(assign.Pattern))
-                        {
-                            let.Scope.Add(identifier);
+                            Assert(hints.Count <= 1);
+                            var scope = new LetScope
+                            {
+                                Parent = let.Scope
+                            };
+                            let.Scope = scope;
+                            if (assign.Pattern.Count == 1)
+                            {
+                                if (assign.Pattern[0] is Identifier identifier && hints.Count == 1)
+                                {
+                                    let.Scope.Add(identifier, hints);
+                                    Assert(hints.Count == 0);
+                                }
+
+                            }
+                            else
+                            {
+                                foreach (var identifier in ExplodePattern(assign.Pattern))
+                                {
+                                    let.Scope.Add(identifier);
+                                }
+                            }
                         }
                         break;
                     case TypeHint hint:
-                        //TODO: ???
+                        {
+                            var name = hint.Name.SingleLower();
+                            if (name == "accountForBias")
+                            {
+                                Assert(true);
+                            }
+                            Assert(hints.Count == 0);
+                            hints.Add(name, hint);
+                        }
                         break;
                     default:
                         Assert(false);
                         throw new NotImplementedException();
                 }
             }
+
+            Assert(hints.Count == 0);
 
             ScopeExpr(let.Scope, let.InExpression);
         }

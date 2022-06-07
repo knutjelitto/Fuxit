@@ -43,10 +43,10 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
-                    //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));
+                    //builder.Load(ElmPackage.Latest("elm-explorations/benchmark")); // 404
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
                     builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
-                    //builder.Load(ElmPackage.Latest("elm-explorations/test"));
+                    //builder.Load(ElmPackage.Latest("elm-explorations/test")); // .facts
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
                 }
 
@@ -71,7 +71,7 @@ namespace Fux
             var builder = new Builder();
             var collector = new Phases.Collector();
 
-            var parse = new Phases.Parse(builder.Errors, collector, new Package(new ElmPackage("test", new SemVersion(0))));
+            var parse = new Phases.Phase0Parse(builder.Errors, collector, new Package(new ElmPackage("test", new SemVersion(0))));
 
             foreach (var source in Tester.All())
             {
