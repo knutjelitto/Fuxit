@@ -9,7 +9,7 @@ namespace Fux.Building
     internal class LetScope : Scope
     {
         private readonly List<Identifier> identifiers = new();
-        private readonly Dictionary<string, Identifier> identifiersIndex = new();
+        private readonly Dictionary<Identifier, Identifier> identifiersIndex = new();
 
         public void Add(Identifier parameter)
         {
@@ -21,7 +21,7 @@ namespace Fux.Building
             identifiersIndex.Add(name, parameter);
         }
 
-        public void Add(Identifier identifier, Dictionary<string, TypeHint> hints)
+        public void Add(Identifier identifier, Dictionary<Identifier, TypeHint> hints)
         {
             var name = identifier.SingleLower();
 

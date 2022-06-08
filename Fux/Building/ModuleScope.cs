@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace Fux.Building
 {
     internal class ModuleScope : Scope
     {
         private readonly List<ImportDecl> imports = new();
         private readonly List<InfixDecl> infixes = new();
-        private readonly Dictionary<string, InfixDecl> infixesIndex = new();
-        private readonly Dictionary<string, TypeDecl> types = new();
-        private readonly Dictionary<string, AliasDecl> aliases = new();
+        private readonly Dictionary<Identifier, InfixDecl> infixesIndex = new();
+        private readonly Dictionary<Identifier, TypeDecl> types = new();
+        private readonly Dictionary<Identifier, AliasDecl> aliases = new();
+        private readonly Dictionary<Identifier, Type.Constructor> constructors = new();
+        private readonly Dictionary<Identifier, Module> modules = new();
 
-        public void Add(ImportDecl import)
+        public void AddImport(ImportDecl import)
         {
             imports.Add(import);
         }
 
-        public void Add(InfixDecl decl)
+        public void AddInfix(InfixDecl decl)
         {
             var name = decl.Name.SingleOp();
 
@@ -29,7 +31,7 @@ namespace Fux.Building
             infixesIndex.Add(name, decl);
         }
 
-        public void Add(TypeDecl decl)
+        public void AddType(TypeDecl decl)
         {
             var name = decl.Name.SingleUpper();
 
@@ -38,7 +40,7 @@ namespace Fux.Building
             types.Add(name, decl);
         }
 
-        public void Add(AliasDecl decl)
+        public void AddAlias(AliasDecl decl)
         {
             var name = decl.Name.SingleUpper();
 
@@ -47,20 +49,44 @@ namespace Fux.Building
             aliases.Add(name, decl);
         }
 
-        public Declaration? ResolveType(Identifier identifier)
+        public void AddConstructor(Type.Constructor constructor)
         {
-            var name = identifier.SingleUpper();
+            var name = constructor.Name.SingleUpper();
 
-            if (types.TryGetValue(name, out var type))
-            {
-                return type;
-            }
-            else if (aliases.TryGetValue(name, out var alias))
-            {
-                return alias;
-            }
+            Assert(!constructors.ContainsKey(name));
 
-            return null;
+            constructors.Add(name, constructor);
+        }
+
+        public void AddModule(Identifier name, Module module)
+        {
+            Assert(!modules.ContainsKey(name));
+            modules.Add(name, module);
+        }
+
+        public bool ImportAddAlias(AliasDecl decl)
+        {
+            return aliases.TryAdd(decl.Name.SingleUpper(), decl);
+        }
+
+        public bool ResolveInfix(Identifier identifier, [MaybeNullWhen(false)] out InfixDecl infix)
+        {
+            return infixesIndex.TryGetValue(identifier.SingleOp(), out infix);
+        }
+
+        public bool ResolveType(Identifier identifier, [MaybeNullWhen(false)]out TypeDecl type)
+        {
+            return types.TryGetValue(identifier.SingleUpper(), out type);
+        }
+
+        public bool ResolveAlias(Identifier identifier, [MaybeNullWhen(false)] out AliasDecl alias)
+        {
+            return aliases.TryGetValue(identifier.SingleUpper(), out alias);
+        }
+
+        public bool ResolveConstructor(Identifier identifier, [MaybeNullWhen(false)] out Type.Constructor constructor)
+        {
+            return constructors.TryGetValue(identifier.SingleUpper(), out constructor);
         }
     }
 }

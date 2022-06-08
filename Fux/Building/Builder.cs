@@ -33,26 +33,45 @@ namespace Fux.Building
         {
             var collector = new Collector();
 
-            Build(package => new Phase0Parse(Errors, collector, package));
-            Build(package => new Phase1Declare(Errors, collector, package));
-            Build(package => new Phase2Resolve(Errors, collector, package));
+            const int width = -8;
+
+            var prefix = $"{"parse__",width}";
+            Build(prefix, package => new Phase0Parse(Errors, collector, package));
+            prefix = $"{prefix}{"declare",width}";
+            Build(prefix, package => new Phase1Declare(Errors, collector, package));
+            prefix = $"{prefix}{"expose_",width}";
+            Build(prefix, package => new Phase2Expose(Errors, collector, package));
+            prefix = $"{prefix}{"import_",width}";
+            Build(prefix, package => new Phase3Import(Errors, collector, package));
+            prefix = $"{prefix}{"resolve",width}";
+            Build(prefix, package => new Phase4Resolve(Errors, collector, package));
+
+            Console.Write($"{"",50}");
+            Console.Write($"{$"{collector.ParseTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{collector.DeclareTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{collector.ExposeTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{collector.ImportTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{collector.ResolveTime.ElapsedMilliseconds} ms",width}");
+            Console.WriteLine();
 
             collector.Write();
         }
 
-        private void Build(Func<Package, Phase> phase)
+        private void Build(string prefix, Func<Package, Phase> phase)
         {
+            Console.SetCursorPosition(0, 0);
             foreach (var package in loaded)
             {
-                Build(package, phase(package));
+                var p = phase(package);
+                Build(prefix, package, p);
             }
         }
 
-        private void Build(Package package, Phase phase)
+        private void Build(string prefix, Package package, Phase phase)
         {
-            Console.Write($"building {phase.Package,-40}");
+            Console.Write($"building {phase.Package,-40} {prefix}");
 
-            Console.Write($"{phase.Name,-10} [");
+            Console.Write($"[");
             phase.Make();
             Console.WriteLine("]");
         }

@@ -24,7 +24,7 @@ namespace Fux
 
                 if (false)
                 {
-                    builder.Load(ElmPackage.Latest("elm/http"));
+                    builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
                 }
                 else
                 {

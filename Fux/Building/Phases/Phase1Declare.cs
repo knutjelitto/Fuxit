@@ -89,7 +89,7 @@ namespace Fux.Building.Phases
 
             hint.PP(writer);
 
-            scope.Add(hint);
+            scope.AddHint(hint);
         }
 
         private void VarDecl(Writer writer, Scope scope, VarDecl decl)
@@ -98,7 +98,7 @@ namespace Fux.Building.Phases
 
             decl.PP(writer);
 
-            scope.Add(decl);
+            scope.AddVar(decl);
 
             decl.Scope.Parent = scope;
 
@@ -111,7 +111,7 @@ namespace Fux.Building.Phases
 
             import.PP(writer);
 
-            scope.Add(import);
+            scope.AddImport(import);
         }
 
         private void Infix(Writer writer, ModuleScope scope, InfixDecl infix)
@@ -120,7 +120,7 @@ namespace Fux.Building.Phases
 
             infix.PP(writer);
 
-            scope.Add(infix);
+            scope.AddInfix(infix);
 
             ScopeExpr(scope, infix.Expression);
         }
@@ -131,7 +131,12 @@ namespace Fux.Building.Phases
 
             type.PP(writer);
 
-            scope.Add(type);
+            scope.AddType(type);
+
+            foreach (var constructor in type.Constructors)
+            {
+                scope.AddConstructor(constructor);
+            }
         }
 
         private void Alias(Writer writer, ModuleScope scope, AliasDecl alias)
@@ -140,7 +145,7 @@ namespace Fux.Building.Phases
 
             alias.PP(writer);
 
-            scope.Add(alias);
+            scope.AddAlias(alias);
         }
 
         private void ScopeExpr(Scope scope, Expression expression)
@@ -223,7 +228,7 @@ namespace Fux.Building.Phases
 
         private void ScopeLet(LetExpr let)
         {
-            var hints = new Dictionary<string, TypeHint>();
+            var hints = new Dictionary<Identifier, TypeHint>();
 
             foreach (var expr in let.LetExpressions)
             {
@@ -277,10 +282,6 @@ namespace Fux.Building.Phases
                     case TypeHint hint:
                         {
                             var name = hint.Name.SingleLower();
-                            if (name == "accountForBias")
-                            {
-                                Assert(true);
-                            }
                             Assert(hints.Count == 0);
                             hints.Add(name, hint);
                         }

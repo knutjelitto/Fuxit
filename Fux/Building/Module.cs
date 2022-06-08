@@ -28,6 +28,8 @@ namespace Fux.Building
         public bool Parsed { get; set; } = false;
         public ModuleAst? Ast { get; set; } = null;
         public ModuleScope Scope { get; } = new();
+
+        public List<Exposed> Exposed { get; } = new();
         
         public Source GetSource()
         {
