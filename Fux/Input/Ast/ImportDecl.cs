@@ -7,6 +7,11 @@
         {
             Alias = alias;
             Exposing = exposing;
+
+            if (name.ToString() == "Elm.Kernel.Basics")
+            {
+                Assert(true);
+            }
         }
 
         public Exposing? Exposing { get; }

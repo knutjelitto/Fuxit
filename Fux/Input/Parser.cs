@@ -1,6 +1,7 @@
 ﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
 #pragma warning disable IDE0028 // Simplify collection initialization
+#pragma warning disable CA1822 // Mark members as static
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
 
 namespace Fux.Input
@@ -130,7 +131,7 @@ namespace Fux.Input
             {
                 alias = Identifier(cursor);
 
-                Assert(alias.IsMulti(Lex.UpperId));
+                Assert(alias.IsMultiUpper);
             }
 
             Exposing? exposing = null;
@@ -268,13 +269,13 @@ namespace Fux.Input
 
             if (cursor.Is(Lex.Assign))
             {
-                if (left[0] is Identifier name && name.IsSingle(Lex.LowerId))
+                if (left[0] is Identifier name && name.IsSingleLower)
                 {
                     cursor.Swallow(Lex.Assign);
 
                     var parameters = new Parameters(left.Skip(1));
 
-                    Assert(name.IsSingle(Lex.LowerId));
+                    Assert(name.IsSingleLower);
 
 
                     var expression = Expression(cursor);
@@ -296,7 +297,7 @@ namespace Fux.Input
 
                 var name = (Identifier)left[0];
 
-                Assert(name.IsSingle(Lex.LowerId));
+                Assert(name.IsSingleLower);
 
                 var type = Type(cursor);
 
@@ -316,7 +317,7 @@ namespace Fux.Input
 
             var name = Identifier(cursor);
 
-            Assert(name.IsMulti(Lex.UpperId));
+            Assert(name.IsMultiUpper);
 
             var arguments = new List<Type>();
 
@@ -351,7 +352,7 @@ namespace Fux.Input
             {
                 var name = Identifier(cursor);
 
-                Assert(name.IsSingle(Lex.LowerId));
+                Assert(name.IsSingleLower);
 
                 return new Type.Parameter(name);
             }
@@ -359,7 +360,7 @@ namespace Fux.Input
             {
                 var name = Identifier(cursor);
 
-                Assert(name.IsMulti(Lex.UpperId));
+                Assert(name.IsMultiUpper);
 
                 return new Type.Concrete(name);
             }
@@ -458,9 +459,12 @@ namespace Fux.Input
             }
             else if (cursor.Is(Lex.LowerId))
             {
-                var name = Identifier(cursor);
+                var name = Identifier(cursor).SingleLower();
 
-                Assert(name.IsSingle(Lex.LowerId));
+                if (name.ToString() == "number")
+                {
+                    return new Type.Number(name);
+                }
 
                 return new Type.Parameter(name);
             }
@@ -787,7 +791,7 @@ namespace Fux.Input
                 {
                     var alias = Identifier(cursor);
 
-                    Assert(alias.IsSingle(Lex.LowerId));
+                    Assert(alias.IsSingleLower);
 
                     atom.Alias = alias;
                 }

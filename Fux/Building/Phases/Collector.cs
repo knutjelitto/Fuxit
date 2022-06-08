@@ -8,6 +8,8 @@ namespace Fux.Building.Phases
 {
     internal class Collector
     {
+        public int ResolveCount { get; set; } = 0;
+
         public List<ModuleDecl> Module { get; } = new();
         public List<ImportDecl> Import { get; } = new();
         public List<TypeDecl> Type { get; } = new();

@@ -19,11 +19,6 @@ namespace Fux.Building.Phases
             {
                 Console.Write(".");
 
-                if (module.IsJs)
-                {
-                    continue;
-                }
-
                 MakeModule(module);
             }
         }
@@ -31,12 +26,18 @@ namespace Fux.Building.Phases
         private void MakeModule(Module module)
         {
             Collector.ImportTime.Start();
-            MakeImport(module);
+            Imports(module);
             Collector.ImportTime.Stop();
         }
 
-        private void MakeImport(Module module)
+        private void Imports(Module module)
         {
+            if (module.IsJs)
+            {
+                return;
+            }
+
+            Assert(module.Ast != null);
             var ast = module.Ast ?? throw new InvalidOperationException();
 
             foreach (var import in ast.Imports)
@@ -59,11 +60,11 @@ namespace Fux.Building.Phases
                                 switch (exposed)
                                 {
                                     case ExposedType exposedType:
-                                        if (importedModule.Scope.ResolveType(exposedType.Name, out var type))
+                                        if (importedModule.Scope.LookupType(exposedType.Name, out var type))
                                         {
                                             module.Scope.AddType(type);
                                         }
-                                        else if (importedModule.Scope.ResolveAlias(exposedType.Name, out var alias))
+                                        else if (importedModule.Scope.LookupAlias(exposedType.Name, out var alias))
                                         {
                                             module.Scope.ImportAddAlias(alias);
                                         }
@@ -74,11 +75,11 @@ namespace Fux.Building.Phases
                                         }
                                         break;
                                     case ExposedVar exposedVar:
-                                        if (importedModule.Scope.ResolveVar(exposedVar.Name, out var var))
+                                        if (importedModule.Scope.LookupVar(exposedVar.Name, out var var))
                                         {
                                             module.Scope.ImportAddVar(var);
                                         }
-                                        else if (importedModule.Scope.ResolveInfix(exposedVar.Name, out var infix))
+                                        else if (importedModule.Scope.LookupInfix(exposedVar.Name, out var infix))
                                         {
                                             module.Scope.AddInfix(infix);
                                         }
@@ -111,7 +112,7 @@ namespace Fux.Building.Phases
                     {
                         continue;
                     }
-                    Assert(import.Name.IsMulti(Lex.UpperId));
+                    Assert(import.Name.IsMultiUpper);
                     module.Scope.AddModule(import.Name, importedModule);
                 }
             }

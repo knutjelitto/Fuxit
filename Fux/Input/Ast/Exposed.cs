@@ -15,7 +15,7 @@
         public ExposedType(Identifier name, bool inclusive)
             : base(name)
         {
-            Assert(name.IsSingle(Lex.UpperId));
+            Assert(name.IsSingleUpper);
             Inclusive = inclusive;
         }
 
@@ -43,7 +43,7 @@
         public ExposedVar(Identifier name)
             : base(name)
         {
-            Assert(name.IsSingle(Lex.LowerId) || name.IsSingle(Lex.OperatorId));
+            Assert(name.IsSingleLower || name.IsSingleOp);
         }
 
         public override string ToString()

@@ -72,13 +72,13 @@ namespace Fux.Building.Phases
             switch (exposed)
             {
                 case ExposedType exposedType:
-                    if (module.Scope.ResolveType(exposed.Name, out var type))
+                    if (module.Scope.LookupType(exposed.Name, out var type))
                     {
                         if (exposedType.Inclusive)
                         {
                             foreach (var constructor in type.Constructors)
                             {
-                                if (module.Scope.ResolveConstructor(constructor.Name, out var ctor))
+                                if (module.Scope.LookupConstructor(constructor.Name, out var ctor))
                                 {
                                     exposedType.Add(ctor);
                                 }
@@ -92,7 +92,7 @@ namespace Fux.Building.Phases
 
                         return exposed;
                     }
-                    else if (module.Scope.ResolveAlias(exposed.Name, out var alias))
+                    else if (module.Scope.LookupAlias(exposed.Name, out _))
                     {
                         if (exposedType.Inclusive)
                         {
@@ -104,11 +104,11 @@ namespace Fux.Building.Phases
                     }
                     break;
                 case ExposedVar exposedVar:
-                    if (module.Scope.ResolveVar(exposedVar.Name, out var var))
+                    if (module.Scope.LookupVar(exposedVar.Name, out _))
                     {
                         return exposed;
                     }
-                    else if (module.Scope.ResolveInfix(exposedVar.Name, out var op))
+                    else if (module.Scope.LookupInfix(exposedVar.Name, out _))
                     {
                         return exposed;
                     }

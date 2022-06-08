@@ -102,7 +102,15 @@ namespace Fux.Building.Phases
 
             decl.Scope.Parent = scope;
 
-            ScopeVar(decl);
+            foreach (var parameter in decl.Parameters)
+            {
+                foreach (var identifier in ExplodePattern(parameter))
+                {
+                    decl.Scope.Add(identifier);
+                }
+            }
+
+            ScopeExpr(decl.Scope, decl.Expression);
         }
 
         private void Import(Writer writer, ModuleScope scope, ImportDecl import)
@@ -132,6 +140,13 @@ namespace Fux.Building.Phases
             type.PP(writer);
 
             scope.AddType(type);
+
+            type.Scope.Parent = scope;
+
+            foreach (var parameter in type.Parameters)
+            {
+                type.Scope.Add(parameter);
+            }
 
             foreach (var constructor in type.Constructors)
             {
@@ -311,7 +326,7 @@ namespace Fux.Building.Phases
         {
             switch (pattern)
             {
-                case Identifier identifier when identifier.IsSingle(Lex.LowerId):
+                case Identifier identifier when identifier.IsSingleLower:
                     yield return identifier;
                     break;
                 case SequenceExpr sequence:
@@ -357,7 +372,7 @@ namespace Fux.Building.Phases
                         yield return identifier;
                     }
                     break;
-                case Identifier identifier when identifier.IsMulti(Lex.UpperId):
+                case Identifier identifier when identifier.IsMultiUpper:
                 case Wildcard:
                 case NumberLiteral:
                 case StringLiteral:
@@ -371,30 +386,17 @@ namespace Fux.Building.Phases
 
             if (pattern.Alias != null)
             {
-                Assert(pattern.Alias.IsSingle(Lex.LowerId));
+                Assert(pattern.Alias.IsSingleLower);
 
                 yield return pattern.Alias;
             }
-        }
-
-        private void ScopeVar(VarDecl decl)
-        {
-            foreach (var parameter in decl.Parameters)
-            {
-                foreach (var identifier in ExplodePattern(parameter))
-                {
-                    decl.Scope.Add(identifier);
-                }
-            }
-
-            ScopeExpr(decl.Scope, decl.Expression);
         }
 
         static void ScopeParameter(LetScope scope, Expression expression)
         {
             switch (expression)
             {
-                case Identifier identifier when identifier.IsSingle(Lex.LowerId):
+                case Identifier identifier when identifier.IsSingleLower:
                     scope.Add(identifier);
                     break;
                 case SequenceExpr sequence:
@@ -409,7 +411,7 @@ namespace Fux.Building.Phases
                         ScopeParameter(scope, expr);
                     }
                     break;
-                case Identifier identifier when identifier.IsMulti(Lex.UpperId):
+                case Identifier identifier when identifier.IsMultiUpper:
                 case Wildcard:
                     break;
                 default:

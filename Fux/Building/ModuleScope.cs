@@ -8,7 +8,7 @@ namespace Fux.Building
 {
     internal class ModuleScope : Scope
     {
-        private readonly List<ImportDecl> imports = new();
+        private readonly Dictionary<Identifier, ImportDecl> imports = new();
         private readonly List<InfixDecl> infixes = new();
         private readonly Dictionary<Identifier, InfixDecl> infixesIndex = new();
         private readonly Dictionary<Identifier, TypeDecl> types = new();
@@ -18,7 +18,11 @@ namespace Fux.Building
 
         public void AddImport(ImportDecl import)
         {
-            imports.Add(import);
+            var name = import.Name.MultiUpper();
+
+            Assert(!imports.ContainsKey(name));
+
+            imports.Add(name, import);
         }
 
         public void AddInfix(InfixDecl decl)
@@ -69,24 +73,59 @@ namespace Fux.Building
             return aliases.TryAdd(decl.Name.SingleUpper(), decl);
         }
 
-        public bool ResolveInfix(Identifier identifier, [MaybeNullWhen(false)] out InfixDecl infix)
+        public bool LookupImport(Identifier identifier, [MaybeNullWhen(false)] out ImportDecl infix)
+        {
+            return imports.TryGetValue(identifier.MultiUpper(), out infix);
+        }
+
+        public bool LookupInfix(Identifier identifier, [MaybeNullWhen(false)] out InfixDecl infix)
         {
             return infixesIndex.TryGetValue(identifier.SingleOp(), out infix);
         }
 
-        public bool ResolveType(Identifier identifier, [MaybeNullWhen(false)]out TypeDecl type)
+        public bool LookupType(Identifier identifier, [MaybeNullWhen(false)]out TypeDecl type)
         {
             return types.TryGetValue(identifier.SingleUpper(), out type);
         }
 
-        public bool ResolveAlias(Identifier identifier, [MaybeNullWhen(false)] out AliasDecl alias)
+        public bool LookupAlias(Identifier identifier, [MaybeNullWhen(false)] out AliasDecl alias)
         {
             return aliases.TryGetValue(identifier.SingleUpper(), out alias);
         }
 
-        public bool ResolveConstructor(Identifier identifier, [MaybeNullWhen(false)] out Type.Constructor constructor)
+        public bool LookupConstructor(Identifier identifier, [MaybeNullWhen(false)] out Type.Constructor constructor)
         {
             return constructors.TryGetValue(identifier.SingleUpper(), out constructor);
+        }
+
+        public override bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)
+        {
+            Assert(Parent == null);
+
+            if (identifier.IsSingleUpper)
+            {
+                if (LookupType(identifier, out var type))
+                {
+                    expr = type;
+                    return true;
+                }
+                Assert(false);
+                throw new NotImplementedException();
+            }
+            else if (identifier.IsQualified)
+            {
+                var (importName, memberName) = identifier.SplitLast();
+
+                Assert(importName.IsMultiUpper);
+                Assert(memberName.IsSingleLower);
+
+                if (LookupImport(importName, out var import))
+                {
+
+                }
+            }
+
+            return base.Resolve(identifier, out expr);
         }
     }
 }

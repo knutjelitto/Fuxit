@@ -8,7 +8,7 @@
             {
                 Name = name;
 
-                Assert(Name.IsMulti(Lex.UpperId));
+                Assert(Name.IsMultiUpper);
             }
 
             public Identifier Name { get; }
@@ -30,7 +30,12 @@
             {
                 Name = name;
 
-                Assert(Name.IsSingle(Lex.LowerId));
+                if (name.ToString() == "number")
+                {
+                    Assert(true);
+                }
+
+                Assert(Name.IsSingleLower);
             }
 
             public Identifier Name { get; }
@@ -114,7 +119,7 @@
                 Name = name;
                 Arguments = arguments;
 
-                Assert(Name.IsMulti(Lex.UpperId));
+                Assert(Name.IsMultiUpper);
             }
 
             public Identifier Name { get; }
@@ -134,5 +139,28 @@
                 writer.Write(ToString());
             }
         }
+
+        public class Number : Type
+        {
+            public Number(Identifier identifier)
+            {
+                Identifier = identifier;
+
+                Assert(identifier.ToString() == "number");
+            }
+
+            public Identifier Identifier { get; }
+
+            public override string ToString()
+            {
+                return Identifier.ToString();
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write(ToString());
+            }
+        }
+
     }
 }

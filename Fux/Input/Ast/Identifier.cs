@@ -25,39 +25,61 @@
         public bool IsSingle(Lex lex) => Count == 1 && this[0].Lex == lex;
         public bool IsMulti(Lex lex) => this.All(t => t.Lex == lex);
 
+        public bool IsSingleLower => IsSingle(Lex.LowerId);
+        public bool IsSingleUpper => IsSingle(Lex.UpperId);
+        public bool IsSingleOp => IsSingle(Lex.OperatorId);
+        public bool IsMultiUpper => IsMulti(Lex.UpperId);
+
+        public bool IsQualified
+        {
+            get
+            {
+                return Count >= 2
+                    && this.SkipLast(1).All(t => t.Lex == Lex.UpperId)
+                    && this[Count - 1].Lex == Lex.LowerId;
+            }
+        }
+
+        public (Identifier module, Identifier name) SplitLast()
+        {
+            return (new Identifier(this.SkipLast(1)), new Identifier(this.TakeLast(1)));
+        }
+
+
+        
         public Identifier SingleLower()
         {
-            Assert(IsSingle(Lex.LowerId));
+            Assert(IsSingleLower);
 
             return this;
         }
 
         public Identifier SingleLowerOrOp()
         {
-            Assert(IsSingle(Lex.LowerId) || IsSingle(Lex.OperatorId));
+            Assert(IsSingleLower || IsSingleOp);
 
             return this;
         }
 
         public Identifier SingleOp()
         {
-            Assert(IsSingle(Lex.OperatorId));
+            Assert(IsSingleOp);
 
             return this;
         }
 
         public Identifier SingleUpper()
         {
-            Assert(IsSingle(Lex.UpperId));
+            Assert(IsSingleUpper);
 
             return this;
         }
 
-        public string MultiUpper()
+        public Identifier MultiUpper()
         {
-            Assert(IsMulti(Lex.UpperId));
+            Assert(IsMultiUpper);
 
-            return toString;
+            return this;
         }
 
         public override bool Equals(object? obj) => obj is Identifier other && toString == other.toString;

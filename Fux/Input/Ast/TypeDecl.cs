@@ -1,6 +1,8 @@
-﻿namespace Fux.Input.Ast
+﻿using Fux.Building;
+
+namespace Fux.Input.Ast
 {
-    internal class TypeDecl : Declaration
+    internal sealed class TypeDecl : Declaration
     {
         public TypeDecl(Identifier name, TypeParameters parameters, Constructors constructors)
             : base(name)
@@ -11,6 +13,13 @@
 
         public TypeParameters Parameters { get; }
         public Constructors Constructors { get; }
+        public LetScope Scope { get; } = new();
+
+        public override string ToString()
+        {
+            var parameters = Parameters.Count == 0 ? "" : $" {Parameters}";
+            return $"{Lex.HardKwType} {Name}{parameters} = {Constructors}";
+        }
 
         public override void PP(Writer writer)
         {
@@ -41,6 +50,11 @@
         public Constructors(IEnumerable<Type.Constructor> items)
             : base(items)
         {
+        }
+
+        public override string ToString()
+        {
+            return string.Join(" | ", this);
         }
     }
 

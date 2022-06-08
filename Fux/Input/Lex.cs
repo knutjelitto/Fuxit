@@ -96,5 +96,10 @@
             public const string Effect = "effect";
             public const string ExposeAll = "(..)";
         }
+
+        public static class Term
+        {
+            public const string Type = "Type";
+        }
     }
 }
