@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal sealed class Identifier : ListOf<Token>
+    internal sealed class Identifier : ListOf<Token>, IEquatable<Identifier>
     {
         private string toString;
         private int hashCode;
@@ -44,8 +44,6 @@
         {
             return (new Identifier(this.SkipLast(1)), new Identifier(this.TakeLast(1)));
         }
-
-
         
         public Identifier SingleLower()
         {
@@ -90,5 +88,7 @@
         {
             writer.Write(ToString());
         }
+
+        public bool Equals(Identifier? other) => other != null && hashCode == other.hashCode && toString == other.toString;
     }
 }

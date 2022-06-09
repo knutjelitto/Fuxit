@@ -654,7 +654,7 @@ namespace Fux.Input
             var kwElse = cursor.Swallow(Lex.HardKwElse);
             var whenFalse = Expression(cursor);
 
-            return new IfExpression(condition, whenTrue, whenFalse);
+            return new IfExpr(condition, whenTrue, whenFalse);
         }
 
         private Expression InlineLet(TokensCursor cursor)

@@ -4,7 +4,10 @@
     {
         public OperatorSymbol(Token token) : base(token)
         {
+            Name = new Identifier(Token.Artifical(Lex.OperatorId, Token, $"({token.Text})"));
         }
+
+        public Identifier Name { get; }
 
         public string Text => Token.ToString();
 

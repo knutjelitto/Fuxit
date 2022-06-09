@@ -35,7 +35,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/html"));
                     builder.Load(ElmPackage.Latest("elm/http"));
                     builder.Load(ElmPackage.Latest("elm/json"));
-                    builder.Load(ElmPackage.Latest("elm/parser"));
+                    builder.Load(ElmPackage.Latest("elm/parser")); //TODO: didn't get scoping of (|.) (|=)
                     builder.Load(ElmPackage.Latest("elm/project-metadata-utils"));
                     builder.Load(ElmPackage.Latest("elm/random"));
                     builder.Load(ElmPackage.Latest("elm/regex"));
@@ -43,10 +43,10 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
-                    //builder.Load(ElmPackage.Latest("elm-explorations/benchmark")); // 404
+                    /*builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));*/ //TODO: 404
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
                     builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
-                    //builder.Load(ElmPackage.Latest("elm-explorations/test")); // .facts
+                    /*builder.Load(ElmPackage.Latest("elm-explorations/test"));*/ //TODO: .facts
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
                 }
 

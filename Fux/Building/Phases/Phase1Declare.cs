@@ -173,19 +173,22 @@ namespace Fux.Building.Phases
                 case CharLiteral:
                 case Unit:
                     break;
-                case IfExpression iff:
+                case IfExpr iff:
                     ScopeExpr(scope, iff.Condition);
                     ScopeExpr(scope, iff.IfTrue);
                     ScopeExpr(scope, iff.IfFalse);
                     break;
                 case MatchExpr match:
                     ScopeExpr(scope, match.Expression);
-                    foreach (var @case in match.Cases)
+                    foreach (var matchCase in match.Cases)
                     {
-                        ScopeExpr(scope, @case);
+                        ScopeExpr(scope, matchCase);
+                        Assert(matchCase.Scope.Parent != null);
                     }
                     break;
                 case MatchCase matchCase:
+                    Assert(matchCase.Scope.Parent == null);
+                    matchCase.Scope.Parent = scope;
                     foreach (var identifier in ExplodePattern(matchCase.Pattern))
                     {
                         matchCase.Scope.Add(identifier);
@@ -251,12 +254,24 @@ namespace Fux.Building.Phases
                 {
                     case VarDecl var:
                         {
+                            if (var.Name.ToString() == "stepState")
+                            {
+                                Assert(true);
+                            }
                             Assert(hints.Count <= 1);
                             var scope = new LetScope
                             {
                                 Parent = let.Scope
                             };
                             let.Scope = scope;
+                            var.Scope.Parent = scope;
+                            foreach (var parameter in var.Parameters)
+                            {
+                                foreach (var identifier in ExplodePattern(parameter))
+                                {
+                                    var.Scope.Add(identifier);
+                                }
+                            }
                             if (hints.Count == 1)
                             {
                                 let.Scope.Add(var.Name, hints);
@@ -266,6 +281,7 @@ namespace Fux.Building.Phases
                             {
                                 let.Scope.Add(var.Name);
                             }
+                            ScopeExpr(var.Scope, var.Expression);
                         }
                         break;
                     case LetAssign assign:
@@ -276,11 +292,12 @@ namespace Fux.Building.Phases
                                 Parent = let.Scope
                             };
                             let.Scope = scope;
+                            assign.Scope.Parent = scope;
                             if (assign.Pattern.Count == 1)
                             {
                                 if (assign.Pattern[0] is Identifier identifier && hints.Count == 1)
                                 {
-                                    let.Scope.Add(identifier, hints);
+                                    assign.Scope.Add(identifier, hints);
                                     Assert(hints.Count == 0);
                                 }
 
@@ -289,9 +306,10 @@ namespace Fux.Building.Phases
                             {
                                 foreach (var identifier in ExplodePattern(assign.Pattern))
                                 {
-                                    let.Scope.Add(identifier);
+                                    assign.Scope.Add(identifier);
                                 }
                             }
+                            ScopeExpr(assign.Scope, assign.Expression);
                         }
                         break;
                     case TypeHint hint:

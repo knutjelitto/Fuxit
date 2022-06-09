@@ -1,4 +1,6 @@
-﻿namespace Fux.Input.Ast
+﻿using Fux.Building;
+
+namespace Fux.Input.Ast
 {
     internal class ImportDecl : Declaration
     {
@@ -15,6 +17,8 @@
         }
 
         public Exposing? Exposing { get; }
+
+        public Module? Module { get; set; } 
 
         public override string ToString()
         {

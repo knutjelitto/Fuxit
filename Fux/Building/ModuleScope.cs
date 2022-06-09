@@ -15,6 +15,14 @@ namespace Fux.Building
         private readonly Dictionary<Identifier, AliasDecl> aliases = new();
         private readonly Dictionary<Identifier, Type.Constructor> constructors = new();
         private readonly Dictionary<Identifier, Module> modules = new();
+        private readonly Dictionary<Identifier, NativeDecl> natives = new();
+
+        public Module Module { get; }
+
+        public ModuleScope(Module module)
+        {
+            Module = module;
+        }
 
         public void AddImport(ImportDecl import)
         {
@@ -68,9 +76,31 @@ namespace Fux.Building
             modules.Add(name, module);
         }
 
+        public void AddNative(NativeDecl decl)
+        {
+            var name = decl.Name.SingleLower();
+
+            Assert(!natives.ContainsKey(name));
+
+            natives.Add(name, decl);
+        }
+
         public bool ImportAddAlias(AliasDecl decl)
         {
             return aliases.TryAdd(decl.Name.SingleUpper(), decl);
+        }
+
+        public bool ImportAddInfix(InfixDecl decl)
+        {
+            var name = decl.Name.SingleOp();
+
+            if (infixesIndex.TryAdd(name, decl))
+            {
+                infixes.Add(decl);
+
+                return true;
+            }
+            return false;
         }
 
         public bool LookupImport(Identifier identifier, [MaybeNullWhen(false)] out ImportDecl infix)
@@ -98,6 +128,12 @@ namespace Fux.Building
             return constructors.TryGetValue(identifier.SingleUpper(), out constructor);
         }
 
+        public bool LookupNative(Identifier identifier, [MaybeNullWhen(false)] out NativeDecl native)
+        {
+            return natives.TryGetValue(identifier.SingleLower(), out native);
+        }
+
+
         public override bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)
         {
             Assert(Parent == null);
@@ -109,8 +145,21 @@ namespace Fux.Building
                     expr = type;
                     return true;
                 }
+                else if (LookupConstructor(identifier, out var ctor))
+                {
+                    expr = ctor;
+                    return true;
+                }
                 Assert(false);
                 throw new NotImplementedException();
+            }
+            if (identifier.IsSingleOp)
+            {
+                if (LookupInfix(identifier, out var type))
+                {
+                    expr = type;
+                    return true;
+                }
             }
             else if (identifier.IsQualified)
             {
@@ -121,7 +170,35 @@ namespace Fux.Building
 
                 if (LookupImport(importName, out var import))
                 {
+                    Assert(importName.Equals(import.Name));
+                    Assert(import.Module != null);
 
+                    if (import.Module.IsJs)
+                    {
+                        if (!import.Module.Scope.LookupNative(memberName, out var native))
+                        {
+                            native = new NativeDecl(memberName);
+                            import.Module.Scope.AddNative(native);
+                        }
+
+                        expr = native;
+                        return true;
+                    }
+                    else
+                    {
+                        if (import.Module.Scope.Resolve(memberName, out var resolved))
+                        {
+                            expr = resolved;
+                            return true;
+                        }
+                        Assert(false);
+                        throw new InvalidOperationException();
+                    }
+                }
+                else
+                {
+                    Assert(false);
+                    throw new InvalidOperationException();
                 }
             }
 

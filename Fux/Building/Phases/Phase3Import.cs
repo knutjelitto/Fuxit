@@ -37,14 +37,19 @@ namespace Fux.Building.Phases
                 return;
             }
 
+            if (module.Name == "List")
+            {
+                Assert(true);
+            }
+
             Assert(module.Ast != null);
             var ast = module.Ast ?? throw new InvalidOperationException();
 
             foreach (var import in ast.Imports)
             {
-                var importedModule = module.Package.FindImport($"{import.Name}");
+                import.Module = module.Package.FindImport($"{import.Name}");
 
-                if (importedModule == null)
+                if (import.Module == null)
                 {
                     Assert(false);
                     throw new InvalidOperationException();
@@ -55,16 +60,19 @@ namespace Fux.Building.Phases
                     switch (exposing)
                     {
                         case ExposingAll all:
-                            foreach (var exposed in importedModule.Exposed)
+                            foreach (var exposed in import.Module.Exposed)
                             {
+#if true
+                                Expose(import, exposed, true);
+#else
                                 switch (exposed)
                                 {
                                     case ExposedType exposedType:
-                                        if (importedModule.Scope.LookupType(exposedType.Name, out var type))
+                                        if (import.Module.Scope.LookupType(exposedType.Name, out var type))
                                         {
                                             module.Scope.AddType(type);
                                         }
-                                        else if (importedModule.Scope.LookupAlias(exposedType.Name, out var alias))
+                                        else if (import.Module.Scope.LookupAlias(exposedType.Name, out var alias))
                                         {
                                             module.Scope.ImportAddAlias(alias);
                                         }
@@ -75,11 +83,11 @@ namespace Fux.Building.Phases
                                         }
                                         break;
                                     case ExposedVar exposedVar:
-                                        if (importedModule.Scope.LookupVar(exposedVar.Name, out var var))
+                                        if (import.Module.Scope.LookupVar(exposedVar.Name, out var var))
                                         {
                                             module.Scope.ImportAddVar(var);
                                         }
-                                        else if (importedModule.Scope.LookupInfix(exposedVar.Name, out var infix))
+                                        else if (import.Module.Scope.LookupInfix(exposedVar.Name, out var infix))
                                         {
                                             module.Scope.AddInfix(infix);
                                         }
@@ -93,12 +101,22 @@ namespace Fux.Building.Phases
                                         Assert(false);
                                         throw new NotImplementedException();
                                 }
+#endif
                             }
                             break;
                         case ExposingSome some:
                             foreach (var exposed in some.Exposed)
                             {
-
+                                var found = import.Module.Exposed.Where(e => e.Name.Equals(exposed.Name)).SingleOrDefault();
+                                if (found != null)
+                                {
+                                    Expose(import, found, exposed is ExposedType type && type.Inclusive);
+                                }
+                                else
+                                {
+                                    Assert(false);
+                                    throw new InvalidOperationException();
+                                }
                             }
                             break;
                         default:
@@ -113,7 +131,57 @@ namespace Fux.Building.Phases
                         continue;
                     }
                     Assert(import.Name.IsMultiUpper);
-                    module.Scope.AddModule(import.Name, importedModule);
+                    module.Scope.AddModule(import.Name, import.Module);
+                }
+            }
+
+            void Expose(ImportDecl import, Exposed exposed, bool inclusive)
+            {
+                Assert(import.Module != null);
+
+                switch (exposed)
+                {
+                    case ExposedType exposedType:
+                        if (import.Module.Scope.LookupType(exposedType.Name, out var type))
+                        {
+                            module.Scope.AddType(type);
+
+                            if (inclusive)
+                            {
+                                foreach (var ctor in type.Constructors)
+                                {
+                                    module.Scope.AddConstructor(ctor);
+                                }
+                            }
+                        }
+                        else if (import.Module.Scope.LookupAlias(exposedType.Name, out var alias))
+                        {
+                            module.Scope.ImportAddAlias(alias);
+                        }
+                        else
+                        {
+                            Assert(false);
+                            throw new InvalidOperationException();
+                        }
+                        break;
+                    case ExposedVar exposedVar:
+                        if (import.Module.Scope.LookupVar(exposedVar.Name, out var var))
+                        {
+                            module.Scope.ImportAddVar(var);
+                        }
+                        else if (import.Module.Scope.LookupInfix(exposedVar.Name, out var infix))
+                        {
+                            module.Scope.ImportAddInfix(infix);
+                        }
+                        else
+                        {
+                            Assert(false);
+                            throw new InvalidOperationException();
+                        }
+                        break;
+                    default:
+                        Assert(false);
+                        throw new NotImplementedException();
                 }
             }
         }

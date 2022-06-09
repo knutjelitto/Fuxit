@@ -6,8 +6,17 @@ namespace Fux.Building
     {
         private readonly Dictionary<Identifier, VarDecl> vars = new();
         private readonly Dictionary<Identifier, TypeHint> hints = new();
+        private Scope? parent;
 
-        public Scope? Parent { get; set; }
+        public Scope? Parent
+        {
+            get => parent;
+            set
+            {
+                Assert(value != null);
+                parent = value;
+            }
+        }
         public bool HintEmpty => hints.Count == 0;
 
         public void AddHint(TypeHint hint)
@@ -15,7 +24,7 @@ namespace Fux.Building
             var name = hint.Name.SingleLower();
 
             Assert(!hints.ContainsKey(name));
-            
+
             hints.Add(name, hint);
         }
 

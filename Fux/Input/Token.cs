@@ -3,6 +3,8 @@
     [DebuggerDisplay("{Dbg()}")]
     internal class Token
     {
+        private readonly string? artifical = null;
+
         private Whites whitesBefore = new();
 
         public Token(Lex lex, ILocation location)
@@ -14,6 +16,17 @@
         public Token(Lex lex, Token template)
             : this(lex, template.Location)
         {
+        }
+
+        private Token(Lex lex, Token template, string artifical)
+            : this(lex, template)
+        {
+            this.artifical = artifical;
+        }
+
+        public static Token Artifical(Lex lex, Token template, string artifical)
+        {
+            return new Token(lex, template, artifical);
         }
 
         public Lex Lex { get; }
@@ -67,7 +80,7 @@
             return this;
         }
 
-        public string Text => Location.Text;
+        public string Text => artifical ?? Location.Text;
 
         public override string ToString()
         {

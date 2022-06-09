@@ -15,6 +15,8 @@ namespace Fux.Building
             NickName = Package.FullName + "/" + pathName;
             FileName = $"src/{pathName}.{ext}";
             FullFileName = Folder.Combine(Package.RootPath, FileName);
+
+            Scope = new ModuleScope(this);
         }
 
         public Package Package { get; }
@@ -27,7 +29,7 @@ namespace Fux.Building
 
         public bool Parsed { get; set; } = false;
         public ModuleAst? Ast { get; set; } = null;
-        public ModuleScope Scope { get; } = new();
+        public ModuleScope Scope { get; }
 
         public List<Exposed> Exposed { get; } = new();
         

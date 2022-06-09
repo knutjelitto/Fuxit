@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Fux.Building;
+
 namespace Fux.Input.Ast
 {
     internal class LetAssign : Expression
@@ -16,6 +18,7 @@ namespace Fux.Input.Ast
 
         public SequenceExpr Pattern { get; }
         public Expression Expression { get; }
+        public LetScope Scope { get; } = new();
 
         public override string ToString()
         {

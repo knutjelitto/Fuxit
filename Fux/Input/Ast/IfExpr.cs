@@ -1,8 +1,8 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class IfExpression : Expression
+    internal class IfExpr : Expression
     {
-        public IfExpression(Expression condition, Expression ifTrue, Expression ifFalse)
+        public IfExpr(Expression condition, Expression ifTrue, Expression ifFalse)
         {
             Condition = condition;
             IfTrue = ifTrue;
