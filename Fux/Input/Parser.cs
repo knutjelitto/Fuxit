@@ -52,7 +52,7 @@ namespace Fux.Input
         {
             Expression? outer = null;
 
-            if (cursor.Is(Lex.HardKwModule) || cursor.IsWeak(Lex.Weak.Effect))
+            if (cursor.Is(Lex.HardKwModule) || cursor.IsWeak(Lex.Weak.Effect) || cursor.IsWeak(Lex.Weak.Port))
             {
                 outer = TopHeader(cursor);
             }
@@ -96,15 +96,29 @@ namespace Fux.Input
             }
             cursor.Swallow(Lex.HardKwModule);
 
-            var path = Identifier(cursor);
+            var path = Identifier(cursor).MultiUpper();
 
-            RecordExpression? where = null;
+            var where = new List<VarDecl>();
+
             if (cursor.IsWeak("where"))
             {
+                //TODO: what's a where?
+
                 cursor.Advance();
 
-                //TODO: what's a where?
-                where = RecordLiteral(cursor) as RecordExpression;
+                cursor.Swallow(Lex.LBrace);
+
+                do
+                {
+                    var name = SingleIdentifier(cursor).SingleLower();
+                    cursor.Swallow(Lex.Assign);
+                    var expression = Expression(cursor);
+
+                    where.Add(new VarDecl(name, new Parameters(), expression));
+                }
+                while (cursor.SwallowIf(Lex.Comma));
+
+                cursor.Swallow(Lex.RBrace);
             }
 
             TupleExpr? tuple = null;
@@ -123,15 +137,13 @@ namespace Fux.Input
         {
             cursor.Swallow(Lex.HardKwImport);
 
-            var path = Identifier(cursor);
+            var path = Identifier(cursor).MultiUpper();
 
             Identifier? alias = null;
 
             if (cursor.SwallowIf(Lex.HardKwAs))
             {
-                alias = Identifier(cursor);
-
-                Assert(alias.IsMultiUpper);
+                alias = Identifier(cursor).MultiUpper();
             }
 
             Exposing? exposing = null;
@@ -315,9 +327,7 @@ namespace Fux.Input
         {
             Assert(cursor.Is(Lex.UpperId));
 
-            var name = Identifier(cursor);
-
-            Assert(name.IsMultiUpper);
+            var name = Identifier(cursor).MultiUpper();
 
             var arguments = new List<Type>();
 
@@ -350,17 +360,13 @@ namespace Fux.Input
         {
             if (cursor.Is(Lex.LowerId))
             {
-                var name = Identifier(cursor);
-
-                Assert(name.IsSingleLower);
+                var name = Identifier(cursor).SingleLower();
 
                 return new Type.Parameter(name);
             }
             else if (cursor.Is(Lex.UpperId))
             {
-                var name = Identifier(cursor);
-
-                Assert(name.IsMultiUpper);
+                var name = Identifier(cursor).MultiUpper();
 
                 return new Type.Concrete(name);
             }
@@ -399,6 +405,13 @@ namespace Fux.Input
             while (cursor.SwallowIf(Lex.Dot));
 
             return new Identifier(tokens);
+        }
+
+        private Identifier SingleIdentifier(TokensCursor cursor)
+        {
+            cursor.Is(Lex.LowerId, Lex.UpperId, Lex.OperatorId);
+            
+            return new Identifier(cursor.Advance());
         }
 
         private Type Type(TokensCursor cursor)
@@ -594,7 +607,7 @@ namespace Fux.Input
             if (fields.All(f => f is FieldAssign))
             {
                 Assert(baseName == null || baseName is Identifier);
-                return new RecordExpression((Identifier?)baseName, fields.Cast<FieldAssign>());
+                return new RecordExpr((Identifier?)baseName, fields.Cast<FieldAssign>());
             }
             else if (fields.All(f => f is FieldPattern))
             {
@@ -789,9 +802,7 @@ namespace Fux.Input
 
                 if (cursor.SwallowIf(Lex.HardKwAs))
                 {
-                    var alias = Identifier(cursor);
-
-                    Assert(alias.IsSingleLower);
+                    var alias = Identifier(cursor).SingleLower();
 
                     atom.Alias = alias;
                 }
@@ -819,13 +830,13 @@ namespace Fux.Input
             {
                 if (cursor.Is(Lex.LowerId))
                 {
-                    return Identifier(cursor);
-                }
-                else if (cursor.Is(Lex.UpperId))
-                {
-                    return Identifier(cursor);
+                    return SingleIdentifier(cursor);
                 }
                 else if (cursor.Is(Lex.OperatorId))
+                {
+                    return SingleIdentifier(cursor);
+                }
+                else if (cursor.Is(Lex.UpperId))
                 {
                     return Identifier(cursor);
                 }

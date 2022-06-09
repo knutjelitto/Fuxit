@@ -1,4 +1,6 @@
-﻿namespace Fux.Input.Ast
+﻿using Fux.Building;
+
+namespace Fux.Input.Ast
 {
     internal sealed class Identifier : ListOf<Token>, IEquatable<Identifier>
     {
@@ -18,6 +20,30 @@
         public Identifier(params Token[] tokens)
             : this(tokens.AsEnumerable())
         {
+        }
+
+        public static Identifier Artificial(Module module, string artifical)
+        {
+            var source = module.Ast!.Header.Name.items.First().Location.Source;
+            var location = new Location(source, 0, 0);
+            var tokens = new List<Token>();
+            foreach (var text in artifical.Split('.'))
+            {
+                if (char.IsUpper(text, 0))
+                {
+                    tokens.Add(Token.Artifical(Lex.UpperId, location, text));
+                }
+                else if (text[0] == '(')
+                {
+                    tokens.Add(Token.Artifical(Lex.OperatorId, location, text));
+                }
+                else
+                {
+                    Assert(false);
+                    throw new InvalidOperationException();
+                }
+            }
+            return new Identifier(tokens);
         }
 
         public TypeHint? TypeHint { get; set; } = null;
@@ -81,6 +107,7 @@
         }
 
         public override bool Equals(object? obj) => obj is Identifier other && toString == other.toString;
+        public bool Equals(Identifier? other) => other != null && hashCode == other.hashCode && toString == other.toString;
         public override int GetHashCode() => hashCode;
         public override string ToString() => toString;
 
@@ -89,6 +116,5 @@
             writer.Write(ToString());
         }
 
-        public bool Equals(Identifier? other) => other != null && hashCode == other.hashCode && toString == other.toString;
     }
 }

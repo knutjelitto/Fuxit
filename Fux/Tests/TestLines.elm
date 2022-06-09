@@ -1,4 +1,4 @@
-﻿module test
+﻿module Test exposing(test)
 
 test =
   skip (chompWhile isNotRelevant) <|

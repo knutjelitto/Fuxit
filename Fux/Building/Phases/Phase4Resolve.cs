@@ -62,6 +62,9 @@ namespace Fux.Building.Phases
                 case TypeHint hint:
                     Resolve(module, hint);
                     break;
+                case AliasDecl alias:
+                    Resolve(module, alias);
+                    break;
                 default:
                     Assert(false);
                     throw new InvalidOperationException();
@@ -97,6 +100,13 @@ namespace Fux.Building.Phases
             ResolveType(module.Scope, hint.Type);
         }
 
+        private void Resolve(Module module, AliasDecl alias)
+        {
+            Assert(alias.Parameters.Count >= 0);
+
+            ResolveType(module.Scope, alias.Declaration);
+        }
+
         private void ResolveType(Scope scope, Type type)
         {
             switch (type)
@@ -117,6 +127,16 @@ namespace Fux.Building.Phases
                         ResolveType(scope, item);
                     }
                     break;
+                case RecordDecl record:
+                    if (record.BaseRecord != null)
+                    {
+                        ResolveType(scope, record.BaseRecord);
+                    }
+                    foreach (var field in record.Fields)
+                    {
+                        ResolveType(scope, field.Type);
+                    }
+                    break;
                 case Type.Concrete concrete:
                     if (scope.Resolve(concrete.Name, out _))
                     {
@@ -125,6 +145,7 @@ namespace Fux.Building.Phases
                     break;
                 case Type.Parameter:
                 case Type.Number:
+                case Type.Unit:
                     break;
                 default:
                     Assert(false);
@@ -139,6 +160,7 @@ namespace Fux.Building.Phases
                 case NumberLiteral:
                 case StringLiteral:
                 case CharLiteral:
+                case Unit:
                     break;
                 case Identifier identifier:
                     {
@@ -201,6 +223,19 @@ namespace Fux.Building.Phases
                         ResolveExpr(scope, expr);
                     }
                     break;
+                case RecordExpr record:
+                    if (record.BaseRecord != null)
+                    {
+                        ResolveExpr(scope, record.BaseRecord);
+                    }
+                    foreach (var field in record.Fields)
+                    {
+                        ResolveExpr(scope, field);
+                    }
+                    break;
+                case FieldAssign fieldAssign:
+                    ResolveExpr(scope, fieldAssign.Expression);
+                    break;
                 case PrefixExpr prefix:
                     //TODO: prefix operator
                     //ResolveExpr(scope, prefix.Op);
@@ -219,6 +254,9 @@ namespace Fux.Building.Phases
                     }
                     Assert(false);
                     throw new InvalidOperationException();
+                case SelectExpr select:
+                    ResolveExpr(scope, select.Lhs);
+                    break;
                 default:
                     Assert(false);
                     throw new NotImplementedException();

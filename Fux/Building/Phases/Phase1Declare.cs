@@ -36,12 +36,18 @@ namespace Fux.Building.Phases
             if (module.Parsed && module.Ast != null)
             {
                 var ast = module.Ast;
+                var header = ast.Header;
 
                 Assert(ast.Declarations.Count() == ast.Expressions.Count);
 
-                ast.Header.PP(writer);
-
+                header.PP(writer);
+                writer.EndLine();
                 writer.WriteLine();
+
+                foreach (var where in header.Where)
+                {
+                    module.Scope.AddVar(where);
+                }
 
                 foreach (var expr in ast.Declarations)
                 {
@@ -228,7 +234,7 @@ namespace Fux.Building.Phases
                     lambda.Scope.Parent = scope;
                     ScopeLambda(lambda);
                     break;
-                case RecordExpression record:
+                case RecordExpr record:
                     foreach (var field in record.Fields)
                     {
                         ScopeExpr(scope, field.Expression);
@@ -254,17 +260,11 @@ namespace Fux.Building.Phases
                 {
                     case VarDecl var:
                         {
-                            if (var.Name.ToString() == "stepState")
-                            {
-                                Assert(true);
-                            }
                             Assert(hints.Count <= 1);
-                            var scope = new LetScope
-                            {
-                                Parent = let.Scope
-                            };
-                            let.Scope = scope;
-                            var.Scope.Parent = scope;
+
+                            var.Scope.Parent = let.Scope;
+                            let.Scope = var.Scope;
+
                             foreach (var parameter in var.Parameters)
                             {
                                 foreach (var identifier in ExplodePattern(parameter))
@@ -287,18 +287,23 @@ namespace Fux.Building.Phases
                     case LetAssign assign:
                         {
                             Assert(hints.Count <= 1);
-                            var scope = new LetScope
+                            assign.Scope.Parent = let.Scope;
+                            let.Scope = assign.Scope;
+
+                            var explode = ExplodePattern(assign.Pattern).ToList(); ;
+
+                            if (explode.Count == 1)
                             {
-                                Parent = let.Scope
-                            };
-                            let.Scope = scope;
-                            assign.Scope.Parent = scope;
-                            if (assign.Pattern.Count == 1)
-                            {
-                                if (assign.Pattern[0] is Identifier identifier && hints.Count == 1)
+                                var identifier = explode[0];
+
+                                if (hints.Count == 1)
                                 {
                                     assign.Scope.Add(identifier, hints);
                                     Assert(hints.Count == 0);
+                                }
+                                else
+                                {
+                                    assign.Scope.Add(identifier, hints);
                                 }
 
                             }

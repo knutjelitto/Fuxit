@@ -30,6 +30,12 @@ namespace Fux.Input.Ast
             Exposed = exposed.ToArray();
         }
 
+        public ExposingSome(params Exposed[] exposed)
+            : this(exposed.AsEnumerable())
+        {
+            Assert(Exposed.Count > 0);
+        }
+
         public IReadOnlyList<Exposed> Exposed { get; }
 
         public override void PP(Writer writer)

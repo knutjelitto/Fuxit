@@ -24,9 +24,20 @@
             this.artifical = artifical;
         }
 
+        private Token(Lex lex, ILocation location, string artifical)
+            : this(lex, location)
+        {
+            this.artifical = artifical;
+        }
+
         public static Token Artifical(Lex lex, Token template, string artifical)
         {
             return new Token(lex, template, artifical);
+        }
+
+        public static Token Artifical(Lex lex, ILocation location, string artifical)
+        {
+            return new Token(lex, location, artifical);
         }
 
         public Lex Lex { get; }

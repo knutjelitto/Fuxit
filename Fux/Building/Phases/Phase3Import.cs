@@ -37,15 +37,33 @@ namespace Fux.Building.Phases
                 return;
             }
 
-            if (module.Name == "List")
+            if (!Package.IsCore)
             {
-                Assert(true);
+                Assert(Package.FindImport("Basics") != null);
+                Import(new ImportDecl(Identifier.Artificial(module, "Basics"), null,
+                    new ExposingAll()));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "String"), null,
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "String"), false))));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "List"), null,
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "List"), false),
+                            new ExposedVar(Identifier.Artificial(module, "(::)")))));
             }
 
             Assert(module.Ast != null);
             var ast = module.Ast ?? throw new InvalidOperationException();
 
             foreach (var import in ast.Imports)
+            {
+                Import(import);
+            }
+
+            void Import(ImportDecl import)
             {
                 import.Module = module.Package.FindImport($"{import.Name}");
 
@@ -55,6 +73,15 @@ namespace Fux.Building.Phases
                     throw new InvalidOperationException();
                 }
 
+                var importName = import.Alias ?? import.Name;
+
+                if (!importName.Equals(import.Name))
+                {
+                    Assert(true);
+                }
+
+                Assert(importName.IsMultiUpper);
+
                 if (import.Exposing is Exposing exposing)
                 {
                     switch (exposing)
@@ -62,46 +89,7 @@ namespace Fux.Building.Phases
                         case ExposingAll all:
                             foreach (var exposed in import.Module.Exposed)
                             {
-#if true
                                 Expose(import, exposed, true);
-#else
-                                switch (exposed)
-                                {
-                                    case ExposedType exposedType:
-                                        if (import.Module.Scope.LookupType(exposedType.Name, out var type))
-                                        {
-                                            module.Scope.AddType(type);
-                                        }
-                                        else if (import.Module.Scope.LookupAlias(exposedType.Name, out var alias))
-                                        {
-                                            module.Scope.ImportAddAlias(alias);
-                                        }
-                                        else
-                                        {
-                                            Assert(false);
-                                            throw new InvalidOperationException();
-                                        }
-                                        break;
-                                    case ExposedVar exposedVar:
-                                        if (import.Module.Scope.LookupVar(exposedVar.Name, out var var))
-                                        {
-                                            module.Scope.ImportAddVar(var);
-                                        }
-                                        else if (import.Module.Scope.LookupInfix(exposedVar.Name, out var infix))
-                                        {
-                                            module.Scope.AddInfix(infix);
-                                        }
-                                        else 
-                                        {
-                                            Assert(false);
-                                            throw new InvalidOperationException();
-                                        }
-                                        break;
-                                    default:
-                                        Assert(false);
-                                        throw new NotImplementedException();
-                                }
-#endif
                             }
                             break;
                         case ExposingSome some:
@@ -124,14 +112,10 @@ namespace Fux.Building.Phases
                             throw new NotImplementedException();
                     }
                 }
-                else
+
+                if (import.Alias != null || import.Exposing == null)
                 {
-                    if (import.Name.ToString().StartsWith("Elm.Kernel.", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        continue;
-                    }
-                    Assert(import.Name.IsMultiUpper);
-                    module.Scope.AddModule(import.Name, import.Module);
+                    module.Scope.AddModule(importName, import.Module);
                 }
             }
 
@@ -144,13 +128,13 @@ namespace Fux.Building.Phases
                     case ExposedType exposedType:
                         if (import.Module.Scope.LookupType(exposedType.Name, out var type))
                         {
-                            module.Scope.AddType(type);
+                            module.Scope.ImportAddType(type);
 
                             if (inclusive)
                             {
                                 foreach (var ctor in type.Constructors)
                                 {
-                                    module.Scope.AddConstructor(ctor);
+                                    module.Scope.ImportAddConstructor(ctor);
                                 }
                             }
                         }

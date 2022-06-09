@@ -2,14 +2,14 @@
 {
     internal class AliasDecl : Declaration
     {
-        public AliasDecl(Identifier name, TypeParameters parameters, Expression declaration)
+        public AliasDecl(Identifier name, TypeParameters parameters, Type declaration)
             : base(name)
         {
             Parameters = parameters;
             Declaration = declaration;
         }
         public TypeParameters Parameters { get; }
-        public Expression Declaration { get; }
+        public Type Declaration { get; }
 
         public override string ToString()
         {

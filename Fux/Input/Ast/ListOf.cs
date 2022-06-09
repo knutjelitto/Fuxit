@@ -4,7 +4,7 @@ namespace Fux.Input.Ast
 {
     internal class ListOf<T> : Expression, IReadOnlyList<T>
     {
-        private readonly List<T> items;
+        protected readonly List<T> items;
 
         public ListOf(IEnumerable<T> items)
         {

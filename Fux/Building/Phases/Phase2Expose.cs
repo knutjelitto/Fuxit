@@ -38,7 +38,6 @@ namespace Fux.Building.Phases
         private void MakeExpose(Module module)
         {
             var ast = module.Ast ?? throw new InvalidOperationException();
-            var scope = module.Scope;
 
             var header = ast.Header;
 
@@ -52,7 +51,7 @@ namespace Fux.Building.Phases
         {
             switch (exposing)
             {
-                case ExposingAll all:
+                case ExposingAll:
                     Assert(false);
                     throw new InvalidOperationException();
                 case ExposingSome some:

@@ -1,8 +1,8 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class RecordExpression : Expression
+    internal class RecordExpr : Expression
     {
-        public RecordExpression(Identifier? baseRecord, IEnumerable<FieldAssign> fields)
+        public RecordExpr(Identifier? baseRecord, IEnumerable<FieldAssign> fields)
         {
             Fields = fields.ToArray();
             BaseRecord = baseRecord;
@@ -15,7 +15,8 @@
         public override string ToString()
         {
             var joined = string.Join(", ", Fields);
-            return $"{Lex.LBrace} {joined} {Lex.RBrace}";
+            var baser = BaseRecord == null ? "" : $" {BaseRecord}, ";
+            return $"{Lex.LBrace} {baser}{joined} {Lex.RBrace}";
         }
 
         public override void PP(Writer writer)
@@ -43,6 +44,11 @@
             {
                 writer.Write($"{Lex.LBrace} ");
                 var more = false;
+                if (BaseRecord != null)
+                {
+                    writer.Write($"{BaseRecord}");
+                    more = true;
+                }
                 foreach (var expression in Fields)
                 {
                     if (more)

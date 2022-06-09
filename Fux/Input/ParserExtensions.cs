@@ -2,9 +2,20 @@
 {
     internal static class ParserExtensions
     {
-        public static bool Is(this TokensCursor cursor, Lex lex)
+        public static bool Is(this TokensCursor cursor, params Lex[] lexes)
         {
-            return cursor.More() && cursor.Current.Lex == lex;
+            if (cursor.More())
+            {
+                foreach (var lex in lexes)
+                {
+                    if (cursor.Current.Lex == lex)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static bool IsIdentifier(this TokensCursor cursor)

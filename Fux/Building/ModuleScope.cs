@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+
 namespace Fux.Building
 {
     internal class ModuleScope : Scope
@@ -90,6 +86,12 @@ namespace Fux.Building
             return aliases.TryAdd(decl.Name.SingleUpper(), decl);
         }
 
+
+        public bool ImportAddType(TypeDecl decl)
+        {
+            return types.TryAdd(decl.Name.SingleUpper(), decl);
+        }
+
         public bool ImportAddInfix(InfixDecl decl)
         {
             var name = decl.Name.SingleOp();
@@ -103,9 +105,15 @@ namespace Fux.Building
             return false;
         }
 
-        public bool LookupImport(Identifier identifier, [MaybeNullWhen(false)] out ImportDecl infix)
+        public bool ImportAddConstructor(Type.Constructor constructor)
         {
-            return imports.TryGetValue(identifier.MultiUpper(), out infix);
+            return constructors.TryAdd(constructor.Name.SingleUpper(), constructor);
+        }
+
+
+        public bool LookupImport(Identifier identifier, [MaybeNullWhen(false)] out ImportDecl import)
+        {
+            return imports.TryGetValue(identifier.MultiUpper(), out import);
         }
 
         public bool LookupInfix(Identifier identifier, [MaybeNullWhen(false)] out InfixDecl infix)
@@ -133,6 +141,11 @@ namespace Fux.Building
             return natives.TryGetValue(identifier.SingleLower(), out native);
         }
 
+        public bool LookupModule(Identifier identifier, [MaybeNullWhen(false)] out Module module)
+        {
+            return modules.TryGetValue(identifier.MultiUpper(), out module);
+        }
+
 
         public override bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)
         {
@@ -148,6 +161,11 @@ namespace Fux.Building
                 else if (LookupConstructor(identifier, out var ctor))
                 {
                     expr = ctor;
+                    return true;
+                }
+                else if (LookupAlias(identifier, out var alias))
+                {
+                    expr = alias;
                     return true;
                 }
                 Assert(false);
@@ -168,17 +186,30 @@ namespace Fux.Building
                 Assert(importName.IsMultiUpper);
                 Assert(memberName.IsSingleLower);
 
-                if (LookupImport(importName, out var import))
+                if (!LookupModule(importName, out var importModule))
                 {
-                    Assert(importName.Equals(import.Name));
-                    Assert(import.Module != null);
-
-                    if (import.Module.IsJs)
+                    if (LookupImport(importName, out var import))
                     {
-                        if (!import.Module.Scope.LookupNative(memberName, out var native))
+                        Assert(import.Module != null);
+                        importModule = import.Module;
+                    }
+                    else
+                    {
+                        Assert(false);
+                        throw new InvalidOperationException();
+                    }
+                }
+
+                if (true)
+                {
+                    //Assert(importName.ToString() == importModule.Name);
+
+                    if (importModule.IsJs)
+                    {
+                        if (!importModule.Scope.LookupNative(memberName, out var native))
                         {
                             native = new NativeDecl(memberName);
-                            import.Module.Scope.AddNative(native);
+                            importModule.Scope.AddNative(native);
                         }
 
                         expr = native;
@@ -186,7 +217,7 @@ namespace Fux.Building
                     }
                     else
                     {
-                        if (import.Module.Scope.Resolve(memberName, out var resolved))
+                        if (importModule.Scope.Resolve(memberName, out var resolved))
                         {
                             expr = resolved;
                             return true;
