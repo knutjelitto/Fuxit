@@ -6,6 +6,10 @@ namespace Fux.Input
     {
         private readonly List<Token> tokens = new();
 
+        public Tokens(List<Token> underlying)
+        {
+        }
+
         public Tokens Add(Token token)
         {
             tokens.Add(token);
