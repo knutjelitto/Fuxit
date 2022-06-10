@@ -49,43 +49,56 @@ namespace Fux.Building.Phases
                     module.Scope.AddVar(where);
                 }
 
-                foreach (var expr in ast.Declarations)
+                if (module.Name == "List")
                 {
-                    writer.Write($"{expr.GetType().Name} - {expr.Name}");
-
-                    writer.Indent(() =>
+                    if (!module.Scope.LookupType(Identifier.Artificial(module, "List"), out _))
                     {
-                        writer.WriteLine();
-                        switch (expr)
-                        {
-                            case ImportDecl import:
-                                Import(writer, module.Scope, import);
-                                break;
-                            case InfixDecl infix:
-                                Infix(writer, module.Scope, infix);
-                                break;
-                            case TypeDecl type:
-                                Type(writer, module.Scope, type);
-                                break;
-                            case AliasDecl alias:
-                                Alias(writer, module.Scope, alias);
-                                break;
-                            case VarDecl varDecl:
-                                VarDecl(writer, module.Scope, varDecl);
-                                break;
-                            case TypeHint hint:
-                                TypeHint(writer, module.Scope, hint);
-                                break;
-                            default:
-                                Assert(false);
-                                throw new NotImplementedException();
-                                break;
-                        }
-                        writer.EndLine();
-                        writer.WriteLine();
-                    });
+                        Declare(FakeList.MakeType(module));
+                    }
+                }
+
+                foreach (var declaration in ast.Declarations)
+                {
+                    Declare(declaration);
                 }
                 Assert(module.Scope.HintEmpty);
+            }
+
+            void Declare(Declaration declaration)
+            {
+                writer.Write($"{declaration.GetType().Name} - {declaration.Name}");
+
+                writer.Indent(() =>
+                {
+                    writer.WriteLine();
+                    switch (declaration)
+                    {
+                        case ImportDecl import:
+                            Import(writer, module.Scope, import);
+                            break;
+                        case InfixDecl infix:
+                            Infix(writer, module.Scope, infix);
+                            break;
+                        case TypeDecl type:
+                            Type(writer, module.Scope, type);
+                            break;
+                        case AliasDecl alias:
+                            Alias(writer, module.Scope, alias);
+                            break;
+                        case VarDecl varDecl:
+                            VarDecl(writer, module.Scope, varDecl);
+                            break;
+                        case TypeHint hint:
+                            TypeHint(writer, module.Scope, hint);
+                            break;
+                        default:
+                            Assert(false);
+                            throw new NotImplementedException();
+                            break;
+                    }
+                    writer.EndLine();
+                    writer.WriteLine();
+                });
             }
         }
 
@@ -178,6 +191,8 @@ namespace Fux.Building.Phases
                 case StringLiteral:
                 case CharLiteral:
                 case Unit:
+                    break;
+                case DotExpr: //TODO: what to do here?
                     break;
                 case IfExpr iff:
                     ScopeExpr(scope, iff.Condition);
@@ -395,11 +410,20 @@ namespace Fux.Building.Phases
                         yield return identifier;
                     }
                     break;
+                case RecordPattern recordPattern:
+                    foreach (var field in recordPattern.Fields)
+                    {
+                        foreach (var identifier in ExplodePattern(field.Pattern))
+                        {
+                            yield return identifier;
+                        }
+                    }
+                    break;
                 case Identifier identifier when identifier.IsMultiUpper:
                 case Wildcard:
                 case NumberLiteral:
                 case StringLiteral:
-                case RecordPattern:
+                case CharLiteral:
                 case Unit:
                     break;
                 default:

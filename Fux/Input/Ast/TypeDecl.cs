@@ -52,6 +52,11 @@ namespace Fux.Input.Ast
         {
         }
 
+        public Constructors(params Type.Constructor[] items)
+            : this(items.AsEnumerable())
+        {
+        }
+
         public override string ToString()
         {
             return string.Join(" | ", this);

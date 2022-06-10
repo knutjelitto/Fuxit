@@ -140,13 +140,11 @@
             }
         }
 
-        public class Number : Type
+        public abstract class Special : Type
         {
-            public Number(Identifier identifier)
+            protected Special(Identifier identifier)
             {
                 Identifier = identifier;
-
-                Assert(identifier.ToString() == "number");
             }
 
             public Identifier Identifier { get; }
@@ -159,6 +157,33 @@
             public override void PP(Writer writer)
             {
                 writer.Write(ToString());
+            }
+        }
+
+        public class Number : Special
+        {
+            public Number(Identifier identifier)
+                : base(identifier)
+            {
+                Assert(identifier.Text == "number");
+            }
+        }
+
+        public class Appendable : Special
+        {
+            public Appendable(Identifier identifier)
+                : base(identifier)
+            {
+                Assert(identifier.Text == "appendable");
+            }
+        }
+
+        public class Comparable : Special
+        {
+            public Comparable(Identifier identifier)
+                : base(identifier)
+            {
+                Assert(identifier.Text == "comparable");
             }
         }
 

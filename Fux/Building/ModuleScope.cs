@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable CS0162 // Unreachable code detected
+
 namespace Fux.Building
 {
     internal class ModuleScope : Scope
@@ -110,10 +112,29 @@ namespace Fux.Building
             return constructors.TryAdd(constructor.Name.SingleUpper(), constructor);
         }
 
+        public bool ImportAddModule(Identifier name, Module module)
+        {
+            return modules.TryAdd(name, module);
+        }
 
         public bool LookupImport(Identifier identifier, [MaybeNullWhen(false)] out ImportDecl import)
         {
             return imports.TryGetValue(identifier.MultiUpper(), out import);
+        }
+
+        public bool LookupImportAlias(Identifier alias, [MaybeNullWhen(false)] out ImportDecl import)
+        {
+            foreach (var maybe in imports.Values)
+            {
+                if (alias.Equals(maybe.Alias))
+                {
+                    import = maybe;
+                    return true;
+                }
+            }
+
+            import = null;
+            return false;
         }
 
         public bool LookupInfix(Identifier identifier, [MaybeNullWhen(false)] out InfixDecl infix)
@@ -179,31 +200,14 @@ namespace Fux.Building
                     return true;
                 }
             }
-            else if (identifier.IsQualified)
+            else if (identifier.IsMulti2Plus)
             {
                 var (importName, memberName) = identifier.SplitLast();
 
                 Assert(importName.IsMultiUpper);
-                Assert(memberName.IsSingleLower);
 
-                if (!LookupModule(importName, out var importModule))
+                foreach (var importModule in FindModules(importName))
                 {
-                    if (LookupImport(importName, out var import))
-                    {
-                        Assert(import.Module != null);
-                        importModule = import.Module;
-                    }
-                    else
-                    {
-                        Assert(false);
-                        throw new InvalidOperationException();
-                    }
-                }
-
-                if (true)
-                {
-                    //Assert(importName.ToString() == importModule.Name);
-
                     if (importModule.IsJs)
                     {
                         if (!importModule.Scope.LookupNative(memberName, out var native))
@@ -215,25 +219,48 @@ namespace Fux.Building
                         expr = native;
                         return true;
                     }
-                    else
+                    else if (importModule.Scope.Resolve(memberName, out var resolved))
                     {
-                        if (importModule.Scope.Resolve(memberName, out var resolved))
-                        {
-                            expr = resolved;
-                            return true;
-                        }
-                        Assert(false);
-                        throw new InvalidOperationException();
+                        expr = resolved;
+                        return true;
                     }
                 }
-                else
-                {
-                    Assert(false);
-                    throw new InvalidOperationException();
-                }
+
+                Assert(false);
+                throw new InvalidOperationException();
             }
 
             return base.Resolve(identifier, out expr);
+
+            IEnumerable<Module> FindModules(Identifier importName)
+            {
+                if (LookupModule(importName, out var importModule))
+                {
+                    yield return importModule;
+                }
+
+                if (LookupImport(importName, out var import))
+                {
+                    Assert(import.Module != null);
+
+                    yield return import.Module;
+                }
+
+                if (LookupImportAlias(importName, out import))
+                {
+                    Assert(import.Module != null);
+
+                    yield return import.Module;
+                }
+
+                foreach (var foreignImport in imports.Values)
+                {
+                    if (foreignImport.Module!.Scope.LookupModule(importName, out var foreign))
+                    {
+                        yield return foreign;
+                    }
+                }
+            }
         }
     }
 }

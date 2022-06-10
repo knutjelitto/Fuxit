@@ -37,6 +37,10 @@ namespace Fux.Input.Ast
                 {
                     tokens.Add(Token.Artifical(Lex.OperatorId, location, text));
                 }
+                else if (char.IsLower(text, 0))
+                {
+                    tokens.Add(Token.Artifical(Lex.LowerId, location, text));
+                }
                 else
                 {
                     Assert(false);
@@ -48,6 +52,8 @@ namespace Fux.Input.Ast
 
         public TypeHint? TypeHint { get; set; } = null;
 
+        public string Text => toString;
+
         public bool IsSingle(Lex lex) => Count == 1 && this[0].Lex == lex;
         public bool IsMulti(Lex lex) => this.All(t => t.Lex == lex);
 
@@ -55,6 +61,8 @@ namespace Fux.Input.Ast
         public bool IsSingleUpper => IsSingle(Lex.UpperId);
         public bool IsSingleOp => IsSingle(Lex.OperatorId);
         public bool IsMultiUpper => IsMulti(Lex.UpperId);
+
+        public bool IsMulti2Plus => Count >= 2;
 
         public bool IsQualified
         {

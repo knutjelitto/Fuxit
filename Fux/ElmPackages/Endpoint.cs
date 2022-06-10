@@ -39,17 +39,33 @@ namespace Fux.ElmPackages
 
         public static Endpoint Decode(ElmPackage reference, byte[] bytes)
         {
-            var content = bytes.GetRootElement();
+            // {"url":"https://github.com/elm/browser/zipball/1.0.2/","hash":"3e42bad1272885793ce153613e446f8425e29e32"}
 
-            Assert(content.ValueKind == JsonValueKind.Object);
+            try
+            {
+                var content = bytes.GetRootElement();
 
-            var properties = content.EnumerateObject().ToList();
+                Assert(content.ValueKind == JsonValueKind.Object);
 
-            Assert(properties.Count == 2);
-            Assert(properties[0].Name == "url" && properties[0].Value.ValueKind == JsonValueKind.String);
-            Assert(properties[1].Name == "hash" && properties[1].Value.ValueKind == JsonValueKind.String);
+                var properties = content.EnumerateObject().ToList();
 
-            return new Endpoint(reference, properties[0].Value.GetString()!, properties[1].Value.GetString()!);
+                Assert(properties.Count == 2);
+                Assert(properties[0].Name == "url" && properties[0].Value.ValueKind == JsonValueKind.String);
+                Assert(properties[1].Name == "hash" && properties[1].Value.ValueKind == JsonValueKind.String);
+
+                return new Endpoint(reference, properties[0].Value.GetString()!, properties[1].Value.GetString()!);
+            }
+            catch
+            {
+                // invalid json
+
+                var url = $"https://github.com/{reference.Name}/zipball/{reference.Version}/";
+
+                return new Endpoint(reference, url, "");
+
+                throw;
+            }
+
         }
 
         public static byte[] Download(ElmPackage reference)

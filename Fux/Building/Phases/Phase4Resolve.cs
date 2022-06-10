@@ -42,10 +42,6 @@ namespace Fux.Building.Phases
 
         private void Resolve(Module module, Declaration declaration)
         {
-            if (Collector.ResolveCount == 19)
-            {
-                Assert(true);
-            }
             switch (declaration)
             {
                 case ImportDecl:
@@ -97,6 +93,10 @@ namespace Fux.Building.Phases
 
         private void Resolve(Module module, TypeHint hint)
         {
+            if (hint.Name.Text == "append")
+            {
+                Assert(true);
+            }
             ResolveType(module.Scope, hint.Type);
         }
 
@@ -145,6 +145,8 @@ namespace Fux.Building.Phases
                     break;
                 case Type.Parameter:
                 case Type.Number:
+                case Type.Appendable:
+                case Type.Comparable:
                 case Type.Unit:
                     break;
                 default:
@@ -162,6 +164,8 @@ namespace Fux.Building.Phases
                 case CharLiteral:
                 case Unit:
                     break;
+                case DotExpr:
+                    break; //TODO: what to do here
                 case Identifier identifier:
                     {
                         if (scope.Resolve(identifier, out var expr))
@@ -256,6 +260,9 @@ namespace Fux.Building.Phases
                     throw new InvalidOperationException();
                 case SelectExpr select:
                     ResolveExpr(scope, select.Lhs);
+                    break;
+                case TypeHint typeHint:
+                    ResolveType(scope, typeHint.Type);
                     break;
                 default:
                     Assert(false);

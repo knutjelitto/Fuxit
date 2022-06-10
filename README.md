@@ -8,6 +8,9 @@ My functional programming language (currently more an [Elm](https://elm-lang.org
 
 [Elm](https://elm-lang.org/)
 
+[Refinement types for elm (thesis)](https://www3.risc.jku.at/publications/download/risc_6304/master-thesis.pdf)
+[(alt)](https://epub.jku.at/obvulihs/download/pdf/6196856?originalFilename=true)
+
 [C# HM](https://github.com/shff/csharp-hindley-milner)
 
 [Koka Book](https://koka-lang.github.io/koka/doc/book.html)

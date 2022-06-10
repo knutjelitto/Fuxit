@@ -1,6 +1,9 @@
 ﻿#pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
 
+using Fux.Input.Ast;
+using static Fux.Input.Ast.Type;
+
 namespace Fux.Building.Phases
 {
     internal class Phase2Expose : Phase
@@ -31,15 +34,22 @@ namespace Fux.Building.Phases
         private void MakeModule(Module module)
         {
             Collector.ExposeTime.Start();
-            MakeExpose(module);
+            Expose(module);
             Collector.ExposeTime.Stop();
         }
 
-        private void MakeExpose(Module module)
+        private void Expose(Module module)
         {
             var ast = module.Ast ?? throw new InvalidOperationException();
 
             var header = ast.Header;
+
+            if (Package.IsCore && module.Name == "List")
+            {
+                var exposing = FakeList.MakeExposing(module);
+
+                Exposing(module, exposing);
+            }
 
             if (header.Exposing != null)
             {
@@ -52,8 +62,8 @@ namespace Fux.Building.Phases
             switch (exposing)
             {
                 case ExposingAll:
-                    Assert(false);
-                    throw new InvalidOperationException();
+                    ExposeAll(module);
+                    break;
                 case ExposingSome some:
                     foreach (var item in some.Exposed)
                     {
@@ -63,6 +73,41 @@ namespace Fux.Building.Phases
                 default:
                     Assert(false);
                     throw new NotImplementedException();
+            }
+        }
+
+        private void ExposeAll(Module module)
+        {
+            foreach (var element in module.Ast!.Declarations)
+            {
+                switch (element)
+                {
+                    case TypeDecl type:
+                        var exposedType = new ExposedType(type.Name, true);
+                        foreach (var constructor in type.Constructors)
+                        {
+                            if (module.Scope.LookupConstructor(constructor.Name, out var ctor))
+                            {
+                                exposedType.Add(ctor);
+                            }
+                        }
+                        module.Exposed.Add(exposedType);
+                        break;
+                    case AliasDecl alias:
+                        var exposedAlias = new ExposedType(alias.Name, false);
+                        module.Exposed.Add(exposedAlias);
+                        break;
+                    case VarDecl var:
+                        var exposedVar = new ExposedVar(var.Name);
+                        module.Exposed.Add(exposedVar);
+                        break;
+                    case InfixDecl infix:
+                        var exposedInfix = new ExposedVar(infix.Name);
+                        module.Exposed.Add(exposedInfix);
+                        break;
+                    default:
+                        break; ;
+                }
             }
         }
 

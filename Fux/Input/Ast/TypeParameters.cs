@@ -7,6 +7,11 @@
         {
         }
 
+        public TypeParameters(params Identifier[] items)
+            : this(items.AsEnumerable())
+        {
+        }
+
         public override string ToString()
         {
             return String.Join(" ", this);

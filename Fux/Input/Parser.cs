@@ -395,7 +395,14 @@ namespace Fux.Input
             {
                 if (cursor.IsIdentifier())
                 {
-                    tokens.Add(cursor.Advance());
+                    var token = cursor.Advance();
+
+                    tokens.Add(token);
+
+                    if (token.Lex == Lex.LowerId || token.Lex == Lex.OperatorId)
+                    {
+                        break;
+                    }
                 }
                 else
                 {
@@ -477,6 +484,16 @@ namespace Fux.Input
                 if (name.ToString() == "number")
                 {
                     return new Type.Number(name);
+                }
+
+                if (name.ToString() == "appendable")
+                {
+                    return new Type.Appendable(name);
+                }
+
+                if (name.ToString() == "comparable")
+                {
+                    return new Type.Comparable(name);
                 }
 
                 return new Type.Parameter(name);
@@ -872,9 +889,21 @@ namespace Fux.Input
                 {
                     return Lambda(cursor);
                 }
+                else if (cursor.Is(Lex.Dot))
+                {
+                    return Dot(cursor);
+                }
 
                 throw Error.NotImplemented(cursor.At());
             }
+        }
+
+        private Expression Dot(TokensCursor cursor)
+        {
+            cursor.Swallow(Lex.Dot);
+            var expr = SingleIdentifier(cursor);
+
+            return new DotExpr(expr);
         }
 
         private Expression Wildcard(TokensCursor cursor)

@@ -40,8 +40,25 @@ namespace Fux.Building.Phases
             if (!Package.IsCore)
             {
                 Assert(Package.FindImport("Basics") != null);
-                Import(new ImportDecl(Identifier.Artificial(module, "Basics"), null,
+                Import(
+                    new ImportDecl(Identifier.Artificial(module, "Basics"), null,
                     new ExposingAll()));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "List"), null,
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "List"), false),
+                            new ExposedVar(Identifier.Artificial(module, "(::)")))));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Maybe"), null,
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "Maybe"), true))));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Result"), null,
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "Result"), true))));
                 Import(
                     new ImportDecl(
                         Identifier.Artificial(module, "String"), null,
@@ -49,10 +66,30 @@ namespace Fux.Building.Phases
                             new ExposedType(Identifier.Artificial(module, "String"), false))));
                 Import(
                     new ImportDecl(
-                        Identifier.Artificial(module, "List"), null,
+                        Identifier.Artificial(module, "Char"), null,
                         new ExposingSome(
-                            new ExposedType(Identifier.Artificial(module, "List"), false),
-                            new ExposedVar(Identifier.Artificial(module, "(::)")))));
+                            new ExposedType(Identifier.Artificial(module, "Char"), false))));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Tuple"), null, null));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Debug"), null, null));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Platform"), null,
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "Program"), false))));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Platform.Cmd"), Identifier.Artificial(module, "Cmd"),
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "Cmd"), false))));
+                Import(
+                    new ImportDecl(
+                        Identifier.Artificial(module, "Platform.Sub"), Identifier.Artificial(module, "Sub"),
+                        new ExposingSome(
+                            new ExposedType(Identifier.Artificial(module, "Sub"), false))));
             }
 
             Assert(module.Ast != null);
@@ -100,6 +137,10 @@ namespace Fux.Building.Phases
                                 {
                                     Expose(import, found, exposed is ExposedType type && type.Inclusive);
                                 }
+                                else if (import.Module.Name == "List" && exposed.Name.ToString() == "List")
+                                {
+                                    Assert(false);
+                                }
                                 else
                                 {
                                     Assert(false);
@@ -113,9 +154,9 @@ namespace Fux.Building.Phases
                     }
                 }
 
-                if (import.Alias != null || import.Exposing == null)
+                if (import.Alias != null || import.Exposing == null || true)
                 {
-                    module.Scope.AddModule(importName, import.Module);
+                    module.Scope.ImportAddModule(importName, import.Module);
                 }
             }
 

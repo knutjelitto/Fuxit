@@ -60,7 +60,7 @@
         public static Lex String = new("_string_", startsAtomic: true);
         public static Lex Char = new("_char_", startsAtomic: true);
 
-        public static Lex Dot = new(".");
+        public static Lex Dot = new(".", startsAtomic: true);
         public static Lex Colon = new(":");
         public static Lex Assign = new("=");
         public static Lex Comma = new(",");
