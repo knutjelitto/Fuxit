@@ -44,6 +44,13 @@ namespace Fux.Building.Phases
 
         private void MakeModule(Module module)
         {
+            Collector.ParseTime.Start();
+            ParseModule(module);
+            Collector.ParseTime.Stop();
+        }
+
+        private void ParseModule(Module module)
+        {
             if (module.IsJs)
             {
                 module.Parsed = true;
@@ -52,7 +59,7 @@ namespace Fux.Building.Phases
 
             var source = module.GetSource();
 
-            module.Ast = Make(source);
+            module.Ast = Parse(source);
             module.Parsed = true;
 
             DumpAst(module);
@@ -68,7 +75,9 @@ namespace Fux.Building.Phases
 
                 PrepareImported(module);
             }
+
         }
+
 
         private static void PrepareImported(Module module)
         {
@@ -80,7 +89,7 @@ namespace Fux.Building.Phases
             }
         }
 
-        public ModuleAst? Make(Source source)
+        public ModuleAst? Parse(Source source)
         {
             var lexer = new Lexer(Errors, source);
             var liner = new Liner(Errors, lexer);
@@ -95,9 +104,7 @@ namespace Fux.Building.Phases
                     return null;
                 }
 
-                Collector.ParseTime.Start();
                 var ast = parser.Module();
-                Collector.ParseTime.Stop();
 
                 return ast;
             }

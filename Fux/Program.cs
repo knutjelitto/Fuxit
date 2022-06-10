@@ -20,6 +20,9 @@ namespace Fux
             {
                 Test();
 
+                //Console.Write("\u001B[32m"); // green
+                Console.Write("\u001B[1m"); // bold
+
                 var builder = new Builder();
 
                 if (false)
@@ -103,7 +106,7 @@ namespace Fux
 
             foreach (var source in Tester.All())
             {
-                parse.Make(source);
+                parse.Parse(source);
             }
         }
     }
