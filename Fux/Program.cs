@@ -35,7 +35,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/html"));
                     builder.Load(ElmPackage.Latest("elm/http"));
                     builder.Load(ElmPackage.Latest("elm/json"));
-                    builder.Load(ElmPackage.Latest("elm/parser")); //TODO: didn't get scoping of (|.) (|=)
+                    builder.Load(ElmPackage.Latest("elm/parser")); //TODO: didn't get it with scoping of (|.) (|=)
                     builder.Load(ElmPackage.Latest("elm/project-metadata-utils"));
                     builder.Load(ElmPackage.Latest("elm/random"));
                     builder.Load(ElmPackage.Latest("elm/regex"));
@@ -43,13 +43,15 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
-                    //TODO: resolve-error //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
+                    //TODO: resolve-error
+                    //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
                     builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
                     builder.Load(ElmPackage.Latest("elm-explorations/test"));
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
 
-                    //TODO: resolve-error //builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
+                    builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
+
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-iso8601-date-strings"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-hex"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-validate"));
@@ -68,8 +70,8 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-community/array-extra"));
                     builder.Load(ElmPackage.Latest("elm-community/basics-extra"));
 
-                    //TODO: resolve-error //builder.Load(ElmPackage.Latest("elm-community/typed-svg"));
-                    //TODO: resolve-error //builder.Load(ElmPackage.Latest("elm-community/graph"));
+                    builder.Load(ElmPackage.Latest("elm-community/typed-svg"));
+                    builder.Load(ElmPackage.Latest("elm-community/graph"));
                     builder.Load(ElmPackage.Latest("elm-community/easing-functions"));
                     builder.Load(ElmPackage.Latest("elm-community/intdict"));
                     builder.Load(ElmPackage.Latest("elm-community/undo-redo"));
@@ -103,15 +105,6 @@ namespace Fux
             {
                 parse.Make(source);
             }
-#if false
-            var x = Catalog.Instance.Where(p => p.Name.StartsWith("elm/")).Select(p => p.Name).Distinct();
-            foreach (var package in x)
-            {
-                Console.WriteLine($"{package}");
-                builder.Build(ElmPackage.Latest(package));
-            }
-#endif
-
         }
     }
 }

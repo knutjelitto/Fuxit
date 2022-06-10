@@ -174,7 +174,8 @@ namespace Fux.Building.Phases
                             break;
                         }
                         Assert(false);
-                        throw new NotImplementedException();
+                        //throw new NotImplementedException();
+                        break;
                     }
                 case IfExpr iff:
                     ResolveExpr(scope, iff.Condition);

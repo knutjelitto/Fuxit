@@ -278,7 +278,7 @@ namespace Fux.Building.Phases
                             Assert(hints.Count <= 1);
 
                             var.Scope.Parent = let.Scope;
-                            let.Scope = var.Scope;
+                            //let.Scope = var.Scope;
 
                             foreach (var parameter in var.Parameters)
                             {
@@ -303,7 +303,7 @@ namespace Fux.Building.Phases
                         {
                             Assert(hints.Count <= 1);
                             assign.Scope.Parent = let.Scope;
-                            let.Scope = assign.Scope;
+                            //let.Scope = assign.Scope;
 
                             var explode = ExplodePattern(assign.Pattern).ToList(); ;
 
@@ -313,12 +313,12 @@ namespace Fux.Building.Phases
 
                                 if (hints.Count == 1)
                                 {
-                                    assign.Scope.Add(identifier, hints);
+                                    let.Scope.Add(identifier, hints);
                                     Assert(hints.Count == 0);
                                 }
                                 else
                                 {
-                                    assign.Scope.Add(identifier, hints);
+                                    let.Scope.Add(identifier, hints);
                                 }
 
                             }
@@ -326,7 +326,7 @@ namespace Fux.Building.Phases
                             {
                                 foreach (var identifier in ExplodePattern(assign.Pattern))
                                 {
-                                    assign.Scope.Add(identifier);
+                                    let.Scope.Add(identifier);
                                 }
                             }
                             ScopeExpr(assign.Scope, assign.Expression);
