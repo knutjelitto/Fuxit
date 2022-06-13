@@ -4,27 +4,38 @@ namespace Fux.Input
 {
     internal class Tokens : IReadOnlyList<Token>
     {
-        private readonly List<Token> tokens = new();
-
-        public Tokens(List<Token> underlying)
+        public Tokens(TokenList tokens, int start, int next)
         {
+            Toks = tokens;
+            Start = start;
+            Next = next;
         }
 
         public Tokens Add(Token token)
         {
-            tokens.Add(token);
+            Next += 1;
 
             return this;
         }
 
-        public Token this[int index] => tokens[index];
-        public int Count => tokens.Count;
-        public IEnumerator<Token> GetEnumerator() => tokens.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)tokens).GetEnumerator();
+        public TokenList Toks { get; }
+        public int Start { get; }
+        public int Next { get; private set; }
+
+        public Token this[int index] => Toks[Start + index];
+        public int Count => Next - Start;
+        public IEnumerator<Token> GetEnumerator()
+        {
+            for (var index = Start; index < Next; ++index)
+            {
+                yield return Toks[index];
+            }
+        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override string ToString()
         {
-            return string.Join(" ", tokens);
+            return string.Join(" ", this);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Fux.Input
         {
             Assert(Current.First);
 
-            var subs = new Tokens();
+            var subs = new Tokens(Tokens.Toks, Current.Index, Current.Index);
 
             var indent = Current.Indent;
 
@@ -54,7 +54,7 @@ namespace Fux.Input
                 }
             }
 
-            Assert(subs.Last().Last);
+            Assert(subs[^1].Last);
 
             while (More() && Current.Indent > indent)
             {

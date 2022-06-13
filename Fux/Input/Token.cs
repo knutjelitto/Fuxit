@@ -5,7 +5,7 @@
     {
         private readonly string? artifical = null;
 
-        private Whites whitesBefore = new();
+        private Whites? whitesBefore = null;
 
         public Token(Lex lex, ILocation location)
         {

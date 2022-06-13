@@ -9,11 +9,6 @@ namespace Fux.Input.Ast
         {
             Alias = alias;
             Exposing = exposing;
-
-            if (name.ToString() == "Elm.Kernel.Basics")
-            {
-                Assert(true);
-            }
         }
 
         public Exposing? Exposing { get; }
@@ -23,9 +18,9 @@ namespace Fux.Input.Ast
         public override string ToString()
         {
             var alias = Alias == null ? "" : $" as {Alias}";
-            var exposinf = Exposing == null ? "" : $" {Exposing}";
+            var exposing = Exposing == null ? "" : $" {Exposing}";
 
-            return $"import {Name}{alias}{exposinf}";
+            return $"import {Name}{alias}{exposing}";
         }
 
         public override void PP(Writer writer)

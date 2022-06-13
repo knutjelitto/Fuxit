@@ -433,9 +433,7 @@ namespace Fux.Building.Phases
 
             if (pattern.Alias != null)
             {
-                Assert(pattern.Alias.IsSingleLower);
-
-                yield return pattern.Alias;
+                yield return pattern.Alias.SingleLower();
             }
         }
 

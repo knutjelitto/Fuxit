@@ -2,7 +2,7 @@
 {
     internal class Liner
     {
-        private Token? current = null;
+        private int current = 0;
 
         private TokenList tokens = new();
 
@@ -11,92 +11,88 @@
             Errors = errors;
             Lexer = lexer;
             Error = new ParserErrors(errors);
+            CreateTokenList();
         }
 
         public ErrorBag Errors { get; }
         public Lexer Lexer { get; }
-
         public ParserErrors Error { get; }
 
         public Tokens GetLine()
         {
-            if (Current.EOF)
+            if (current == tokens.Count - 1)
             {
-                Assert(this.tokens.Last().Lex == Lex.EOF);
-                return new Tokens().Add(Current);
+                Assert(tokens[current].Lex == Lex.EOF);
+                return new Tokens(tokens, current, current + 1);
             }
 
-            var tokens = new Tokens();
-
-            return ParseLine(0, tokens);
+            return ParseLine(0);
         }
 
-        private Token Current
+        private int Consume(int indent)
         {
-            get
+            tokens[current++].Indent = indent;
+
+            return current;
+        }
+
+        private Tokens ParseLine(int indent)
+        {
+            var starter = current;
+
+            tokens[current].First = true;
+
+            while (current < tokens.Count && !tokens[current].EOF && tokens[current].Line == tokens[starter].Line)
             {
-                if (current == null)
-                {
-                    current = CreateNextToken();
-                }
-                return current;
-            }
-        }
-
-        private Token Consume(int indent)
-        {
-            var token = Current;
-
-            token.Indent = indent;
-
-            current = null;
-
-            return token;
-        }
-
-        private Tokens ParseLine(int indent, Tokens tokens)
-        {
-            var starter = Current;
-
-            Current.First = true;
-
-            while (!Current.EOF && Current.Line == starter.Line)
-            {
-                tokens.Add(Consume(indent));
+                current = Consume(indent);
             }
 
-            tokens.Last().Last = true;
+            tokens[current - 1].Last = true;
 
-            if (!Current.EOF && Current.Column > starter.Column)
+            if (current < tokens.Count && !tokens[current].EOF && tokens[current].Column > tokens[starter].Column)
             {
                 indent = indent + 1;
 
-                _ = ParseLine(indent, tokens);
+                _ = ParseLine(indent);
 
-                while (!Current.EOF && Current.Column > starter.Column)
+                while (current < tokens.Count && !tokens[current].EOF && tokens[current].Column > tokens[starter].Column)
                 {
-                    _ = ParseLine(indent, tokens);
+                    _ = ParseLine(indent);
                 }
             }
 
-            Assert(tokens.Count > 0);
+            Assert(current > starter);
 
-            return tokens;
+            return new Tokens(tokens, starter, current);
         }
 
-        private Token CreateNextToken()
+        private void CreateTokenList()
         {
-            var whites = new Whites();
-            var current = tokens.Add(Lexer.GetNext());
+            var current = Lexer.GetNext();
 
-            while (!current.EOF && current.White)
+            while (true)
             {
-                whites.Add(current);
+                var whites = new Whites();
 
-                current = tokens.Add(Lexer.GetNext());
+                while (current.White)
+                {
+                    whites.Add(current);
+
+                    current = Lexer.GetNext();
+                }
+
+                current.TransferWhites(whites);
+
+                tokens.Add(current);
+
+                Assert(current.Index == tokens.Count - 1);
+
+                if (current.Lex == Lex.EOF)
+                {
+                    break;
+                }
+                current = Lexer.GetNext();                    
             }
-
-            return current.TransferWhites(whites);
         }
     }
 }

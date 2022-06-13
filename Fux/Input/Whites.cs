@@ -1,35 +1,10 @@
 ﻿namespace Fux.Input
 {
-    internal class Whites
+    internal class Whites : List<Token>
     {
-        private readonly List<Token> whites = new();
-        private bool transparent = true;
-
-        public void Add(Token white)
-        {
-            Assert(white.White);
-
-            if (white.Lex == Lex.BlockComment || white.Lex == Lex.LineComment)
-            {
-                transparent = false;
-            }
-            else if (white.Lex == Lex.Newline)
-            {
-                transparent = true;
-            }
-            else
-            {
-                transparent = transparent && white.Lex == Lex.Space;
-            }
-
-            whites.Add(white);
-        }
-
-        public bool IsTransparent => transparent;
-
         public override string ToString()
         {
-            return string.Join("", whites);
+            return string.Join("", this);
         }
     }
 }

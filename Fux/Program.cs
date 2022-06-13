@@ -53,6 +53,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-explorations/test"));
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
 
+#if false
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
 
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-iso8601-date-strings"));
@@ -79,6 +80,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-community/intdict"));
                     builder.Load(ElmPackage.Latest("elm-community/undo-redo"));
                     builder.Load(ElmPackage.Latest("elm-community/list-split"));
+#endif
                 }
 
                 builder.Build();
