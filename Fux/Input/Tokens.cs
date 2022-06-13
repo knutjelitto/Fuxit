@@ -11,7 +11,7 @@ namespace Fux.Input
             Next = next;
         }
 
-        public Tokens Add(Token token)
+        public Tokens Add()
         {
             Next += 1;
 

@@ -2,6 +2,11 @@
 {
     internal abstract class Type : Expression
     {
+        public override void PP(Writer writer)
+        {
+            writer.Write($"{this}");
+        }
+
         public class Concrete : Type
         {
             public Concrete(Identifier name)
@@ -16,11 +21,6 @@
             public override string ToString()
             {
                 return $"{Name}";
-            }
-
-            public override void PP(Writer writer)
-            {
-                throw new NotImplementedException();
             }
         }
             
@@ -44,11 +44,6 @@
             {
                 return $"{Name}";
             }
-
-            public override void PP(Writer writer)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         public class Function : Type
@@ -65,11 +60,6 @@
             public override string ToString()
             {
                 return Protected($"{Lhs} -> {Rhs}");
-            }
-
-            public override void PP(Writer writer)
-            {
-                writer.Write($"{ToString()}");
             }
         }
 
@@ -88,11 +78,6 @@
             {
                 return $"({string.Join(", ", Types)})";
             }
-
-            public override void PP(Writer writer)
-            {
-                writer.Write(ToString());
-            }
         }
 
         public class Unit : Type
@@ -105,14 +90,9 @@
             {
                 return $"()";
             }
-
-            public override void PP(Writer writer)
-            {
-                throw new NotImplementedException();
-            }
         }
 
-        internal class Constructor : Type
+        public class Constructor : Type
         {
             public Constructor(Identifier name, TypeArguments arguments)
             {
@@ -133,11 +113,6 @@
                 }
                 return Protected($"{Name} {Arguments}");
             }
-
-            public override void PP(Writer writer)
-            {
-                writer.Write(ToString());
-            }
         }
 
         public abstract class Special : Type
@@ -152,11 +127,6 @@
             public override string ToString()
             {
                 return Identifier.ToString();
-            }
-
-            public override void PP(Writer writer)
-            {
-                writer.Write(ToString());
             }
         }
 
@@ -187,5 +157,44 @@
             }
         }
 
+        internal class Record : Type
+        {
+            public Record(Type? baseRecord, IEnumerable<FieldDefine> fields)
+            {
+                BaseRecord = baseRecord;
+                Fields = fields.ToArray();
+            }
+
+            public Type? BaseRecord { get; }
+
+            public IReadOnlyList<FieldDefine> Fields { get; }
+
+            public override string ToString()
+            {
+                var joined = string.Join(", ", Fields);
+                return $"{Lex.LBrace} {joined} {Lex.RBrace}";
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write($"{Lex.LBrace} ");
+                var more = false;
+                foreach (var field in Fields)
+                {
+                    if (more)
+                    {
+                        writer.WriteLine();
+                        writer.Write($"{Lex.Comma} ");
+                    }
+                    more = true;
+                    field.PP(writer);
+                }
+                if (writer.LinePending)
+                {
+                    writer.WriteLine();
+                }
+                writer.WriteLine($"{Lex.RBrace}");
+            }
+        }
     }
 }

@@ -5,12 +5,9 @@ namespace Fux.Building.Phases
 {
     internal class Phase3Import : Phase
     {
-        public Collector Collector { get; }
-
-        public Phase3Import(ErrorBag errors, Collector collector, Package package)
+        public Phase3Import(ErrorBag errors, Package package)
             : base("import", errors, package)
         {
-            Collector = collector;
         }
 
         public override void Make()

@@ -10,13 +10,11 @@
         {
             Errors = errors;
             Lexer = lexer;
-            Error = new ParserErrors(errors);
             CreateTokenList();
         }
 
         public ErrorBag Errors { get; }
         public Lexer Lexer { get; }
-        public ParserErrors Error { get; }
 
         public Tokens GetLine()
         {

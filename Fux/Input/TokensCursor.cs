@@ -34,6 +34,18 @@ namespace Fux.Input
             }
         }
 
+        public T Scope<T>(Func<TokensCursor, T> parser)
+            where T : Expression
+        {
+            var start = Tokens.Start + Offset;
+            var expression = parser(this);
+            var next = Tokens.Start + Offset;
+
+            expression.Span = new Tokens(Tokens.Toks, start, next);
+
+            return expression;
+        }
+
         public TokensCursor Sub()
         {
             Assert(Current.First);
@@ -46,7 +58,9 @@ namespace Fux.Input
             {
                 var current = Current;
 
-                subs.Add(Advance());
+                subs.Add();
+
+                Advance();
 
                 if (current.Last)
                 {
@@ -58,7 +72,8 @@ namespace Fux.Input
 
             while (More() && Current.Indent > indent)
             {
-                subs.Add(Advance());
+                subs.Add();
+                Advance();
             }
 
             return new TokensCursor(Error, subs);

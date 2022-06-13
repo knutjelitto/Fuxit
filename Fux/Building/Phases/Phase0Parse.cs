@@ -4,12 +4,9 @@ namespace Fux.Building.Phases
 {
     internal class Phase0Parse : Phase
     {
-        public Collector Collector { get; }
-
-        public Phase0Parse(ErrorBag errors, Collector collector, Package package)
+        public Phase0Parse(ErrorBag errors, Package package)
             : base("parse", errors, package)
         {
-            Collector = collector;
         }
 
         public override void Make()

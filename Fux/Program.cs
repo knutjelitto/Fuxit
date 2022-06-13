@@ -25,6 +25,9 @@ namespace Fux
 
                 var builder = new Builder();
 
+                var whole = new Stopwatch();
+                whole.Start();
+
                 if (false)
                 {
                     builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
@@ -84,6 +87,10 @@ namespace Fux
                 }
 
                 builder.Build();
+
+                whole.Stop();
+
+                Console.Write($"[{whole.ElapsedMilliseconds} ms] ");
             }
             catch (DiagnosticException diagnostics)
             {
@@ -102,9 +109,8 @@ namespace Fux
         private static void Test()
         {
             var builder = new Builder();
-            var collector = new Phases.Collector();
 
-            var parse = new Phases.Phase0Parse(builder.Errors, collector, new Package(new ElmPackage("test", new SemVersion(0))));
+            var parse = new Phases.Phase0Parse(builder.Errors, new Package(new ElmPackage("test", new SemVersion(0))));
 
             foreach (var source in Tester.All())
             {

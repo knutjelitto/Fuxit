@@ -8,12 +8,9 @@ namespace Fux.Building.Phases
 {
     internal class Phase2Expose : Phase
     {
-        public Collector Collector { get; }
-
-        public Phase2Expose(ErrorBag errors, Collector collector, Package package)
+        public Phase2Expose(ErrorBag errors, Package package)
             : base("expose", errors, package)
         {
-            Collector = collector;
         }
 
         public override void Make()

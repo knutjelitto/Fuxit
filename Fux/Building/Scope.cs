@@ -67,6 +67,5 @@ namespace Fux.Building
             expr = null;
             return false;
         }
-
     }
 }

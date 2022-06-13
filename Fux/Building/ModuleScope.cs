@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+using Fux.Building.Phases;
+
 #pragma warning disable CS0162 // Unreachable code detected
 
 namespace Fux.Building
@@ -212,7 +214,9 @@ namespace Fux.Building
                     {
                         if (!importModule.Scope.LookupNative(memberName, out var native))
                         {
-                            native = new NativeDecl(memberName);
+                            Assert(importName.Text.StartsWith("Elm.Kernel."));
+                            native = new NativeDecl(importName, memberName);
+                            Collector.Instance.NativeDecl.Add(native);
                             importModule.Scope.AddNative(native);
                         }
 

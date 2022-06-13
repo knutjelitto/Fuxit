@@ -16,6 +16,8 @@ namespace Fux.Building.Phases
             Package = package;
         }
 
+        public Collector Collector => Collector.Instance;
+
 
         public string Name { get; }
         public ErrorBag Errors { get; }

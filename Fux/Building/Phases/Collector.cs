@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Building.Phases
+﻿namespace Fux.Building.Phases
 {
     internal class Collector
     {
-        public int ResolveCount { get; set; } = 0;
+        public static readonly Collector Instance = new();
+
+        private Collector() { }
 
         public List<ModuleDecl> Module { get; } = new();
         public List<ImportDecl> Import { get; } = new();
@@ -17,6 +13,7 @@ namespace Fux.Building.Phases
         public List<InfixDecl> Infix { get; } = new();
         public List<VarDecl> VarDecl { get; } = new();
         public List<TypeHint> TypeHint { get; } = new();
+        public List<NativeDecl> NativeDecl { get; } = new();
 
         public Stopwatch ParseTime { get; } = new();
         public Stopwatch DeclareTime { get; } = new();
@@ -33,6 +30,7 @@ namespace Fux.Building.Phases
             Write("all-infix.text", Infix);
             Write("all-var.text", VarDecl);
             Write("all-hint.text", TypeHint);
+            Write("all-native.text", NativeDecl);
 
             void Write<T>(string name, IEnumerable<T> expressions)
                 where T : Declaration

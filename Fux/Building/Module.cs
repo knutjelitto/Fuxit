@@ -14,7 +14,6 @@ namespace Fux.Building
             var ext = js ? "js" : "elm";
             NickName = Package.FullName + "/" + pathName;
             FileName = $"src/{pathName}.{ext}";
-            FullFileName = Folder.Combine(Package.RootPath, FileName);
 
             Scope = new ModuleScope(this);
         }
@@ -25,7 +24,6 @@ namespace Fux.Building
         public bool IsElm => !IsJs;
         public string NickName { get; }
         public string FileName { get; }
-        public string FullFileName { get; }
 
         public bool Parsed { get; set; } = false;
         public ModuleAst? Ast { get; set; } = null;
@@ -35,7 +33,9 @@ namespace Fux.Building
         
         public Source GetSource()
         {
-            return new StringSource(NickName, FullFileName, File.ReadAllText(FullFileName, Encoding.UTF8));
+            var fullFileName = Folder.Combine(Package.RootPath, FileName);
+
+            return new StringSource(NickName, fullFileName, File.ReadAllText(fullFileName, Encoding.UTF8));
         }
 
         public override string ToString() => Name;

@@ -6,17 +6,18 @@
             : base(op)
         {
             Assoc = assoc;
-            Power = power;
+            Precedence = power;
             Expression = expression;
         }
 
         public InfixAssoc Assoc { get; }
-        public InfixPower Power { get; }
+        public InfixPower Precedence { get; }
         public Identifier Expression { get; }
+        public int Power => Precedence.Value;
 
         public override string ToString()
         {
-            return $"infix {Assoc} {Power} {Name} = {Expression}";
+            return $"infix {Assoc} {Precedence} {Name} = {Expression}";
         }
 
         public override void PP(Writer writer)

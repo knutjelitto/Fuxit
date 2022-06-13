@@ -1,16 +1,14 @@
-﻿#pragma warning disable CA1822 // Mark members as static
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
 
 namespace Fux.Building.Phases
 {
     internal class Phase4Resolve : Phase
     {
-        public Collector Collector { get; }
-
-        public Phase4Resolve(ErrorBag errors, Collector collector, Package package)
+        public Phase4Resolve(ErrorBag errors, Package package)
             : base("resolve", errors, package)
         {
-            Collector = collector;
         }
 
         public override void Make()
@@ -65,8 +63,6 @@ namespace Fux.Building.Phases
                     Assert(false);
                     throw new InvalidOperationException();
             }
-            
-            Collector.ResolveCount += 1;
         }
 
         private void Resolve(Module module, InfixDecl infix)
@@ -77,6 +73,11 @@ namespace Fux.Building.Phases
         private void Resolve(Module module, VarDecl var)
         {
             ResolveExpr(var.Scope, var.Expression);
+
+            if (var.Expression.Resolved is NativeDecl native)
+            {
+                native.TypeHint = var.Name.TypeHint;
+            }
         }
 
         private void Resolve(Module module, TypeDecl type)
@@ -127,7 +128,7 @@ namespace Fux.Building.Phases
                         ResolveType(scope, item);
                     }
                     break;
-                case RecordDecl record:
+                case Type.Record record:
                     if (record.BaseRecord != null)
                     {
                         ResolveType(scope, record.BaseRecord);
@@ -163,19 +164,17 @@ namespace Fux.Building.Phases
                 case StringLiteral:
                 case CharLiteral:
                 case Unit:
-                    break;
                 case DotExpr:
                     break; //TODO: what to do here
                 case Identifier identifier:
                     {
                         if (scope.Resolve(identifier, out var expr))
                         {
-                            Assert(true);
+                            expression.Resolved = expr;
                             break;
                         }
                         Assert(false);
-                        //throw new NotImplementedException();
-                        break;
+                        throw new NotImplementedException();
                     }
                 case IfExpr iff:
                     ResolveExpr(scope, iff.Condition);
@@ -246,19 +245,9 @@ namespace Fux.Building.Phases
                     //ResolveExpr(scope, prefix.Op);
                     ResolveExpr(scope, prefix.Rhs);
                     break;
-                case InfixExpr infix:
-                    ResolveExpr(scope, infix.Op);
-                    ResolveExpr(scope, infix.Lhs);
-                    ResolveExpr(scope, infix.Rhs);
+                case OpChain chain:
+                    ResolveInfix(scope, chain);
                     break;
-                case OperatorSymbol operatorSymbol:
-                    if (scope.Resolve(operatorSymbol.Name, out _))
-                    {
-                        Assert(true);
-                        break;
-                    }
-                    Assert(false);
-                    throw new InvalidOperationException();
                 case SelectExpr select:
                     ResolveExpr(scope, select.Lhs);
                     break;
@@ -269,6 +258,35 @@ namespace Fux.Building.Phases
                     Assert(false);
                     throw new NotImplementedException();
             }
+        }
+
+        private void ResolveInfix(Scope scope, OpChain chain)
+        {
+            Assert(chain.Rest.Count > 0);
+
+            ResolveExpr(scope, chain.First);
+
+            foreach (var opExpr in chain.Rest)
+            {
+                if (scope.Resolve(opExpr.Op.Name, out var resolved))
+                {
+                    if (resolved is InfixDecl op)
+                    {
+                        opExpr.Op.Resolved = op;
+
+                        ResolveExpr(scope, opExpr.Expression);
+                    }
+                    else
+                    {
+                        Assert(false);
+                        throw new NotImplementedException();
+                    }
+                }
+            }
+
+            var infix = chain.Resolve();
+
+            chain.Resolved = infix;
         }
     }
 }

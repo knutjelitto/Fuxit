@@ -31,30 +31,28 @@ namespace Fux.Building
 
         public void Build()
         {
-            var collector = new Collector();
-
             const int width = -8;
 
             var prefix = $"{"parse__",width}";
-            Build(prefix, package => new Phase0Parse(Errors, collector, package));
+            Build(prefix, package => new Phase0Parse(Errors, package));
             prefix = $"{prefix}{"declare",width}";
-            Build(prefix, package => new Phase1Declare(Errors, collector, package));
+            Build(prefix, package => new Phase1Declare(Errors, package));
             prefix = $"{prefix}{"expose_",width}";
-            Build(prefix, package => new Phase2Expose(Errors, collector, package));
+            Build(prefix, package => new Phase2Expose(Errors, package));
             prefix = $"{prefix}{"import_",width}";
-            Build(prefix, package => new Phase3Import(Errors, collector, package));
+            Build(prefix, package => new Phase3Import(Errors, package));
             prefix = $"{prefix}{"resolve",width}";
-            Build(prefix, package => new Phase4Resolve(Errors, collector, package));
+            Build(prefix, package => new Phase4Resolve(Errors, package));
 
             Console.Write($"{"",50}");
-            Console.Write($"{$"{collector.ParseTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{collector.DeclareTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{collector.ExposeTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{collector.ImportTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{collector.ResolveTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{Collector.Instance.ParseTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{Collector.Instance.DeclareTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{Collector.Instance.ExposeTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{Collector.Instance.ImportTime.ElapsedMilliseconds} ms",width}");
+            Console.Write($"{$"{Collector.Instance.ResolveTime.ElapsedMilliseconds} ms",width}");
             Console.WriteLine();
 
-            collector.Write();
+            Collector.Instance.Write();
         }
 
         private void Build(string prefix, Func<Package, Phase> phase)

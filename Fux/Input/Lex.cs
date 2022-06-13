@@ -95,6 +95,7 @@
             public const string Exposing = "exposing";
             public const string Effect = "effect";
             public const string Port = "port";
+            public const string Where = "where";
             public const string ExposeAll = "(..)";
         }
 

@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input.Ast
+﻿namespace Fux.Input.Ast
 {
     internal class NativeDecl : Declaration
     {
-        public NativeDecl(Identifier name)
+        public NativeDecl(Identifier moduleName, Identifier name)
             : base(name)
         {
+            ModuleName = moduleName;
         }
+
+        public TypeHint? TypeHint { get; set; } = null;
+        public Identifier ModuleName { get; }
 
         public override void PP(Writer writer)
         {
-            throw new NotImplementedException();
+            writer.Write($"{ModuleName}.{Name} : {TypeHint?.Type}");
         }
     }
 }

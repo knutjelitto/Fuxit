@@ -8,12 +8,9 @@ namespace Fux.Building.Phases
 {
     internal class Phase1Declare : Phase
     {
-        public Collector Collector { get; }
-
-        public Phase1Declare(ErrorBag errors, Collector collector, Package package)
+        public Phase1Declare(ErrorBag errors, Package package)
             : base("declare", errors, package)
         {
-            Collector = collector;
         }
 
         public override void Make()
@@ -241,6 +238,13 @@ namespace Fux.Building.Phases
                     ScopeExpr(scope, infix.Lhs);
                     ScopeExpr(scope, infix.Rhs);
                     break;
+                case OpChain opChain:
+                    ScopeExpr(scope, opChain.First);
+                    foreach (var rest in opChain.Rest)
+                    {
+                        ScopeExpr(scope, rest.Expression);
+                    }
+                    break;
                 case LetExpr let:
                     let.Scope.Parent = scope;
                     ScopeLet(let);
@@ -397,6 +401,19 @@ namespace Fux.Building.Phases
                             {
                                 yield return identifier;
                             }
+                        }
+                    }
+                    break;
+                case OpChain opChain:
+                    foreach (var identifier in ExplodePattern(opChain.First))
+                    {
+                        yield return identifier;
+                    }
+                    foreach (var rest in opChain.Rest)
+                    {
+                        foreach (var identifier in ExplodePattern(rest.Expression))
+                        {
+                            yield return identifier;
                         }
                     }
                     break;

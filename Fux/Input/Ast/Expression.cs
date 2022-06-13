@@ -4,7 +4,15 @@
     {
         protected const int WhatIsLong = 60;
 
+        protected Expression()
+        {
+            Resolved = this;
+        }
+
         public Identifier? Alias { get; set; }
+
+        public Tokens? Span { get; set; } = null;
+        public Expression Resolved { get; set; }
 
         public abstract void PP(Writer writer);
 
