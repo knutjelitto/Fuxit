@@ -24,8 +24,8 @@ namespace Fux.ElmPackages
 
         public bool Match(SemVersion version)
         {
-            bool min = InclMin ? Min <= version : Min < version;
-            bool max = InclMax ? version <= Max : version < Max;
+            bool min = InclMin ? Min.ComparePrecedenceTo(version) <= 0 : Min.ComparePrecedenceTo(version) < 0;
+            bool max = InclMax ? version.ComparePrecedenceTo(Max) <= 0 : version.ComparePrecedenceTo(Max) < 0;
 
             return min && max;
         }

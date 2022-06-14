@@ -33,6 +33,8 @@ namespace Fux.Building
         {
             const int width = -8;
 
+            Terminal.ClearHome();
+
             var prefix = $"{"parse__",width}";
             Build(prefix, package => new Phase0Parse(Errors, package));
             prefix = $"{prefix}{"declare",width}";
@@ -44,20 +46,20 @@ namespace Fux.Building
             prefix = $"{prefix}{"resolve",width}";
             Build(prefix, package => new Phase4Resolve(Errors, package));
 
-            Console.Write($"{"",50}");
-            Console.Write($"{$"{Collector.Instance.ParseTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{Collector.Instance.DeclareTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{Collector.Instance.ExposeTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{Collector.Instance.ImportTime.ElapsedMilliseconds} ms",width}");
-            Console.Write($"{$"{Collector.Instance.ResolveTime.ElapsedMilliseconds} ms",width}");
-            Console.WriteLine();
+            Terminal.Write($"{"",50}");
+            Terminal.Write($"{$"{Collector.Instance.ParseTime.ElapsedMilliseconds} ms",width}");
+            Terminal.Write($"{$"{Collector.Instance.DeclareTime.ElapsedMilliseconds} ms",width}");
+            Terminal.Write($"{$"{Collector.Instance.ExposeTime.ElapsedMilliseconds} ms",width}");
+            Terminal.Write($"{$"{Collector.Instance.ImportTime.ElapsedMilliseconds} ms",width}");
+            Terminal.Write($"{$"{Collector.Instance.ResolveTime.ElapsedMilliseconds} ms",width}");
+            Terminal.WriteLine();
 
             Collector.Instance.Write();
         }
 
         private void Build(string prefix, Func<Package, Phase> phase)
         {
-            Console.SetCursorPosition(0, 0);
+            Terminal.GoHome();
             foreach (var package in loaded)
             {
                 var p = phase(package);
@@ -67,11 +69,12 @@ namespace Fux.Building
 
         private void Build(string prefix, Package package, Phase phase)
         {
-            Console.Write($"building {phase.Package,-40} {prefix}");
+            Terminal.ClearToEol();
+            Terminal.Write($"building {phase.Package,-40} {prefix}");
 
-            Console.Write($"[");
+            Terminal.Write($"[");
             phase.Make();
-            Console.WriteLine("]");
+            Terminal.WriteLine("]");
         }
     }
 }

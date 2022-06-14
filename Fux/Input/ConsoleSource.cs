@@ -21,7 +21,7 @@
         {
             if (lineOffset > line.Length)
             {
-                Console.Write("fux> ");
+                Terminal.Write("fux> ");
                 line = Console.ReadLine() ?? string.Empty;
                 lineOffset = 0;
             }

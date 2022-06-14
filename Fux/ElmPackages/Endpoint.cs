@@ -72,7 +72,7 @@ namespace Fux.ElmPackages
         {
             var requestUri = $"https://package.elm-lang.org/packages/{reference}/endpoint.json";
 
-            Console.Write($"download {requestUri} ...");
+            Terminal.Write($"download {requestUri} ...");
 
             using var request = new HttpClient();
 
@@ -80,7 +80,7 @@ namespace Fux.ElmPackages
 
             var bytes = response.Content.ReadAsByteArrayAsync().Result;
 
-            Console.WriteLine();
+            Terminal.WriteLine();
 
             return bytes;
         }

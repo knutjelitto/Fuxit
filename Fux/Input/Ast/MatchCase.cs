@@ -10,13 +10,13 @@ namespace Fux.Input.Ast
 {
     internal class MatchCase : Expression
     {
-        public MatchCase(SequenceExpr pattern, Expression expression)
+        public MatchCase(Expression pattern, Expression expression)
         {
             Pattern = pattern;
             Expression = expression;
         }
 
-        public SequenceExpr Pattern { get; }
+        public Expression Pattern { get; }
         public Expression Expression { get; }
 
         public LetScope Scope { get; } = new();

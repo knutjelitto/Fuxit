@@ -6,6 +6,8 @@
 
         private Collector() { }
 
+        public int NumberOfLines = 0;
+
         public List<ModuleDecl> Module { get; } = new();
         public List<ImportDecl> Import { get; } = new();
         public List<TypeDecl> Type { get; } = new();
@@ -30,7 +32,7 @@
             Write("all-infix.text", Infix);
             Write("all-var.text", VarDecl);
             Write("all-hint.text", TypeHint);
-            Write("all-native.text", NativeDecl);
+            WriteNative("all-native.text", NativeDecl);
 
             void Write<T>(string name, IEnumerable<T> expressions)
                 where T : Declaration
@@ -51,6 +53,37 @@
                                 writer.WriteLine();
                             }
                             writer.WriteLine();
+                        });
+                    }
+                }
+            }
+
+            void WriteNative(string name, IEnumerable<NativeDecl> expressions)
+            {
+                using (var writer = name.Writer())
+                {
+                    var loc = string.Empty;
+                    foreach (var type in expressions)
+                    {
+                        var newLoc = type.Name[0].Location.Name;
+                        if (newLoc != loc)
+                        {
+                            if (loc != string.Empty)
+                            {
+                                writer.WriteLine();
+                            }
+                            loc = newLoc;
+                            writer.WriteLine($"{{- {loc} -}}");
+                            writer.WriteLine();
+                        }
+
+                        writer.Indent(() =>
+                        {
+                            type.PP(writer);
+                            if (writer.LinePending)
+                            {
+                                writer.WriteLine();
+                            }
                         });
                     }
                 }

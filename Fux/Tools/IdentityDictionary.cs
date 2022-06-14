@@ -7,5 +7,14 @@
             : base(new IdentityEquality<TKey>())
         {
         }
+        public IdentityDictionary(IdentityDictionary<TKey, TValue> items)
+            : base(items, new IdentityEquality<TKey>())
+        {
+        }
+
+        public IdentityDictionary<TKey, TValue> Clone()
+        {
+            return new IdentityDictionary<TKey, TValue>(this);
+        }
     }
 }

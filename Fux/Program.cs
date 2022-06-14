@@ -1,4 +1,5 @@
 ﻿using Fux.Building;
+using Fux.Building.Phases;
 using Fux.ElmPackages;
 using Fux.Tests;
 
@@ -16,12 +17,14 @@ namespace Fux
     {
         static void Main(string[] args)
         {
+            HindleyMilner.Main();
+
             try
             {
                 Test();
 
-                //Console.Write("\u001B[32m"); // green
-                Console.Write("\u001B[1m"); // bold
+                //Terminal.Write("\u001B[32m"); // green
+                Terminal.Write("\u001B[1m"); // bold
 
                 var builder = new Builder();
 
@@ -90,7 +93,7 @@ namespace Fux
 
                 whole.Stop();
 
-                Console.Write($"[{whole.ElapsedMilliseconds} ms] ");
+                Terminal.Write($"[{Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms] ");
             }
             catch (DiagnosticException diagnostics)
             {
@@ -98,7 +101,7 @@ namespace Fux
                 {
                     foreach (var line in diagnostic.Report())
                     {
-                        Console.WriteLine($"{line}");
+                        Terminal.WriteLine($"{line}");
                     }
                 }
             }

@@ -170,7 +170,7 @@ namespace Fux.Input
 
         private Exposing Exposing(TokensCursor cursor)
         {
-            return Scope<Exposing>(cursor, cursor =>
+            return cursor.Scope<Exposing>(cursor =>
             {
                 Assert(cursor.IsWeak(Lex.Weak.Exposing));
                 cursor.Swallow(Lex.LowerId);
@@ -247,7 +247,7 @@ namespace Fux.Input
 
         public Expression TopType(TokensCursor cursor)
         {
-            return Scope<Expression>(cursor, cursor =>
+            return cursor.Scope<Expression>(cursor =>
             {
                 var kwType = cursor.Swallow(Lex.HardKwType);
 
@@ -297,9 +297,9 @@ namespace Fux.Input
 
         public Expression Declaration(TokensCursor cursor)
         {
-            return Scope<Expression>(cursor, cursor =>
+            return cursor.Scope<Expression>(cursor =>
             {
-                var left = Pattern(cursor);
+                var left = (SequenceExpr)Sequence(cursor, true);
 
                 if (cursor.Is(Lex.Assign))
                 {
@@ -360,8 +360,8 @@ namespace Fux.Input
                     while (cursor.More()
                         && cursor.IsNot(Lex.Bar)
                         && cursor.IsNot(Lex.RParent)
-                        && cursor.IsNot(Lex.Comma)
                         && cursor.IsNot(Lex.RBrace)
+                        && cursor.IsNot(Lex.Comma)
                         && cursor.IsNot(Lex.Arrow))
                     {
                         var argument = TypeArgument(cursor);
@@ -404,10 +404,6 @@ namespace Fux.Input
                 else if (cursor.Is(Lex.LBrace))
                 {
                     return Type(cursor);
-                }
-                else
-                {
-                    Assert(true);
                 }
 
                 Assert(false);
@@ -634,7 +630,7 @@ namespace Fux.Input
 
         private Expression RecordLiteral(TokensCursor cursor)
         {
-            return Scope<Expression>(cursor, cursor =>
+            return cursor.Scope<Expression>(cursor =>
             {
                 var left = cursor.Swallow(Lex.LBrace);
 
@@ -778,7 +774,7 @@ namespace Fux.Input
                 {
                     var subCursor = cursor.Sub();
 
-                    var pattern = Pattern(subCursor);
+                    var pattern = Expression(subCursor);
 
                     subCursor.Swallow(Lex.Arrow);
 
@@ -793,15 +789,34 @@ namespace Fux.Input
             });
         }
 
-        private SequenceExpr Pattern(TokensCursor cursor)
-        {
-            return (SequenceExpr)Sequence(cursor, true);
-        }
-
         private Expression Expression(TokensCursor cursor)
         {
-            return Sequence(cursor);
+            return OperatorExpr(cursor);
         }
+
+        private Expression OperatorExpr(TokensCursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                var expr = Sequence(cursor);
+                if (cursor.Is(Lex.Operator))
+                {
+                    var opExprs = new List<OpExpr>();
+
+                    while (cursor.Is(Lex.Operator))
+                    {
+                        var op = new OperatorSymbol(cursor.Swallow(Lex.Operator));
+
+                        opExprs.Add(new OpExpr(op, Sequence(cursor)));
+                    }
+
+                    return new OpChain(expr, opExprs);
+                }
+
+                return expr;
+            });
+        }
+
 
         private Expression Sequence(TokensCursor cursor, bool always = false)
         {
@@ -811,7 +826,7 @@ namespace Fux.Input
 
                 do
                 {
-                    var expression = OperatorExpr(cursor);
+                    var expression = PrefixExpr(cursor);
 
                     expressions.Add(expression);
                 }
@@ -825,39 +840,6 @@ namespace Fux.Input
                 }
 
                 return new SequenceExpr(expressions);
-            });
-        }
-
-
-        private Expression OperatorExpr(TokensCursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var expr = PrefixExpr(cursor);
-#if true
-                if (cursor.Is(Lex.Operator))
-                {
-                    var opExprs = new List<OpExpr>();
-
-                    while (cursor.Is(Lex.Operator))
-                    {
-                        var op = new OperatorSymbol(cursor.Swallow(Lex.Operator));
-
-                        opExprs.Add(new OpExpr(op, PrefixExpr(cursor)));
-                    }
-
-                    return new OpChain(expr, opExprs);
-                }
-#else
-                if (cursor.Is(Lex.Operator))
-                {
-                    var op = new OperatorSymbol(cursor.Swallow(Lex.Operator));
-
-                    expr = new InfixExpr(op, expr, OperatorExpr(cursor));
-                }
-#endif
-
-                return expr;
             });
         }
 
@@ -1047,7 +1029,7 @@ namespace Fux.Input
             {
                 cursor.Swallow(Lex.Lambda);
 
-                var parameters = Pattern(cursor);
+                var parameters = (SequenceExpr)Sequence(cursor, true);
 
                 cursor.Swallow(Lex.Arrow);
 

@@ -17,7 +17,7 @@ namespace Fux.Building.Phases
         {
             foreach (var module in Package.Modules)
             {
-                Console.Write(".");
+                Terminal.Write(".");
 
                 if (module.IsJs)
                 {

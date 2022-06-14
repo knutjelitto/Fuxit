@@ -31,7 +31,7 @@
         {
             var requestUri = endpoint.Url;
 
-            Console.Write($"download {requestUri} ...");
+            Terminal.Write($"download {requestUri} ...");
 
             using (var request = new HttpClient())
             {
@@ -39,7 +39,7 @@
 
                 var bytes = response.Content.ReadAsByteArrayAsync().Result;
 
-                Console.WriteLine();
+                Terminal.WriteLine();
 
                 return bytes;
             }

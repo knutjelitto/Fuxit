@@ -1,5 +1,7 @@
 ﻿module Test exposing(test)
 
+test = - (fak 1) + fak 2 * fak 3
+
 test =
   skip (chompWhile isNotRelevant) <|
     oneOf

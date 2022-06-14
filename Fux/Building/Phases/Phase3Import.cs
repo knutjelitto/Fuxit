@@ -14,13 +14,13 @@ namespace Fux.Building.Phases
         {
             foreach (var module in Package.Modules)
             {
-                Console.Write(".");
+                Terminal.Write(".");
 
-                MakeModule(module);
+                Import(module);
             }
         }
 
-        private void MakeModule(Module module)
+        private void Import(Module module)
         {
             Collector.ImportTime.Start();
             Imports(module);

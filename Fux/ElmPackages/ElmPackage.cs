@@ -68,7 +68,7 @@ namespace Fux.ElmPackages
                     Directory.Delete(folder, true);
                 }
 
-                Console.Write($"extracting {destination} ...");
+                Terminal.Write($"extracting {destination} ...");
 
                 ZipFile.ExtractToDirectory(archive, tempDestination, true);
 
@@ -83,7 +83,7 @@ namespace Fux.ElmPackages
                     Directory.Move(source, destination);
                 }
 
-                Console.WriteLine();
+                Terminal.WriteLine();
             }
         }
 

@@ -13,7 +13,7 @@ namespace Fux.Building.Phases
         {
             foreach (var module in Package.Exposed)
             {
-                Console.Write(".");
+                Terminal.Write(".");
 
                 if (module.Parsed)
                 {
@@ -33,7 +33,7 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                Console.Write(".");
+                Terminal.Write(".");
 
                 MakeModule(module);
             }
@@ -58,6 +58,8 @@ namespace Fux.Building.Phases
 
             module.Ast = Parse(source);
             module.Parsed = true;
+
+            Collector.NumberOfLines += source.Lines.Count;
 
             DumpAst(module);
 

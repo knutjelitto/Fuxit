@@ -7,7 +7,9 @@ namespace Fux.Building
         private readonly ElmPackage elm;
         private readonly List<Package> dependencies = new();
         private readonly List<Module> exposed = new();
+        private readonly Dictionary<string, Module> exposedIndex = new();
         private readonly List<Module> intern = new();
+        private readonly Dictionary<string, Module> internIndex = new();
 
         public Package(ElmPackage elm)
         {
@@ -32,6 +34,7 @@ namespace Fux.Building
         public void AddExposed(Module module)
         {
             exposed.Add(module);
+            exposedIndex.Add(module.Name, module);
         }
 
         public Module? FindImport(string importPath)
@@ -69,36 +72,34 @@ namespace Fux.Building
 
         private Module? FindIntern(string name)
         {
-            Module? module = null;
-
-            Assert(!name.Contains('/'));
-
-            module = exposed.FirstOrDefault(m => m.Name == name);
-
-            if (module == null)
+            if (exposedIndex.TryGetValue(name, out var module))
             {
-                module = intern.FirstOrDefault(m => m.Name == name);
+                return module;
+            }
 
-                if (module == null)
+            if (internIndex.TryGetValue(name, out module))
+            {
+                return module;
+            }
+
+            var partPath = $"src/{name.Replace('.', '/')}";
+
+            var fullPath = Folder.Combine(RootPath, partPath) + ".elm";
+
+            if (File.Exists(fullPath))
+            {
+                module = new Module(this, name);
+                intern.Add(module);
+                internIndex.Add(module.Name, module);
+            }
+            else
+            {
+                fullPath = Folder.Combine(RootPath, partPath) + ".js";
+                if (File.Exists(fullPath))
                 {
-                    var partPath = $"src/{name.Replace('.', '/')}";
-
-                    var fullPath = Folder.Combine(RootPath, partPath) + ".elm";
-
-                    if (File.Exists(fullPath))
-                    {
-                        module = new Module(this, name);
-                        intern.Add(module);
-                    }
-                    else
-                    {
-                        fullPath = Folder.Combine(RootPath, partPath) + ".js";
-                        if (File.Exists(fullPath))
-                        {
-                            module = new Module(this, name, true);
-                            intern.Add(module);
-                        }
-                    }
+                    module = new Module(this, name, true);
+                    intern.Add(module);
+                    internIndex.Add(module.Name, module);
                 }
             }
 
@@ -107,7 +108,11 @@ namespace Fux.Building
 
         private Module? FindExtern(string importPath)
         {
-            return exposed.FirstOrDefault(m => m.Name == importPath);
+            if (exposedIndex.TryGetValue(importPath, out var module))
+            {
+                return module;
+            }
+            return null;
         }
 
         public override string ToString() => FullName;
