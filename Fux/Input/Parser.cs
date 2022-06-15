@@ -361,6 +361,7 @@ namespace Fux.Input
                         && cursor.IsNot(Lex.Bar)
                         && cursor.IsNot(Lex.RParent)
                         && cursor.IsNot(Lex.RBrace)
+                        && cursor.IsNot(Lex.RBracket)
                         && cursor.IsNot(Lex.Comma)
                         && cursor.IsNot(Lex.Arrow))
                     {
@@ -372,8 +373,9 @@ namespace Fux.Input
                 while (cursor.More()
                     && cursor.IsNot(Lex.Bar)
                     && cursor.IsNot(Lex.RParent)
-                    && cursor.IsNot(Lex.Comma)
                     && cursor.IsNot(Lex.RBrace)
+                    && cursor.IsNot(Lex.RBracket)
+                    && cursor.IsNot(Lex.Comma)
                     && cursor.IsNot(Lex.Arrow));
 
 
@@ -798,7 +800,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var expr = Sequence(cursor);
+                var expr = PrefixExpr(cursor);
                 if (cursor.Is(Lex.Operator))
                 {
                     var opExprs = new List<OpExpr>();
@@ -807,7 +809,7 @@ namespace Fux.Input
                     {
                         var op = new OperatorSymbol(cursor.Swallow(Lex.Operator));
 
-                        opExprs.Add(new OpExpr(op, Sequence(cursor)));
+                        opExprs.Add(new OpExpr(op, PrefixExpr(cursor)));
                     }
 
                     return new OpChain(expr, opExprs);
@@ -818,31 +820,6 @@ namespace Fux.Input
         }
 
 
-        private Expression Sequence(TokensCursor cursor, bool always = false)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var expressions = new List<Expression>();
-
-                do
-                {
-                    var expression = PrefixExpr(cursor);
-
-                    expressions.Add(expression);
-                }
-                while (cursor.StartsAtomic);
-
-                Assert(expressions.Count >= 1);
-
-                if (!always && expressions.Count == 1)
-                {
-                    return expressions[0];
-                }
-
-                return new SequenceExpr(expressions);
-            });
-        }
-
         private Expression PrefixExpr(TokensCursor cursor)
         {
             return cursor.Scope(cursor =>
@@ -852,16 +829,41 @@ namespace Fux.Input
                 if (cursor.IsOperator())
                 {
                     var op = new OperatorSymbol(cursor.Advance());
-                    var argument = PrefixExpr(cursor);
+                    var argument = Sequence(cursor);
 
                     app = new PrefixExpr(op, argument);
                 }
                 else
                 {
-                    app = Compound(cursor);
+                    app = Sequence(cursor);
                 }
 
                 return app;
+            });
+        }
+
+        private Expression Sequence(TokensCursor cursor, bool always = false)
+        {
+            return cursor.Scope(cursor =>
+            {
+                var expressions = new List<Expression>();
+
+                do
+                {
+                    var expression = Compound(cursor);
+
+                    expressions.Add(expression);
+                }
+                while (cursor.StartsAtomic);
+
+                Assert(expressions.Count >= 1);
+
+                if (!always && expressions.Count == 1)
+               {
+                    return expressions[0];
+                }
+
+                return new SequenceExpr(expressions);
             });
         }
 
