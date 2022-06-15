@@ -22,6 +22,7 @@
         public Stopwatch ExposeTime { get; } = new();
         public Stopwatch ImportTime { get; } = new();
         public Stopwatch ResolveTime { get; } = new();
+        public Stopwatch TypeTime { get; } = new();
 
         public void Write()
         {

@@ -18,6 +18,11 @@
             return false;
         }
 
+        public static bool WhitesBefore(this TokensCursor cursor)
+        {
+            return cursor.More() && cursor.Current.WhitesBefore;
+        }
+
         public static bool IsIdentifier(this TokensCursor cursor)
         {
             return cursor.More() &&

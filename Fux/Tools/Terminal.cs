@@ -1,4 +1,6 @@
-﻿namespace Fux.Tools
+﻿using System.Text;
+
+namespace Fux.Tools
 {
     public static class Terminal
     {
@@ -15,6 +17,16 @@
         public static void WriteLine()
         {
             Console.WriteLine();
+        }
+
+        public static (int line, int column) GetSize()
+        {
+            return (Console.WindowHeight, Console.WindowWidth);
+        }
+
+        public static void SetPosition(int line, int column)
+        {
+            Console.SetCursorPosition(column, line);
         }
 
         public static void GoHome()

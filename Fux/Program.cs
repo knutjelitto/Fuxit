@@ -17,7 +17,25 @@ namespace Fux
     {
         static void Main(string[] args)
         {
-            HindleyMilner.Main();
+#if false
+            var (lines, columns) = Terminal.GetSize();
+
+            var nums = "0123456789";
+            var bld = new StringBuilder();
+            while (bld.Length < columns)
+            {
+                bld.Append(nums);
+            }
+            var str = bld.ToString()[..columns];
+
+            for (var line = 0; line < lines; line++)
+            {
+                Terminal.SetPosition(line, 0);
+                Terminal.Write($"{str}");
+            }
+#endif
+
+            //HindleyMilner.Main();
 
             try
             {
@@ -52,6 +70,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
+#if false
                     //TODO: resolve-error
                     //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
@@ -59,7 +78,6 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-explorations/test"));
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
 
-#if false
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
 
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-iso8601-date-strings"));
@@ -93,7 +111,9 @@ namespace Fux
 
                 whole.Stop();
 
-                Terminal.Write($"[{Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms] ");
+                var locsec = Math.Round(1000m * Collector.Instance.NumberOfLines / whole.ElapsedMilliseconds);
+
+                Terminal.Write($"[{Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} loc/s] ");
             }
             catch (DiagnosticException diagnostics)
             {

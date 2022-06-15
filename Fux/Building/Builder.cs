@@ -45,6 +45,8 @@ namespace Fux.Building
             Build(prefix, package => new Phase3Import(Errors, package));
             prefix = $"{prefix}{"resolve",width}";
             Build(prefix, package => new Phase4Resolve(Errors, package));
+            prefix = $"{prefix}{"type___",width}";
+            Build(prefix, package => new Phase5Type(Errors, package));
 
             Terminal.Write($"{"",50}");
             Terminal.Write($"{$"{Collector.Instance.ParseTime.ElapsedMilliseconds} ms",width}");
@@ -52,6 +54,7 @@ namespace Fux.Building
             Terminal.Write($"{$"{Collector.Instance.ExposeTime.ElapsedMilliseconds} ms",width}");
             Terminal.Write($"{$"{Collector.Instance.ImportTime.ElapsedMilliseconds} ms",width}");
             Terminal.Write($"{$"{Collector.Instance.ResolveTime.ElapsedMilliseconds} ms",width}");
+            Terminal.Write($"{$"{Collector.Instance.TypeTime.ElapsedMilliseconds} ms",width}");
             Terminal.WriteLine();
 
             Collector.Instance.Write();

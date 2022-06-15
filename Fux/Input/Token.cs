@@ -45,6 +45,8 @@
         public int Column => Location.Column;
         public int Line => Location.Line;
 
+        public bool WhitesBefore => whitesBefore != null && whitesBefore.Count > 0;
+
         public int Indent { get; set; } = 0;
         public bool First { get; set; } = false;
         public bool Last { get; set; } = false;

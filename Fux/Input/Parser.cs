@@ -907,7 +907,7 @@ namespace Fux.Input
 
                 Expression atom = ParseAtom(cursor);
 
-                while (cursor.Is(Lex.Dot))
+                while (cursor.Is(Lex.Dot) && !cursor.WhitesBefore())
                 {
                     cursor.Swallow(Lex.Dot);
 

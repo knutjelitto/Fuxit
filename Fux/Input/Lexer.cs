@@ -265,6 +265,21 @@ namespace Fux.Input
                 }
             }
 
+            if (Current == '.')
+            {
+                Offset += 1;
+
+                Assert(Current.IsDigit());
+
+                do
+                {
+                    Offset += 1;
+                }
+                while (Current.IsDigit());
+            }
+
+            Assert(Current != '.');
+
             return Lex.Number;
         }
 
