@@ -38,8 +38,9 @@ namespace Fux
                 Terminal.Write($"{str}");
             }
 #endif
-
-            //HindleyMilner.Main();
+#if false
+            HindleyMilner.Main();
+#endif
 
             try
             {
@@ -49,9 +50,6 @@ namespace Fux
                 Terminal.Write("\u001B[1m"); // bold
 
                 var builder = new Builder();
-
-                var whole = new Stopwatch();
-                whole.Start();
 
                 if (false)
                 {
@@ -111,13 +109,16 @@ namespace Fux
 #endif
                 }
 
+                var whole = new Stopwatch();
+                whole.Start();
+
                 builder.Build();
 
                 whole.Stop();
 
                 var locsec = Math.Round(1000m * Collector.Instance.NumberOfLines / whole.ElapsedMilliseconds);
 
-                Terminal.Write($"[{Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} loc/s] ");
+                Terminal.Write($"[{Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} lps] ");
             }
             catch (DiagnosticException diagnostics)
             {
@@ -130,7 +131,7 @@ namespace Fux
                 }
             }
 
-            WaitForKey();
+            //WaitForKey();
         }
 
         private static void Test()

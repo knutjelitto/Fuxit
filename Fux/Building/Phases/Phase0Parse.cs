@@ -93,8 +93,7 @@ namespace Fux.Building.Phases
         public ModuleAst? Parse(Source source)
         {
             var lexer = new Lexer(Errors, source);
-            var liner = new Liner(Errors, lexer);
-            var parser = new Parser(Errors, liner);
+            var parser = new Parser(Errors, lexer);
 
             try
             {
@@ -175,7 +174,7 @@ namespace Fux.Building.Phases
         private void DumpLines(Source source)
         {
             var lexer = new Lexer(Errors, source.Clone());
-            var liner = new Liner(Errors, lexer);
+            //var liner = new Liner(Errors, lexer);
 
             using (var writer = MakeWriter(source.Display + "-lines.txt"))
             {
@@ -183,7 +182,7 @@ namespace Fux.Building.Phases
 
                 do
                 {
-                    line = liner.GetLine();
+                    line = lexer.GetLine();
 
                     DumpLine(writer, line);
                     writer.WriteLine();

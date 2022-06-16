@@ -54,7 +54,7 @@ namespace Fux.Building.AlgorithmW
     public record AbstractionExpression(TermVar Term, Expression Exp) : Expression
     {
         //public override string ToString() => $"λ{Term}.{Exp}";
-        public override string ToString() => $"{Term} => {Exp}";
+        public override string ToString() => $"({Term} => {Exp})";
     }
 
     public record LetExpression(TermVar Term, Expression Exp1, Expression Exp2) : Expression
@@ -69,26 +69,32 @@ namespace Fux.Building.AlgorithmW
     }
 
     public abstract record InferredType;
+
     public record VariableType(TypeVar TypeVar) : InferredType
     {
         public override string ToString() => TypeVar.ToString();
     }
+
     public record IntegerType : InferredType
     {
         public override string ToString() => "Int";
     }
+
     public record FloatType : InferredType
     {
         public override string ToString() => "Float";
     }
+
     public record BoolType : InferredType
     {
         public override string ToString() => "Bool";
     }
+
     public record StringType : InferredType
     {
         public override string ToString() => "String";
     }
+
     public record FunctionType(InferredType TypeIn, InferredType TypeOut) : InferredType
     {
         public override string ToString() => $"({TypeIn} → {TypeOut})";
@@ -100,22 +106,31 @@ namespace Fux.Building.AlgorithmW
     {
         public override string ToString() => Message;
     }
+
     public static class TypeInferenceResult
     {
         public static TypeInferenceResult<TResult> Ok<TResult>(TResult result) => new(result, null);
         public static TypeInferenceResult<TResult> Fail<TResult>(TypeInferenceError error) => new(default, error);
     }
+
     public record TypeInferenceResult<TResult>(TResult? Result, TypeInferenceError? Error);
 
     public class Substitution
     {
         private readonly ImmutableDictionary<TypeVar, InferredType> map;
+
         public static Substitution Empty() => new(ImmutableDictionary<TypeVar, InferredType>.Empty);
+
         public Substitution(ImmutableDictionary<TypeVar, InferredType> map) => this.map = map;
+
         public InferredType? TryGet(TypeVar typeVar) => map.TryGetValue(typeVar, out var type) ? type : null;
+
         public Substitution Insert(TypeVar typeVar, InferredType type) => new(map.Add(typeVar, type));
+
         public Substitution Remove(TypeVar typeVar) => new(map.Remove(typeVar));
+
         public IEnumerable<KeyValuePair<TypeVar, InferredType>> Enumerate() => map;
+
         public Substitution UnionWith(Substitution other)
         {
             var union = this.map;

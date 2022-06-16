@@ -8,14 +8,14 @@ namespace Fux.Input
 {
     internal class Parser
     {
-        public Parser(ErrorBag errors, Liner liner)
+        public Parser(ErrorBag errors, Lexer lexer)
         {
             Errors = errors;
-            Liner = liner;
+            Lexer = lexer;
         }
 
         public ErrorBag Errors { get; }
-        public Liner Liner { get; }
+        public Lexer Lexer { get; }
 
         public ModuleAst Module()
         {
@@ -42,8 +42,8 @@ namespace Fux.Input
 
         public Expression Outer()
         {
-            var line = Liner.GetLine();
-            var cursor = new TokensCursor(Errors.Parser, line);
+            var tokens = Lexer.GetLine();
+            var cursor = new TokensCursor(Errors.Parser, tokens);
 
             return Outer(cursor);
         }
@@ -645,10 +645,6 @@ namespace Fux.Input
             {
                 var left = cursor.Swallow(Lex.LBrace);
 
-                var fields = new List<Field>();
-
-                var state = cursor.State;
-
                 if (cursor.Is(Lex.RBrace))
                 {
                     cursor.Swallow(Lex.RBrace);
@@ -656,7 +652,9 @@ namespace Fux.Input
                     return new RecordPattern(Enumerable.Empty<FieldPattern>());
                 }
 
-                Expression? baseName = SingleLowerIdentifier(cursor);
+                var fields = new List<Field>();
+                var state = cursor.State;
+                Identifier? baseName = SingleLowerIdentifier(cursor);
 
                 if (cursor.IsNot(Lex.Bar))
                 {
@@ -679,11 +677,12 @@ namespace Fux.Input
                 if (fields.All(f => f is FieldAssign))
                 {
                     Assert(baseName == null || baseName is Identifier);
-                    return new RecordExpr((Identifier?)baseName, fields.Cast<FieldAssign>());
+                    return new RecordExpr(baseName, fields.Cast<FieldAssign>());
                 }
                 else if (fields.All(f => f is FieldPattern))
                 {
                     Assert(baseName == null);
+                    //Assert(fields.Count == 1);
                     return new RecordPattern(fields.Cast<FieldPattern>());
                 }
 
@@ -849,7 +848,7 @@ namespace Fux.Input
             });
         }
 
-        private Expression Sequence(TokensCursor cursor, bool always = false)
+        private Expression Sequence(TokensCursor cursor, bool always = true)
         {
             return cursor.Scope(cursor =>
             {

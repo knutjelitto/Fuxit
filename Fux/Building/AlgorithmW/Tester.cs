@@ -12,32 +12,32 @@ namespace Fux.Building.AlgorithmW
             test(lit("hello"));
             test(lit(true));
             test(app(app(var("+"), lit(1)), lit(2)));
-            test(bind("x", lit(4), bind("y", lit("5"), app(app(var("+"), var("x")), var("y")))));
+            test(let("x", lit(4), let("y", lit("5"), app(app(var("+"), var("x")), var("y")))));
             test(app(app(var("+"), lit(true)), lit(false)));
             test(app(var("-"), lit(5)));
             test(app(var("-"), lit("test")));
-            test(bind("id", abs("x", var("x")), var("id")));
-            test(bind("five", abs("x", lit(5)), var("five")));
-            test(bind("id", abs("x", var("x")), app(var("id"), var("id"))));
-            test(bind("id",
-                      abs("x", bind("y", var("x"), var("y"))),
+            test(let("id", abs("x", var("x")), var("id")));
+            test(let("five", abs("x", lit(5)), var("five")));
+            test(let("id", abs("x", var("x")), app(var("id"), var("id"))));
+            test(let("id",
+                      abs("x", let("y", var("x"), var("y"))),
                       app(var("id"), var("id"))));
-            test(bind("id",
-                      abs("x", bind("y", var("x"), var("y"))),
+            test(let("id",
+                      abs("x", let("y", var("x"), var("y"))),
                       app(app(var("id"), var("id")), lit(2))));
-            test(bind("id", abs("x", app(var("x"), var("x"))), var("id")));
+            test(let("id", abs("x", app(var("x"), var("x"))), var("id")));
             test(abs("m",
-                     bind("y", var("m"), bind("x", app(var("y"), lit(true)), var("x")))));
+                     let("y", var("m"), let("x", app(var("y"), lit(true)), var("x")))));
             test(app(lit(2), lit(2)));
             test(abs("a",
-                     bind("x",
+                     let("x",
                           abs("b",
-                              bind("y", abs("c", app(var("a"), lit(1))), app(var("y"), lit(2)))),
+                              let("y", abs("c", app(var("a"), lit(1))), app(var("y"), lit(2)))),
                           app(var("x"), lit(3)))));
             test(app(abs("a",
-                         bind("x",
+                         let("x",
                               abs("b",
-                                  bind("y", abs("c", app(var("a"), lit(1))), app(var("y"), lit(2)))),
+                                  let("y", abs("c", app(var("a"), lit(1))), app(var("y"), lit(2)))),
                               app(var("x"), lit(3)))),
                      abs("x", var("x"))));
 
@@ -51,13 +51,13 @@ namespace Fux.Building.AlgorithmW
                      abs("x", var("x"))));
             test(abs("x", abs("y", var("x")))); // true
             test(abs("x", abs("y", var("y")))); // false
-            test(bind("id",
+            test(let("id",
                       abs("x", var("x")),
-                      bind("eat2",
+                      let("eat2",
                            abs("x", abs("y", lit("foo"))),
                            app(app(var("eat2"), app(var("id"), lit(1))),
                                app(var("id"), lit(true))))));
-            test(bind("+",
+            test(let("+",
                       abs("x", app(var("+"), var("x"))),
                       app(app(var("+"), lit(1)), lit(2))));
             test(app(abs("x", app(var("x"), var("x"))),
@@ -67,9 +67,9 @@ namespace Fux.Building.AlgorithmW
 
             // the output on this case is correct but nondeterministic because of the random iteration
             // order of Rust's HashMaps and HashSets
-            test(bind("zero",
+            test(let("zero",
                       abs("f", abs("x", var("x"))),
-                      bind("succ",
+                      let("succ",
                            abs("n",
                                abs("f",
                                    abs("x", app(var("f"), app(app(var("n"), var("f")), var("x")))))),
@@ -84,9 +84,9 @@ namespace Fux.Building.AlgorithmW
                                                            app(var("succ"), var("zero")))))))))))));
 
             // this case produces an incredibly large type
-            test(bind("zero",
+            test(let("zero",
                       abs("f", abs("x", var("x"))),
-                      bind("succ",
+                      let("succ",
                            abs("n",
                                abs("f",
                                    abs("x", app(var("f"), app(var("n"), app(var("f"), var("x"))))))),
