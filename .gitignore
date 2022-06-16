@@ -364,3 +364,5 @@ FodyWeavers.xsd
 
 /Temp
 /Elm
+
+!/Runtime/src/kernel/core/debug

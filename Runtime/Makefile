@@ -26,7 +26,9 @@
 #
 
 LLVM_ROOT   = C:/dev/knut/scoop/apps/llvm/current/bin
-WASMOPT     = C:/dev/knut/scoop/shims/wasm-opt.exe
+CLANG      	= clang
+WASMLD		= wasm-ld
+WASMOPT     = wasm-opt
 WASM2WAT	= wasm-dis
 WASM2C		= wasm2c
 
@@ -81,17 +83,17 @@ endif
 # Compute tool paths
 ISWIN := $(findstring :,$(firstword $(subst \, ,$(subst /, ,$(abspath .)))))
 PIPETONULL := $(if $(ISWIN),>nul 2>nul,>/dev/null 2>/dev/null)
-ifeq ($(wildcard $(subst $(strip ) ,\ ,$(LLVM_ROOT))/clang*),)
-  $(error clang executables not found in set LLVM_ROOT path ($(LLVM_ROOT)). Set custom path in this makefile with LLVM_ROOT = $(if $(ISWIN),d:)/path/to/clang)
-endif
-ifeq ($(wildcard $(subst $(strip ) ,\ ,$(WASMOPT))),)
-  $(error wasm-opt executable not found in set WASMOPT path ($(WASMOPT)). Fix path in this makefile with WASMOPT = $(if $(ISWIN),d:)/path/to/wasm-opt$(if $(ISWIN),.exe))
-endif
+#ifeq ($(wildcard $(subst $(strip ) ,\ ,$(LLVM_ROOT))/clang*),)
+#  $(error clang executables not found in set LLVM_ROOT path ($(LLVM_ROOT)). Set custom path in this makefile with LLVM_ROOT = $(if $(ISWIN),d:)/path/to/clang)
+#endif
+#ifeq ($(wildcard $(subst $(strip ) ,\ ,$(WASMOPT))),)
+#  $(error wasm-opt executable not found in set WASMOPT path ($(WASMOPT)). Fix path in this makefile with WASMOPT = $(if $(ISWIN),d:)/path/to/wasm-opt$(if $(ISWIN),.exe))
+#endif
 
 # Surround used commands with double quotes
-CC  := "$(LLVM_ROOT)/clang"
-CXX := "$(LLVM_ROOT)/clang" -x c++
-LD  := "$(LLVM_ROOT)/wasm-ld"
+CC  := "$(CLANG)"
+CXX := "$(CLANG)" -x c++
+LD  := "$(WASMLD)"
 
 all: $(OUTDIR)/loader.js $(OUTDIR)/loader.html $(OUTDIR)/output.wasm $(OUTDIR)/output.wat $(OUTDIR)/output.c
 .PHONY: clean cleanall run analyze

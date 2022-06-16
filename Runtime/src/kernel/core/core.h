@@ -2,7 +2,7 @@
 #define CORE_H
 
 #include "../wrapper/wrapper.h"
-#include "./debug/debug.h"
+#include "debug/debug.h"
 #include "types.h"
 
 #ifdef _WIN32
