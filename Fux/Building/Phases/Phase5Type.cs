@@ -74,11 +74,11 @@ namespace Fux.Building.Phases
                 case Identifier identifier:
                     {
                         Assert(identifier.Resolved != null);
-                        if (identifier.Type == null)
+                        if (identifier.TypeX == null)
                         {
-                            identifier.Type = identifier.Resolved.Type;
+                            identifier.TypeX = identifier.Resolved.TypeX;
 
-                            if (identifier.Type == null)
+                            if (identifier.TypeX == null)
                             {
 
                             }

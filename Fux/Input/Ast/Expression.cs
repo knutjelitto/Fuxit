@@ -13,7 +13,7 @@
 
         public Tokens? Span { get; set; } = null;
         public Expression Resolved { get; set; }
-        public Type? Type { get; set; } = null;
+        public Type? TypeX { get; set; } = null;
 
         public abstract void PP(Writer writer);
 
