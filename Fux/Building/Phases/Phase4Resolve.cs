@@ -22,11 +22,11 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                MakeModule(module);
+                Make(module);
             }
         }
 
-        private void MakeModule(Module module)
+        private void Make(Module module)
         {
             Assert(module.Parsed && module.Ast != null);
 
@@ -98,7 +98,7 @@ namespace Fux.Building.Phases
             {
                 Assert(true);
             }
-            ResolveType(module.Scope, hint.Type);
+            ResolveType(module.Scope, hint.TypeDef);
         }
 
         private void Resolve(Module module, AliasDecl alias)
@@ -135,7 +135,7 @@ namespace Fux.Building.Phases
                     }
                     foreach (var field in record.Fields)
                     {
-                        ResolveType(scope, field.Type);
+                        ResolveType(scope, field.TypeDef);
                     }
                     break;
                 case Type.Concrete concrete:
@@ -252,7 +252,7 @@ namespace Fux.Building.Phases
                     ResolveExpr(scope, select.Lhs);
                     break;
                 case TypeHint typeHint:
-                    ResolveType(scope, typeHint.Type);
+                    ResolveType(scope, typeHint.TypeDef);
                     break;
                 default:
                     Assert(false);

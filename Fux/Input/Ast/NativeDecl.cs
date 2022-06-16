@@ -13,7 +13,7 @@
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{ModuleName}.{Name} : {TypeHint?.Type}");
+            writer.Write($"{ModuleName}.{Name} : {TypeHint?.TypeDef}");
         }
     }
 }

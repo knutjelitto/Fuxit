@@ -70,7 +70,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
-#if false
+#if true
                     //TODO: resolve-error
                     //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));

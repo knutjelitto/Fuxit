@@ -13,20 +13,20 @@ namespace Fux.Input.Ast
         public FieldDefine(Identifier name, Type type)
         {
             Name = name;
-            Type = type;
+            TypeDef = type;
         }
 
         public Identifier Name { get; }
-        public Type Type { get; }
+        public Type TypeDef { get; }
 
         public override string ToString()
         {
-            return $"{Name} : {Type}";
+            return $"{Name} : {TypeDef}";
         }
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{Name} : {Type}");
+            writer.Write($"{Name} : {TypeDef}");
         }
     }
 }

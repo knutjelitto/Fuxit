@@ -1038,23 +1038,5 @@ namespace Fux.Input
                 return new LambdaExpr(parameters, expr);
             });
         }
-
-        private T Scope<T>(TokensCursor cursor, Func<TokensCursor, T> parser)
-            where T : Expression
-        {
-#if true
-            return cursor.Scope(parser);
-#else
-            var start = cursor.Tokens.Start + cursor.Offset;
-
-            var expression = parser(cursor);
-
-            var next = cursor.Tokens.Start + cursor.Offset;
-
-            expression.Span = new Tokens(cursor.Tokens.Toks, start, next);
-
-            return expression;
-#endif
-        }
     }
 }

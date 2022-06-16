@@ -20,13 +20,15 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                MakeModule(module);
+                Make(module);
             }
 
             var i = 0;
             while (i < Package.Intern.Count)
             {
                 var module = Package.Intern[i++];
+
+                Assert(!module.Parsed);
 
                 if (module.Parsed)
                 {
@@ -35,18 +37,18 @@ namespace Fux.Building.Phases
 
                 Terminal.Write(".");
 
-                MakeModule(module);
+                Make(module);
             }
         }
 
-        private void MakeModule(Module module)
+        private void Make(Module module)
         {
             Collector.ParseTime.Start();
-            ParseModule(module);
+            Parse(module);
             Collector.ParseTime.Stop();
         }
 
-        private void ParseModule(Module module)
+        private void Parse(Module module)
         {
             if (module.IsJs)
             {

@@ -16,11 +16,11 @@ namespace Fux.Building.Phases
             {
                 Terminal.Write(".");
 
-                Import(module);
+                Make(module);
             }
         }
 
-        private void Import(Module module)
+        private void Make(Module module)
         {
             Collector.ImportTime.Start();
             Imports(module);
