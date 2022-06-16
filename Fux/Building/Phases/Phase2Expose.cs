@@ -24,11 +24,11 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                MakeModule(module);
+                Make(module);
             }
         }
 
-        private void MakeModule(Module module)
+        private void Make(Module module)
         {
             Collector.ExposeTime.Start();
             Expose(module);

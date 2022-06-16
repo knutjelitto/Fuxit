@@ -4,6 +4,8 @@
 #pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable IDE0063 // Use simple 'using' statement
 
+using Fux.Tools;
+
 namespace Fux.Building.Phases
 {
     internal class Phase1Declare : Phase
@@ -21,11 +23,16 @@ namespace Fux.Building.Phases
 
                 using (var writer = MakeWriter(module, "decl"))
                 {
-                    Collector.DeclareTime.Start();
-                    MakeModule(writer, module);
-                    Collector.DeclareTime.Stop();
+                    Make(writer, module);
                 }
             }
+        }
+
+        private void Make(Writer writer, Module module)
+        {
+            Collector.DeclareTime.Start();
+            MakeModule(writer, module);
+            Collector.DeclareTime.Stop();
         }
 
         private void MakeModule(Writer writer, Module module)

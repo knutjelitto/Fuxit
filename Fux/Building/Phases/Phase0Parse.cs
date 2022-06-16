@@ -20,13 +20,15 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                MakeModule(module);
+                Make(module);
             }
 
             var i = 0;
             while (i < Package.Intern.Count)
             {
                 var module = Package.Intern[i++];
+
+                Assert(!module.Parsed);
 
                 if (module.Parsed)
                 {
@@ -35,18 +37,18 @@ namespace Fux.Building.Phases
 
                 Terminal.Write(".");
 
-                MakeModule(module);
+                Make(module);
             }
         }
 
-        private void MakeModule(Module module)
+        private void Make(Module module)
         {
             Collector.ParseTime.Start();
-            ParseModule(module);
+            Parse(module);
             Collector.ParseTime.Stop();
         }
 
-        private void ParseModule(Module module)
+        private void Parse(Module module)
         {
             if (module.IsJs)
             {
@@ -91,8 +93,7 @@ namespace Fux.Building.Phases
         public ModuleAst? Parse(Source source)
         {
             var lexer = new Lexer(Errors, source);
-            var liner = new Liner(Errors, lexer);
-            var parser = new Parser(Errors, liner);
+            var parser = new Parser(Errors, lexer);
 
             try
             {
@@ -173,7 +174,7 @@ namespace Fux.Building.Phases
         private void DumpLines(Source source)
         {
             var lexer = new Lexer(Errors, source.Clone());
-            var liner = new Liner(Errors, lexer);
+            //var liner = new Liner(Errors, lexer);
 
             using (var writer = MakeWriter(source.Display + "-lines.txt"))
             {
@@ -181,7 +182,7 @@ namespace Fux.Building.Phases
 
                 do
                 {
-                    line = liner.GetLine();
+                    line = lexer.GetLine();
 
                     DumpLine(writer, line);
                     writer.WriteLine();

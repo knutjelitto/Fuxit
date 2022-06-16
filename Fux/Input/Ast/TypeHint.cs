@@ -5,20 +5,20 @@
         public TypeHint(Identifier name, Type type)
             : base(name)
         {
-            Type = type;
+            TypeDef = type;
         }
 
-        public Type Type { get; }
+        public Type TypeDef { get; }
 
         public override string ToString()
         {
-            return Protected($"{Name} {Lex.Colon} {Type}");
+            return Protected($"{Name} {Lex.Colon} {TypeDef}");
         }
 
         public override void PP(Writer writer)
         {
             writer.Write($"{Name} {Lex.Colon} ");
-            Type.PP(writer);
+            TypeDef.PP(writer);
         }
     }
 }

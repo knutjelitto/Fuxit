@@ -22,11 +22,18 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                MakeModule(module);
+                Make(module);
             }
         }
 
-        private void MakeModule(Module module)
+        private void Make(Module module)
+        {
+            Collector.TypeTime.Start();
+            Type(module);
+            Collector.TypeTime.Stop();
+        }
+
+        private void Type(Module module)
         {
             Assert(module.Parsed && module.Ast != null);
 

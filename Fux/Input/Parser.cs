@@ -8,14 +8,14 @@ namespace Fux.Input
 {
     internal class Parser
     {
-        public Parser(ErrorBag errors, Liner liner)
+        public Parser(ErrorBag errors, Lexer lexer)
         {
             Errors = errors;
-            Liner = liner;
+            Lexer = lexer;
         }
 
         public ErrorBag Errors { get; }
-        public Liner Liner { get; }
+        public Lexer Lexer { get; }
 
         public ModuleAst Module()
         {
@@ -42,8 +42,8 @@ namespace Fux.Input
 
         public Expression Outer()
         {
-            var line = Liner.GetLine();
-            var cursor = new TokensCursor(Errors.Parser, line);
+            var tokens = Lexer.GetLine();
+            var cursor = new TokensCursor(Errors.Parser, tokens);
 
             return Outer(cursor);
         }
@@ -311,7 +311,6 @@ namespace Fux.Input
 
                         Assert(name.IsSingleLower);
 
-
                         var expression = Expression(cursor);
 
                         return new VarDecl(name, parameters, expression);
@@ -450,6 +449,16 @@ namespace Fux.Input
                 cursor.Is(Lex.LowerId, Lex.UpperId, Lex.OperatorId);
 
                 return new Identifier(cursor.Advance());
+            });
+        }
+
+        private Identifier SingleLowerIdentifier(TokensCursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                Assert(cursor.Is(Lex.LowerId));
+
+                return new Identifier(cursor.Advance()).SingleLower();
             });
         }
 
@@ -636,10 +645,6 @@ namespace Fux.Input
             {
                 var left = cursor.Swallow(Lex.LBrace);
 
-                var fields = new List<Field>();
-
-                var state = cursor.State;
-
                 if (cursor.Is(Lex.RBrace))
                 {
                     cursor.Swallow(Lex.RBrace);
@@ -647,7 +652,9 @@ namespace Fux.Input
                     return new RecordPattern(Enumerable.Empty<FieldPattern>());
                 }
 
-                Expression? baseName = Sequence(cursor);
+                var fields = new List<Field>();
+                var state = cursor.State;
+                Identifier? baseName = SingleLowerIdentifier(cursor);
 
                 if (cursor.IsNot(Lex.Bar))
                 {
@@ -670,11 +677,12 @@ namespace Fux.Input
                 if (fields.All(f => f is FieldAssign))
                 {
                     Assert(baseName == null || baseName is Identifier);
-                    return new RecordExpr((Identifier?)baseName, fields.Cast<FieldAssign>());
+                    return new RecordExpr(baseName, fields.Cast<FieldAssign>());
                 }
                 else if (fields.All(f => f is FieldPattern))
                 {
                     Assert(baseName == null);
+                    //Assert(fields.Count == 1);
                     return new RecordPattern(fields.Cast<FieldPattern>());
                 }
 
@@ -683,16 +691,14 @@ namespace Fux.Input
 
                 Field Field(TokensCursor cursor)
                 {
-                    var name = Sequence(cursor);
+                    var name = SingleLowerIdentifier(cursor);
 
                     if (cursor.Is(Lex.Assign))
                     {
-                        Assert(name is Identifier);
-
                         var assign = cursor.Swallow(Lex.Assign);
                         var value = Expression(cursor);
 
-                        return new FieldAssign((Identifier)name, value);
+                        return new FieldAssign(name, value);
                     }
                     else
                     {
@@ -842,7 +848,7 @@ namespace Fux.Input
             });
         }
 
-        private Expression Sequence(TokensCursor cursor, bool always = false)
+        private Expression Sequence(TokensCursor cursor, bool always = true)
         {
             return cursor.Scope(cursor =>
             {
@@ -859,7 +865,7 @@ namespace Fux.Input
                 Assert(expressions.Count >= 1);
 
                 if (!always && expressions.Count == 1)
-               {
+                {
                     return expressions[0];
                 }
 
@@ -1039,24 +1045,6 @@ namespace Fux.Input
 
                 return new LambdaExpr(parameters, expr);
             });
-        }
-
-        private T Scope<T>(TokensCursor cursor, Func<TokensCursor, T> parser)
-            where T : Expression
-        {
-#if true
-            return cursor.Scope(parser);
-#else
-            var start = cursor.Tokens.Start + cursor.Offset;
-
-            var expression = parser(cursor);
-
-            var next = cursor.Tokens.Start + cursor.Offset;
-
-            expression.Span = new Tokens(cursor.Tokens.Toks, start, next);
-
-            return expression;
-#endif
         }
     }
 }
