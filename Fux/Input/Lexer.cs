@@ -30,11 +30,13 @@ namespace Fux.Input
             Source = source;
             Offset = 0;
             Error = new LexerErrors(errors, this);
+            Liner = new Liner(errors, this);
         }
 
         public Source Source { get; }
         public int Offset { get; private set; }
         public int Start { get; private set; }
+        public Liner Liner { get; }
 
         private int Current => Source.Ensure(Offset);
         private int Next => Source.Ensure(Offset + 1);
@@ -45,15 +47,7 @@ namespace Fux.Input
 
         public LexerErrors Error { get; }
 
-        public Token Eof()
-        {
-            return Build(Lex.EOF);
-        }
-
-        public Token Bof()
-        {
-            return new Token(Lex.BOF, new Location(Source, 0, 0));
-        }
+        public Tokens GetLine() => Liner.GetLine();
 
         public Token GetNext()
         {

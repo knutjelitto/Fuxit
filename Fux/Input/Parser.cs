@@ -311,7 +311,6 @@ namespace Fux.Input
 
                         Assert(name.IsSingleLower);
 
-
                         var expression = Expression(cursor);
 
                         return new VarDecl(name, parameters, expression);
@@ -450,6 +449,16 @@ namespace Fux.Input
                 cursor.Is(Lex.LowerId, Lex.UpperId, Lex.OperatorId);
 
                 return new Identifier(cursor.Advance());
+            });
+        }
+
+        private Identifier SingleLowerIdentifier(TokensCursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                Assert(cursor.Is(Lex.LowerId));
+
+                return new Identifier(cursor.Advance()).SingleLower();
             });
         }
 
@@ -647,7 +656,7 @@ namespace Fux.Input
                     return new RecordPattern(Enumerable.Empty<FieldPattern>());
                 }
 
-                Expression? baseName = Sequence(cursor);
+                Expression? baseName = SingleLowerIdentifier(cursor);
 
                 if (cursor.IsNot(Lex.Bar))
                 {
@@ -683,16 +692,14 @@ namespace Fux.Input
 
                 Field Field(TokensCursor cursor)
                 {
-                    var name = Sequence(cursor);
+                    var name = SingleLowerIdentifier(cursor);
 
                     if (cursor.Is(Lex.Assign))
                     {
-                        Assert(name is Identifier);
-
                         var assign = cursor.Swallow(Lex.Assign);
                         var value = Expression(cursor);
 
-                        return new FieldAssign((Identifier)name, value);
+                        return new FieldAssign(name, value);
                     }
                     else
                     {
@@ -859,7 +866,7 @@ namespace Fux.Input
                 Assert(expressions.Count >= 1);
 
                 if (!always && expressions.Count == 1)
-               {
+                {
                     return expressions[0];
                 }
 
