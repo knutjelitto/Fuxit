@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Newtonsoft.Json.Linq;
-
-using static Fux.Input.Lex;
+﻿using System.Collections.Immutable;
 
 namespace Fux.Building.AlgorithmW
 {
@@ -34,19 +25,21 @@ namespace Fux.Building.AlgorithmW
     /// </summary>
     public abstract record Literal : Expression;
 
-    public record NumberLiteral(object Any) : Literal
-    {
-        public override string ToString() => Any.ToString()!;
-    }
-
-    public record IntegerLiteral(int Value) : NumberLiteral(Value)
+    public record IntegerLiteral(int Value) : Literal
     {
         public override string ToString() => Value.ToString();
     }
 
-    public record FloatLiteral(double Value) : NumberLiteral(Value)
+    public record FloatLiteral(double Value) : Literal
     {
-        public override string ToString() => Value.ToString();
+        public override string ToString()
+        {
+            if (Math.Truncate(Value) == Value)
+            {
+                return $"{Value}.0";
+            }
+            return Value.ToString();
+        }
     }
 
     public record BoolLiteral(bool Value) : Literal
@@ -91,11 +84,6 @@ namespace Fux.Building.AlgorithmW
     public record VariableType(TypeVar TypeVar) : InferredType
     {
         public override string ToString() => TypeVar.ToString();
-    }
-
-    public record NumberType : InferredType
-    {
-        public override string ToString() => "number";
     }
 
     public record IntegerType : InferredType

@@ -29,16 +29,6 @@ namespace Fux.Building.AlgorithmW
             return app(app(e1, e2), e3);
         }
 
-        public static NumberLiteral number(int value)
-        {
-            return new NumberLiteral(value);
-        }
-
-        public static NumberLiteral number(double value)
-        {
-            return new NumberLiteral(value);
-        }
-
         public static IntegerLiteral integer(int value)
         {
             return new IntegerLiteral(value);

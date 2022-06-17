@@ -38,9 +38,6 @@ namespace Fux
                 Terminal.Write($"{str}");
             }
 #endif
-#if false
-            HindleyMilner.Main();
-#endif
 
             try
             {
@@ -72,7 +69,6 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
 
-#if true
                     //TODO: resolve-error
                     //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
@@ -106,7 +102,6 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-community/intdict"));
                     builder.Load(ElmPackage.Latest("elm-community/undo-redo"));
                     builder.Load(ElmPackage.Latest("elm-community/list-split"));
-#endif
                 }
 
                 var whole = new Stopwatch();

@@ -9,18 +9,20 @@ namespace Fux.Building.AlgorithmW
     {
         public static void Run()
         {
-            test(app(app(var("+"), integer(1)), integer(2)));
+            test(app(var("+"), floating(1), floating(2)));
+            test(app(var("+"), integer(1), integer(2)));
 
             test(
-                let("n", floating(0),
-                    iff(app(var("lt"), var("n"), integer(0)),
+                let("n", integer(0),
+                    iff(app(var("<"), var("n"), integer(0)),
                         app(var("-"), var("n")),
                         var("n")
                 )));
 
+            test(iff(lit(true), app(var("toFloat"), integer(4)), floating(4.0)));
+
             return;
 
-            test(iff(lit(true), integer(4), floating(4.0)));
 
 
             test(integer(5));

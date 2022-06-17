@@ -33,7 +33,6 @@ namespace Fux.Building.AlgorithmW
                                 FloatLiteral(_) => new FloatType(),
                                 BoolLiteral(_) => new BoolType(),
                                 StringLiteral(_) => new StringType(),
-                                NumberLiteral(_) => new NumberType(),
                                 _ => throw new InvalidOperationException($"unknown literal type '{literal}'"),
                             }
                         ));
@@ -64,7 +63,7 @@ namespace Fux.Building.AlgorithmW
                                 if (result2 is ((Substitution s2, InferredType t2), _))
                                 {
                                     var result3 = MostGeneralUnifier(t1, t2);
-                                    if (result3 is ((Substitution s3, _), _))
+                                    if (result3 is (Substitution s3, _))
                                     {
                                         return TypeInferenceResult.Ok((ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3)));
                                     }
@@ -107,7 +106,7 @@ namespace Fux.Building.AlgorithmW
                             {
                                 var varType = new VariableType(typeVarGenerator.GetNext());
                                 var result3 = MostGeneralUnifier(type1: ApplySubstitution(t1, s2), type2: new FunctionType(t2, varType));
-                                if (result3 is ((Substitution s3, _), _))
+                                if (result3 is (Substitution s3, _))
                                 {
                                     return TypeInferenceResult.Ok((ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3)));
                                 }
@@ -194,22 +193,22 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Most general unifier, a substitution S such that S(self) is congruent to S(other).
         /// </summary>
-        private static TypeInferenceResult<(Substitution, InferredType?)> MostGeneralUnifier(InferredType type1, InferredType type2)
+        private static TypeInferenceResult<Substitution> MostGeneralUnifier(InferredType type1, InferredType type2)
         {
             switch (type1, type2)
             {
                 // For functions, we find the most general unifier for the inputs, apply the resulting
                 // substitution to the outputs, find the outputs' most general unifier, and finally
                 // compose the two resulting substitutions.
-                case (FunctionType({ } typeIn1, { } typeOut1), FunctionType({ } typeIn2, { } typeOut2)):
+                case (FunctionType({ } type1In, { } type1Out), FunctionType({ } type2In, { } type2Out)):
                     {
-                        var result1 = MostGeneralUnifier(typeIn1, typeIn2);
-                        if (result1 is ((Substitution sub1, _), _))
+                        var result1 = MostGeneralUnifier(type1In, type2In);
+                        if (result1 is (Substitution sub1, _))
                         {
-                            var result2 = MostGeneralUnifier(ApplySubstitution(typeOut1, sub1), ApplySubstitution(typeOut2, sub1));
-                            if (result2 is ((Substitution sub2, _), _))
+                            var result2 = MostGeneralUnifier(ApplySubstitution(type1Out, sub1), ApplySubstitution(type2Out, sub1));
+                            if (result2 is (Substitution sub2, _))
                             {
-                                return TypeInferenceResult.Ok((ComposeSubstitutions(sub1, sub2), (InferredType?)null));
+                                return TypeInferenceResult.Ok(ComposeSubstitutions(sub1, sub2));
                             }
                             else
                             {
@@ -232,23 +231,14 @@ namespace Fux.Building.AlgorithmW
                         return BindVariable(v, t);
                     }
                 // If they are both primitives, no substitution needs to be done.
-                case (NumberType, NumberType) or (IntegerType, IntegerType) or (FloatType, FloatType) or (BoolType, BoolType) or (StringType, StringType):
+                case (IntegerType, IntegerType) or (FloatType, FloatType) or (BoolType, BoolType) or (StringType, StringType):
                     {
-                        return TypeInferenceResult.Ok((Substitution.Empty(), (InferredType?)null));
-                    }
-                case (NumberType, IntegerType) or
-                     (NumberType, FloatType) or
-                     (IntegerType, NumberType) or
-                     (IntegerType, FloatType) or
-                     (FloatType, NumberType) or
-                     (FloatType, IntegerType):
-                    {
-                        return TypeInferenceResult.Ok((Substitution.Empty(), (InferredType?)null));
+                        return TypeInferenceResult.Ok(Substitution.Empty());
                     }
                 // Otherwise, the types cannot be unified.
                 case (var t1, var t2):
                     {
-                        return TypeInferenceResult.Fail<(Substitution, InferredType?)>(new TypeInferenceError($"types do not unify: {t1} vs {t2}"));
+                        return TypeInferenceResult.Fail<Substitution>(new TypeInferenceError($"types do not unify: {t1} vs {t2}"));
                     }
             }
         }
@@ -256,22 +246,22 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Attempt to bind a type variable to a type, returning an appropriate substitution.
         /// </summary>
-        private static TypeInferenceResult<(Substitution, InferredType?)> BindVariable(TypeVar typeVar, InferredType type)
+        private static TypeInferenceResult<Substitution> BindVariable(TypeVar typeVar, InferredType type)
         {
             // Check for binding a variable to itself
             if (type is VariableType({ } u) && u == typeVar)
             {
-                return TypeInferenceResult.Ok((Substitution.Empty(), (InferredType?)null));
+                return TypeInferenceResult.Ok(Substitution.Empty());
             }
 
             // The occurs check prevents illegal recursive types.
             if (GetFreeTypeVariables(type).Contains(typeVar))
             {
-                return TypeInferenceResult.Fail<(Substitution, InferredType?)>(new TypeInferenceError($"occur check fails: {typeVar} vs {type}"));
+                return TypeInferenceResult.Fail<Substitution>(new TypeInferenceError($"occur check fails: {typeVar} vs {type}"));
             }
 
-            var s = Substitution.Empty().Insert(typeVar, type);
-            return TypeInferenceResult.Ok((s, (InferredType?)null));
+            var subst = Substitution.Empty().Insert(typeVar, type);
+            return TypeInferenceResult.Ok(subst);
         }
 
         private static HashSet<TypeVar> GetFreeTypeVariables(InferredType type)
@@ -282,7 +272,7 @@ namespace Fux.Building.AlgorithmW
                 VariableType({ } s) => new HashSet<TypeVar>(new[] { s }),
 
                 // Primitive types have no free variables
-                NumberType or IntegerType or FloatType or BoolType or StringType => new HashSet<TypeVar>(),
+                IntegerType or FloatType or BoolType or StringType => new HashSet<TypeVar>(),
 
                 // For functions, we take the union of the free type variables of the input and output.
                 FunctionType({ } inType, { } outType) => union(GetFreeTypeVariables(inType), GetFreeTypeVariables(outType)),
@@ -350,10 +340,15 @@ namespace Fux.Building.AlgorithmW
 
         public TypeEnvironment GetDefaultTypeEnvironment()
         {
+            var number1 = new VariableType(new TypeVar(1111));
+            var number2 = new VariableType(new TypeVar(1112));
+            var number3 = new VariableType(new TypeVar(1113));
+
             var typeEnvironment = TypeEnvironment.Empty()
-                .Insert("+", new Polytype(new FunctionType(new IntegerType(), new FunctionType(new IntegerType(), new IntegerType())))) // + :: int -> int -> int -- binary addition
-                .Insert("-", new Polytype(new FunctionType(new IntegerType(), new IntegerType()))) // - :: int -> int -- unary negation
-                .Insert("lt", new Polytype(new FunctionType(new NumberType(), new FunctionType(new NumberType(), new BoolType())))) // lt :: int -> int -> bool -- binary '<'
+                .Insert("+", new Polytype(new FunctionType(number1, new FunctionType(number1, number1)))) // + :: number -> number -> number -- binary addition
+                .Insert("-", new Polytype(new FunctionType(number2, number2))) // - :: number -> number -- unary negation
+                .Insert("<", new Polytype(new FunctionType(number3, new FunctionType(number3, new BoolType())))) // less-than :: number -> number -> bool
+                .Insert("toFloat", new Polytype(new FunctionType(new IntegerType(), new FloatType()))) // - :: integer -> floating -- conversion
                 ;
             return typeEnvironment;
         }
