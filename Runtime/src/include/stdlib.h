@@ -13,4 +13,6 @@ typedef int ptrdiff_t;
 
 void exit(int status);
 
+void abort(void);
+
 

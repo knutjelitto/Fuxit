@@ -34,7 +34,7 @@ WASM2C		= wasm2c
 
 EXPORTS = square sum
 SOURCES = $(wildcard *.c) src/kernel/core/core.c
-BUILD   = RELEASE
+BUILD   = DEBUG
 
 #------------------------------------------------------------------------------------------------------
 

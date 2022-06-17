@@ -17,7 +17,7 @@ namespace Fux
     {
         static void Main(string[] args)
         {
-#if false
+#if true
             Fux.Building.AlgorithmW.Tester.Run();
             WaitForKey();
 #endif
@@ -131,7 +131,7 @@ namespace Fux
                 }
             }
 
-            //WaitForKey();
+            WaitForKey();
         }
 
         private static void Test()

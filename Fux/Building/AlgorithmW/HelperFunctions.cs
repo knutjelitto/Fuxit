@@ -9,6 +9,11 @@ namespace Fux.Building.AlgorithmW
             return new LetExpression(name, e1, e2);
         }
 
+        public static IffExpression iff(Expression cond, Expression then, Expression @else)
+        {
+            return new IffExpression(cond, then, @else);
+        }
+
         public static AbstractionExpression abs(string var, Expression e)
         {
             return new AbstractionExpression(var, e);
@@ -19,12 +24,27 @@ namespace Fux.Building.AlgorithmW
             return new ApplicationExpression(e1, e2);
         }
 
-        public static IntegerLiteral lit(int value)
+        public static ApplicationExpression app(Expression e1, Expression e2, Expression e3)
+        {
+            return app(app(e1, e2), e3);
+        }
+
+        public static NumberLiteral number(int value)
+        {
+            return new NumberLiteral(value);
+        }
+
+        public static NumberLiteral number(double value)
+        {
+            return new NumberLiteral(value);
+        }
+
+        public static IntegerLiteral integer(int value)
         {
             return new IntegerLiteral(value);
         }
 
-        public static FloatLiteral lit(double value)
+        public static FloatLiteral floating(double value)
         {
             return new FloatLiteral(value);
         }

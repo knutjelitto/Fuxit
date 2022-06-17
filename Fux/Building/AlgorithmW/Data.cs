@@ -5,6 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json.Linq;
+
+using static Fux.Input.Lex;
+
 namespace Fux.Building.AlgorithmW
 {
     /// <summary>
@@ -29,18 +33,27 @@ namespace Fux.Building.AlgorithmW
     /// A literal value of some primitive
     /// </summary>
     public abstract record Literal : Expression;
-    public record IntegerLiteral(int Value) : Literal
+
+    public record NumberLiteral(object Any) : Literal
+    {
+        public override string ToString() => Any.ToString()!;
+    }
+
+    public record IntegerLiteral(int Value) : NumberLiteral(Value)
     {
         public override string ToString() => Value.ToString();
     }
-    public record FloatLiteral(double Value) : Literal
+
+    public record FloatLiteral(double Value) : NumberLiteral(Value)
     {
         public override string ToString() => Value.ToString();
     }
+
     public record BoolLiteral(bool Value) : Literal
     {
         public override string ToString() => Value.ToString();
     }
+
     public record StringLiteral(string Value) : Literal
     {
         public override string ToString() => $"\"{Value}\"";
@@ -62,6 +75,11 @@ namespace Fux.Building.AlgorithmW
         public override string ToString() => $"(let {Term} = {Exp1} in {Exp2})";
     }
 
+    public record IffExpression(Expression Cond, Expression Then, Expression Else) : Expression
+    {
+        public override string ToString() => $"(if {Cond} then {Then} else {Else})";
+    }
+
 
     public record TypeVar(int ID)
     {
@@ -73,6 +91,11 @@ namespace Fux.Building.AlgorithmW
     public record VariableType(TypeVar TypeVar) : InferredType
     {
         public override string ToString() => TypeVar.ToString();
+    }
+
+    public record NumberType : InferredType
+    {
+        public override string ToString() => "number";
     }
 
     public record IntegerType : InferredType
@@ -100,7 +123,22 @@ namespace Fux.Building.AlgorithmW
         public override string ToString() => $"({TypeIn} → {TypeOut})";
     }
 
-    public record Polytype(IReadOnlyList<TypeVar> TypeVariables, InferredType Type);
+    public class Polytype
+    {
+        public Polytype(IReadOnlyList<TypeVar> typeVariables, InferredType type)
+        {
+            TypeVariables = typeVariables;
+            Type = type;
+        }
+
+        public Polytype(InferredType type)
+            : this(Array.Empty<TypeVar>(), type)
+        {
+        }
+
+        public IReadOnlyList<TypeVar> TypeVariables { get; }
+        public InferredType Type { get; }
+    }
 
     public record TypeInferenceError(string Message)
     {
@@ -142,6 +180,15 @@ namespace Fux.Building.AlgorithmW
                 }
             }
             return new Substitution(union);
+        }
+
+        public override string ToString()
+        {
+            if (map.Count == 0)
+            {
+                return $"Substitution.Empty";
+            }
+            return $"Substitution[{map.Count}]";
         }
     }
 

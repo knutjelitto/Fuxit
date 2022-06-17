@@ -139,7 +139,7 @@ static i32 ipow(i32 base, i32 ex) {
 /**
  * pow
  */
-void* eval_pow(void* args[]) {
+static void* eval_pow(void* args[]) {
   ElmFloat* x = args[0];
   ElmFloat* y = args[1];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
