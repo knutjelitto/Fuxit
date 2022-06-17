@@ -9,7 +9,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// The meat of the type inference algorithm.
         /// </summary>
-        private static TypeInferenceResult<(Substitution, InferredType)> InferType(Expression expression, TypeEnvironment typeEnvironment, TypeVarGenerator typeVarGenerator)
+        private static TypeInferenceResult<(Substitution, WType)> InferType(WExpr expression, TypeEnvironment typeEnvironment, TypeVarGenerator typeVarGenerator)
         {
             switch (expression)
             {
@@ -21,11 +21,11 @@ namespace Fux.Building.AlgorithmW
                         return TypeInferenceResult.Ok((Substitution.Empty(), InstantiateType(polytype, typeVarGenerator)));
                     }
 
-                    return TypeInferenceResult.Fail<(Substitution, InferredType)>(new TypeInferenceError($"unbound variable: {term}"));
+                    return TypeInferenceResult.Fail<(Substitution, WType)>(new TypeInferenceError($"unbound variable: {term}"));
 
                 // A literal is typed as it's primitive type.
                 case Literal literal:
-                    return TypeInferenceResult.Ok<(Substitution, InferredType)>((
+                    return TypeInferenceResult.Ok<(Substitution, WType)>((
                             Substitution.Empty(),
                             literal switch
                             {
@@ -41,13 +41,13 @@ namespace Fux.Building.AlgorithmW
                     {
                         {
                             var result1 = InferType(cond, typeEnvironment, typeVarGenerator);
-                            if (result1 is ((Substitution s1, InferredType t1), _))
+                            if (result1 is ((Substitution s1, WType t1), _))
                             {
                                 var t2 = new BoolType();
                                 var result2 = MostGeneralUnifier(t1, t2);
                                 if (result2 is (_, TypeInferenceError error))
                                 {
-                                    return TypeInferenceResult.Fail<(Substitution, InferredType)>(error);
+                                    return TypeInferenceResult.Fail<(Substitution, WType)>(error);
                                 }
                             }
                             else
@@ -57,23 +57,24 @@ namespace Fux.Building.AlgorithmW
                         }
                         {
                             var result1 = InferType(expr1, typeEnvironment, typeVarGenerator);
-                            if (result1 is ((Substitution s1, InferredType t1), _))
+                            if (result1 is ((Substitution s1, WType t1), _))
                             {
                                 var result2 = InferType(expr2, typeEnvironment, typeVarGenerator);
-                                if (result2 is ((Substitution s2, InferredType t2), _))
+                                if (result2 is ((Substitution s2, WType t2), _))
                                 {
                                     var result3 = MostGeneralUnifier(t1, t2);
                                     if (result3 is (Substitution s3, _))
                                     {
                                         return TypeInferenceResult.Ok((ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3)));
                                     }
-                                    return TypeInferenceResult.Fail<(Substitution, InferredType)>(result3.Error!);
+                                    return TypeInferenceResult.Fail<(Substitution, WType)>(result3.Error!);
                                 }
                                 return result2; // error
                             }
                             return result1; // error
                         }
                     }
+
                 // An abstraction is typed by:
                 // * Removing any existing type with the same name as the argument to prevent name clashes.
                 // * Inserting a new type variable for the argument.
@@ -81,14 +82,15 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case AbstractionExpression({ } term, { } exp):
                     {
-                        var varType = new VariableType(typeVarGenerator.GetNext());
+                        var varType = typeVarGenerator.GetNext();
                         var env = typeEnvironment.Remove(term).Insert(term, new Polytype(varType));
                         return InferType(exp, env, typeVarGenerator) switch
                         {
-                            ((Substitution substitution, InferredType type), _) => TypeInferenceResult.Ok<(Substitution, InferredType)>((substitution, new FunctionType(ApplySubstitution(varType, substitution), type))),
-                            (_, TypeInferenceError error) => TypeInferenceResult.Fail<(Substitution, InferredType)>(error)
+                            ((Substitution substitution, WType type), _) => TypeInferenceResult.Ok<(Substitution, WType)>((substitution, new FunctionType(ApplySubstitution(varType, substitution), type))),
+                            (_, TypeInferenceError error) => TypeInferenceResult.Fail<(Substitution, WType)>(error)
                         };
                     }
+
                 // An application is typed by:
                 // * Inferring the type of the callee.
                 // * Applying the resulting substitution to the argument and inferring it's type.
@@ -96,21 +98,21 @@ namespace Fux.Building.AlgorithmW
                 // argument type to a new type variable. This combines the previously known type of the
                 // function and the type as it is now being used.
                 // * Applying the unifier to the new type variable.
-                case ApplicationExpression({ } exp1, { } exp2):
+                case ApplicationExpression({ } callee, { } argument):
                     {
-                        var result1 = InferType(exp1, typeEnvironment, typeVarGenerator);
-                        if (result1 is ((Substitution s1, InferredType t1), _))
+                        var result1 = InferType(callee, typeEnvironment, typeVarGenerator);
+                        if (result1 is ((Substitution s1, WType t1), _))
                         {
-                            var result2 = InferType(exp2, ApplySubstitution(typeEnvironment, s1), typeVarGenerator);
-                            if (result2 is ((Substitution s2, InferredType t2), _))
+                            var result2 = InferType(argument, ApplySubstitution(typeEnvironment, s1), typeVarGenerator);
+                            if (result2 is ((Substitution s2, WType t2), _))
                             {
-                                var varType = new VariableType(typeVarGenerator.GetNext());
+                                var varType = typeVarGenerator.GetNext();
                                 var result3 = MostGeneralUnifier(type1: ApplySubstitution(t1, s2), type2: new FunctionType(t2, varType));
                                 if (result3 is (Substitution s3, _))
                                 {
                                     return TypeInferenceResult.Ok((ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3)));
                                 }
-                                return TypeInferenceResult.Fail<(Substitution, InferredType)>(result3.Error!);
+                                return TypeInferenceResult.Fail<(Substitution, WType)>(result3.Error!);
                             }
                             return result2; // error
                         }
@@ -126,14 +128,14 @@ namespace Fux.Building.AlgorithmW
                     {
                         var env1 = typeEnvironment.Remove(term);
                         var result1 = InferType(exp1, typeEnvironment, typeVarGenerator);
-                        if (result1 is ((Substitution s1, InferredType t1), _))
+                        if (result1 is ((Substitution s1, WType t1), _))
                         {
                             var tp = GeneralizePolytype(ApplySubstitution(env1, s1), t1);
                             var env2 = env1.Insert(term, tp);
                             var result2 = InferType(exp2, ApplySubstitution(env2, s1), typeVarGenerator);
-                            if (result2 is ((Substitution s2, InferredType t2), _))
+                            if (result2 is ((Substitution s2, WType t2), _))
                             {
-                                return TypeInferenceResult.Ok<(Substitution, InferredType)>((ComposeSubstitutions(s2, s1), t2));
+                                return TypeInferenceResult.Ok<(Substitution, WType)>((ComposeSubstitutions(s2, s1), t2));
                             }
                             return result2; // error
                         }
@@ -144,7 +146,7 @@ namespace Fux.Building.AlgorithmW
             }
         }
 
-        private static InferredType ApplySubstitution(InferredType type, Substitution substitution)
+        private static WType ApplySubstitution(WType type, Substitution substitution)
         {
             return type switch
             {
@@ -163,7 +165,7 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private static TypeEnvironment ApplySubstitution(TypeEnvironment typeEnv, Substitution substitution)
         {
-            return new TypeEnvironment(typeEnv.Enumerate().Select(kv => (kv.Key, ApplySubstitution(kv.Value, substitution))));
+            return new TypeEnvironment(typeEnv.Enumerate().Select(vp => (vp.var, ApplySubstitution(vp.polytype, substitution))));
         }
 
         private static Polytype ApplySubstitution(Polytype polytype, Substitution substitution)
@@ -176,7 +178,7 @@ namespace Fux.Building.AlgorithmW
             return new Polytype(polytype.TypeVariables, ApplySubstitution(polytype.Type, sub));
         }
 
-        private static Polytype GeneralizePolytype(TypeEnvironment typeEnv, InferredType type)
+        private static Polytype GeneralizePolytype(TypeEnvironment typeEnv, WType type)
         {
             return new Polytype(GetFreeTypeVariables(type).Except(GetFreeTypeVariables(typeEnv)).ToList(), type);
         }
@@ -193,7 +195,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Most general unifier, a substitution S such that S(self) is congruent to S(other).
         /// </summary>
-        private static TypeInferenceResult<Substitution> MostGeneralUnifier(InferredType type1, InferredType type2)
+        private static TypeInferenceResult<Substitution> MostGeneralUnifier(WType type1, WType type2)
         {
             switch (type1, type2)
             {
@@ -246,7 +248,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Attempt to bind a type variable to a type, returning an appropriate substitution.
         /// </summary>
-        private static TypeInferenceResult<Substitution> BindVariable(TypeVar typeVar, InferredType type)
+        private static TypeInferenceResult<Substitution> BindVariable(TypeVar typeVar, WType type)
         {
             // Check for binding a variable to itself
             if (type is VariableType({ } u) && u == typeVar)
@@ -264,15 +266,15 @@ namespace Fux.Building.AlgorithmW
             return TypeInferenceResult.Ok(subst);
         }
 
-        private static HashSet<TypeVar> GetFreeTypeVariables(InferredType type)
+        private static HashSet<TypeVar> GetFreeTypeVariables(WType type)
         {
             return type switch
             {
                 // For a type variable, there is one free variable: the variable itself.
-                VariableType({ } s) => new HashSet<TypeVar>(new[] { s }),
+                VariableType({ } typeVar) => new HashSet<TypeVar>(new[] { typeVar }),
 
                 // Primitive types have no free variables
-                IntegerType or FloatType or BoolType or StringType => new HashSet<TypeVar>(),
+                PrimitiveType => new HashSet<TypeVar>(),
 
                 // For functions, we take the union of the free type variables of the input and output.
                 FunctionType({ } inType, { } outType) => union(GetFreeTypeVariables(inType), GetFreeTypeVariables(outType)),
@@ -303,18 +305,18 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private static HashSet<TypeVar> GetFreeTypeVariables(TypeEnvironment typeEnv)
         {
-            return GetFreeTypeVariables(typeEnv.Enumerate().Select(kv => kv.Value).ToList());
+            return GetFreeTypeVariables(typeEnv.Polytypes);
         }
 
         /// <summary>
         /// The free type variables of a vector of types is the union of the free type variables of each of the types in the vector.
         /// </summary>
-        private static HashSet<TypeVar> GetFreeTypeVariables(IReadOnlyList<Polytype> types)
+        private static HashSet<TypeVar> GetFreeTypeVariables(IEnumerable<Polytype> polytypes)
         {
             var union = new HashSet<TypeVar>();
-            foreach (var type in types)
+            foreach (var polytype in polytypes)
             {
-                union.UnionWith(GetFreeTypeVariables(type));
+                union.UnionWith(GetFreeTypeVariables(polytype));
             }
             return union;
         }
@@ -322,18 +324,18 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Instantiates a polytype into a type. Replaces all bound type variables with fresh type variables and return the resulting type.
         /// </summary>
-        private static InferredType InstantiateType(Polytype polytype, TypeVarGenerator typeVarGenerator)
+        private static WType InstantiateType(Polytype polytype, TypeVarGenerator typeVarGenerator)
         {
-            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: new VariableType(typeVarGenerator.GetNext()))).ToImmutableDictionary(x => x.typeVar, x => (InferredType)x.newVar);
+            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: typeVarGenerator.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (WType)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
         }
 
-        public TypeInferenceResult<InferredType> Run(Expression expression, TypeEnvironment typeEnvironment, TypeVarGenerator typeVarGenerator)
+        public TypeInferenceResult<WType> Run(WExpr expression, TypeEnvironment typeEnvironment, TypeVarGenerator typeVarGenerator)
         {
             return InferType(expression, typeEnvironment, typeVarGenerator) switch
             {
-                ((Substitution substitution, InferredType type), _) => new(ApplySubstitution(type, substitution), null),
+                ((Substitution substitution, WType type), _) => new(ApplySubstitution(type, substitution), null),
                 (_, TypeInferenceError error) => new(null, error)
             };
         }

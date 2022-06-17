@@ -118,7 +118,7 @@ namespace Fux.Building.AlgorithmW
                                                            app(var("succ"), var("zero")))))))))))));
         }
 
-        private static void test(Expression expression)
+        private static void test(WExpr expression)
         {
             var typeInferrer = new TypeInferrer();
             var typeEnvironment = typeInferrer.GetDefaultTypeEnvironment();
@@ -128,7 +128,7 @@ namespace Fux.Building.AlgorithmW
             var result = typeInferrer.Run(expression, typeEnvironment, typeVarGenerator);
             switch (result)
             {
-                case (InferredType type, _):
+                case (WType type, _):
                     Console.WriteLine($"OUTPUT: {type}");
                     break;
                 case (_, TypeInferenceError(string error)):

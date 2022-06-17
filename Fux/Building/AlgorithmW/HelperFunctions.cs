@@ -4,27 +4,27 @@ namespace Fux.Building.AlgorithmW
 {
     public static class HelperFunctions
     {
-        public static LetExpression let(string name, Expression e1, Expression e2)
+        public static LetExpression let(string name, WExpr e1, WExpr e2)
         {
             return new LetExpression(name, e1, e2);
         }
 
-        public static IffExpression iff(Expression cond, Expression then, Expression @else)
+        public static IffExpression iff(WExpr cond, WExpr then, WExpr @else)
         {
             return new IffExpression(cond, then, @else);
         }
 
-        public static AbstractionExpression abs(string var, Expression e)
+        public static AbstractionExpression abs(string var, WExpr e)
         {
             return new AbstractionExpression(var, e);
         }
 
-        public static ApplicationExpression app(Expression e1, Expression e2)
+        public static ApplicationExpression app(WExpr e1, WExpr e2)
         {
             return new ApplicationExpression(e1, e2);
         }
 
-        public static ApplicationExpression app(Expression e1, Expression e2, Expression e3)
+        public static ApplicationExpression app(WExpr e1, WExpr e2, WExpr e3)
         {
             return app(app(e1, e2), e3);
         }
