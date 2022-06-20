@@ -2,19 +2,6 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    public record TypeInferenceError(string Message)
-    {
-        public override string ToString() => Message;
-    }
-
-    public static class TypeInferenceResult
-    {
-        public static TypeInferenceResult<TResult> Ok<TResult>(TResult result) => new(result, null);
-        public static TypeInferenceResult<TResult> Fail<TResult>(TypeInferenceError error) => new(default, error);
-    }
-
-    public record TypeInferenceResult<TResult>(TResult? Result, TypeInferenceError? Error);
-
     public class Substitution
     {
         private readonly ImmutableDictionary<TypeVar, WType> map;

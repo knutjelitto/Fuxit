@@ -18,12 +18,15 @@ namespace Fux.Input
             return this;
         }
 
+        public Token this[int index] => Toks[Start + index];
+        public int Count => Next - Start;
+
         public TokenList Toks { get; }
         public int Start { get; }
         public int Next { get; private set; }
 
-        public Token this[int index] => Toks[Start + index];
-        public int Count => Next - Start;
+        public bool Eof => Start == Toks.Count - 1;
+
         public IEnumerator<Token> GetEnumerator()
         {
             for (var index = Start; index < Next; ++index)
@@ -31,6 +34,7 @@ namespace Fux.Input
                 yield return Toks[index];
             }
         }
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override string ToString()

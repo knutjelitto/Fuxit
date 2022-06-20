@@ -24,6 +24,9 @@ namespace Fux.Building
 
         public ErrorBag Errors => errors;
 
+        public IEnumerable<Package> Packages => loaded;
+        public IEnumerable<Module> Modules => loaded.SelectMany(p => p.Modules);
+
         public void Load(ElmPackage elmPackage)
         {
             var _ = loaded.Register(elmPackage);
@@ -31,31 +34,35 @@ namespace Fux.Building
 
         public void Build()
         {
-            const int width = -8;
+            const int rwidth = 5;
+            const int lwidth = -rwidth;
 
             Terminal.ClearHome();
 
-            var prefix = $"{"parse__",width}";
-            Build(prefix, package => new Phase0Parse(Errors, package));
-            prefix = $"{prefix}{"declare",width}";
-            Build(prefix, package => new Phase1Declare(Errors, package));
-            prefix = $"{prefix}{"expose_",width}";
-            Build(prefix, package => new Phase2Expose(Errors, package));
-            prefix = $"{prefix}{"import_",width}";
-            Build(prefix, package => new Phase3Import(Errors, package));
-            prefix = $"{prefix}{"resolve",width}";
-            Build(prefix, package => new Phase4Resolve(Errors, package));
-            prefix = $"{prefix}{"type___",width}";
-            Build(prefix, package => new Phase5Type(Errors, package));
+            var prefix = $"{"scan",lwidth}";
+            Build(prefix, package => new Phase1Scan(Errors, package));
+            prefix = $"{prefix}{"pars",lwidth}";
+            Build(prefix, package => new Phase2Parse(Errors, package));
+            prefix = $"{prefix}{"decl",lwidth}";
+            Build(prefix, package => new Phase3Declare(Errors, package));
+            prefix = $"{prefix}{"expo",lwidth}";
+            Build(prefix, package => new Phase4Expose(Errors, package));
+            prefix = $"{prefix}{"impo",lwidth}";
+            Build(prefix, package => new Phase5Import(Errors, package));
+            prefix = $"{prefix}{"reso",lwidth}";
+            Build(prefix, package => new Phase6Resolve(Errors, package));
+            prefix = $"{prefix}{"type",lwidth}";
+            Build(prefix, package => new Phase7Type(Errors, package));
 
-            Terminal.Write($"{"",50}");
-            Terminal.Write($"{$"{Collector.Instance.ParseTime.ElapsedMilliseconds} ms",width}");
-            Terminal.Write($"{$"{Collector.Instance.DeclareTime.ElapsedMilliseconds} ms",width}");
-            Terminal.Write($"{$"{Collector.Instance.ExposeTime.ElapsedMilliseconds} ms",width}");
-            Terminal.Write($"{$"{Collector.Instance.ImportTime.ElapsedMilliseconds} ms",width}");
-            Terminal.Write($"{$"{Collector.Instance.ResolveTime.ElapsedMilliseconds} ms",width}");
-            Terminal.Write($"{$"{Collector.Instance.TypeTime.ElapsedMilliseconds} ms",width}");
-            Terminal.WriteLine();
+            Terminal.Write($"{"",53}");
+            Terminal.Write($"{$"{Collector.Instance.ScanTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.Write($"{$"{Collector.Instance.ParseTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.Write($"{$"{Collector.Instance.DeclareTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.Write($"{$"{Collector.Instance.ExposeTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.Write($"{$"{Collector.Instance.ImportTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.Write($"{$"{Collector.Instance.ResolveTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.Write($"{$"{Collector.Instance.TypeTime.ElapsedMilliseconds} ",rwidth}");
+            Terminal.WriteLine("ms");
 
             Collector.Instance.Write();
         }
@@ -63,17 +70,18 @@ namespace Fux.Building
         private void Build(string prefix, Func<Package, Phase> phase)
         {
             Terminal.GoHome();
+            var count = 0;
             foreach (var package in loaded)
             {
                 var p = phase(package);
-                Build(prefix, package, p);
+                Build(prefix, ++count, package, p);
             }
         }
 
-        private void Build(string prefix, Package package, Phase phase)
+        private void Build(string prefix, int no, Package package, Phase phase)
         {
             Terminal.ClearToEol();
-            Terminal.Write($"building {phase.Package,-40} {prefix}");
+            Terminal.Write($"building {no,-2} {phase.Package,-40} {prefix}");
 
             Terminal.Write($"[");
             phase.Make();

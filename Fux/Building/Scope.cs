@@ -17,7 +17,7 @@ namespace Fux.Building
                 parent = value;
             }
         }
-        public bool HintEmpty => hints.Count == 0;
+        public bool HintsAreEmpty => hints.Count == 0;
 
         public void AddHint(TypeHint hint)
         {
@@ -38,7 +38,7 @@ namespace Fux.Building
 
             if (hints.TryGetValue(name, out var hint))
             {
-                decl.Name.TypeHint = hint;
+                decl.Type = hint.Type ;
                 hints.Remove(name);
             }
         }

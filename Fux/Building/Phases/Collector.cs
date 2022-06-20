@@ -10,13 +10,14 @@
 
         public List<ModuleDecl> Module { get; } = new();
         public List<ImportDecl> Import { get; } = new();
-        public List<TypeDecl> Type { get; } = new();
-        public List<AliasDecl> Alias { get; } = new();
-        public List<InfixDecl> Infix { get; } = new();
-        public List<VarDecl> VarDecl { get; } = new();
-        public List<TypeHint> TypeHint { get; } = new();
+        public List<TypeDecl> DeclareType { get; } = new();
+        public List<AliasDecl> DeclareAlias { get; } = new();
+        public List<InfixDecl> DeclareInfix { get; } = new();
+        public List<VarDecl> DeclareVar { get; } = new();
+        public List<TypeHint> DeclareHint { get; } = new();
         public List<NativeDecl> NativeDecl { get; } = new();
 
+        public Stopwatch ScanTime { get; } = new();
         public Stopwatch ParseTime { get; } = new();
         public Stopwatch DeclareTime { get; } = new();
         public Stopwatch ExposeTime { get; } = new();
@@ -28,12 +29,12 @@
         {
             Write("all-module.text", Module);
             Write("all-import.text", Import);
-            Write("all-type.text", Type);
-            Write("all-alias.text", Alias);
-            Write("all-infix.text", Infix);
-            Write("all-var.text", VarDecl);
-            Write("all-hint.text", TypeHint);
-            WriteNative("all-native.text", NativeDecl);
+            WriteCompact("all-decl-type.text", DeclareType, writePP);
+            Write("all-decl-alias.text", DeclareAlias);
+            Write("all-decl-infix.text", DeclareInfix);
+            WriteCompact("all-decl-var.text", DeclareVar, writeStr);
+            Write("all-decl-hint.text", DeclareHint);
+            WriteCompact("all-native.text", NativeDecl, writePP);
 
             void Write<T>(string name, IEnumerable<T> expressions)
                 where T : Declaration
@@ -59,7 +60,22 @@
                 }
             }
 
-            void WriteNative(string name, IEnumerable<NativeDecl> expressions)
+            void writePP(Writer writer, Expression expr)
+            {
+                expr.PP(writer);
+                if (writer.LinePending)
+                {
+                    writer.WriteLine();
+                }
+            }
+
+
+            void writeStr(Writer writer, Expression expr)
+            {
+                writer.WriteLine($"{expr}");
+            }
+
+            void WriteCompact(string name, IEnumerable<Declaration> expressions, Action<Writer, Expression> write)
             {
                 using (var writer = name.Writer())
                 {
@@ -80,11 +96,7 @@
 
                         writer.Indent(() =>
                         {
-                            type.PP(writer);
-                            if (writer.LinePending)
-                            {
-                                writer.WriteLine();
-                            }
+                            write(writer, type);
                         });
                     }
                 }

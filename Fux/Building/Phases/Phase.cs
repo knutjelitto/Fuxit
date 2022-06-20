@@ -9,9 +9,9 @@ namespace Fux.Building.Phases
 {
     internal abstract class Phase
     {
-        protected Phase(string name, ErrorBag errors, Package package)
+        protected Phase(string phaseName, ErrorBag errors, Package package)
         {
-            Name = name;
+            PhaseName = phaseName;
             Errors = errors;
             Package = package;
         }
@@ -19,7 +19,7 @@ namespace Fux.Building.Phases
         public Collector Collector => Collector.Instance;
 
 
-        public string Name { get; }
+        public string PhaseName { get; }
         public ErrorBag Errors { get; }
         public Package Package { get; }
 
@@ -34,6 +34,12 @@ namespace Fux.Building.Phases
 
             return writer;
         }
+
+        protected Writer MakeWriter(Module module)
+        {
+            return MakeWriter(module, PhaseName);
+        }
+
 
         protected Writer MakeWriter(Module module, string phase)
         {

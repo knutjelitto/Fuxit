@@ -13,6 +13,7 @@ namespace Fux.Input.Ast
 
         public Parameters Parameters { get; }
         public Expression Expression { get; }
+        public Type? Type { get; set; }
 
         public LetScope Scope { get; } = new LetScope();
 

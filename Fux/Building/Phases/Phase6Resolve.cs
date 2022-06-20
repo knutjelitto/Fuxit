@@ -4,10 +4,10 @@
 
 namespace Fux.Building.Phases
 {
-    internal class Phase5Type : Phase
+    internal class Phase6Resolve : Phase
     {
-        public Phase5Type(ErrorBag errors, Package package)
-            : base("type", errors, package)
+        public Phase6Resolve(ErrorBag errors, Package package)
+            : base("resolve", errors, package)
         {
         }
 
@@ -28,35 +28,121 @@ namespace Fux.Building.Phases
 
         private void Make(Module module)
         {
-            Collector.TypeTime.Start();
-            Type(module);
-            Collector.TypeTime.Stop();
-        }
+            Assert(module.Ast != null);
 
-        private void Type(Module module)
-        {
-            Assert(module.Parsed && module.Ast != null);
-
-            Collector.TypeTime.Start();
-            foreach (var declaration in module.Ast.Declarations.OfType<VarDecl>())
+            Collector.ResolveTime.Start();
+            foreach (var declaration in module.Ast.Declarations)
             {
-                Type(module, declaration);
+                Resolve(module, declaration);
             }
-            Collector.TypeTime.Stop();
+            Collector.ResolveTime.Stop();
         }
 
-        private void Type(Module module, VarDecl var)
+        private void Resolve(Module module, Declaration declaration)
         {
-            Resolve(module, var);
+            switch (declaration)
+            {
+                case ImportDecl:
+                    return;
+                case InfixDecl infix:
+                    Resolve(module, infix);
+                    break;
+                case TypeDecl type:
+                    Resolve(module, type);
+                    break;
+                case VarDecl var:
+                    Resolve(module, var);
+                    break;
+                case TypeHint hint:
+                    Resolve(module, hint);
+                    break;
+                case AliasDecl alias:
+                    Resolve(module, alias);
+                    break;
+                default:
+                    Assert(false);
+                    throw new InvalidOperationException();
+            }
+        }
+
+        private void Resolve(Module module, InfixDecl infix)
+        {
+            ResolveExpr(module.Scope, infix.Expression);
         }
 
         private void Resolve(Module module, VarDecl var)
         {
             ResolveExpr(var.Scope, var.Expression);
+        }
 
-            if (var.Expression.Resolved is NativeDecl native)
+        private void Resolve(Module module, TypeDecl type)
+        {
+            Assert(type.Parameters.Count >= 0);
+            Assert(type.Constructors.Count >= 1);
+
+            foreach (var ctor in type.Constructors)
             {
-                native.TypeHint = var.Name.TypeHint;
+                ResolveType(type.Scope, ctor);
+            }
+        }
+
+        private void Resolve(Module module, TypeHint hint)
+        {
+            ResolveType(module.Scope, hint.Type);
+        }
+
+        private void Resolve(Module module, AliasDecl alias)
+        {
+            Assert(alias.Parameters.Count >= 0);
+
+            ResolveType(module.Scope, alias.Declaration);
+        }
+
+        private void ResolveType(Scope scope, Type type)
+        {
+            switch (type)
+            {
+                case Type.Constructor ctor:
+                    foreach (var arg in ctor.Arguments)
+                    {
+                        ResolveType(scope, arg);
+                    }
+                    break;
+                case Type.Function function:
+                    ResolveType(scope, function.Lhs);
+                    ResolveType(scope, function.Rhs);
+                    break;
+                case Type.Tuple tuple:
+                    foreach (var item in tuple.Types)
+                    {
+                        ResolveType(scope, item);
+                    }
+                    break;
+                case Type.Record record:
+                    if (record.BaseRecord != null)
+                    {
+                        ResolveType(scope, record.BaseRecord);
+                    }
+                    foreach (var field in record.Fields)
+                    {
+                        ResolveType(scope, field.TypeDef);
+                    }
+                    break;
+                case Type.Concrete concrete:
+                    if (scope.Resolve(concrete.Name, out _))
+                    {
+                        Assert(true);
+                    }
+                    break;
+                case Type.Parameter:
+                case Type.Number:
+                case Type.Appendable:
+                case Type.Comparable:
+                case Type.Unit:
+                    break;
+                default:
+                    Assert(false);
+                    throw new NotImplementedException();
             }
         }
 
@@ -68,22 +154,17 @@ namespace Fux.Building.Phases
                 case StringLiteral:
                 case CharLiteral:
                 case Unit:
-                case TypeHint:
                 case DotExpr:
                     break; //TODO: what to do here
                 case Identifier identifier:
                     {
-                        Assert(identifier.Resolved != null);
-                        if (identifier.TypeX == null)
+                        if (scope.Resolve(identifier, out var expr))
                         {
-                            identifier.TypeX = identifier.Resolved.TypeX;
-
-                            if (identifier.TypeX == null)
-                            {
-
-                            }
+                            expression.Resolved = expr;
+                            break;
                         }
-                        break;
+                        Assert(false);
+                        throw new NotImplementedException();
                     }
                 case IfExpr iff:
                     ResolveExpr(scope, iff.Condition);
@@ -159,6 +240,9 @@ namespace Fux.Building.Phases
                     break;
                 case SelectExpr select:
                     ResolveExpr(scope, select.Lhs);
+                    break;
+                case TypeHint typeHint:
+                    ResolveType(scope, typeHint.Type);
                     break;
                 default:
                     Assert(false);

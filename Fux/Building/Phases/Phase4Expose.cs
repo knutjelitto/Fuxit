@@ -6,9 +6,9 @@ using static Fux.Input.Ast.Type;
 
 namespace Fux.Building.Phases
 {
-    internal class Phase2Expose : Phase
+    internal class Phase4Expose : Phase
     {
-        public Phase2Expose(ErrorBag errors, Package package)
+        public Phase4Expose(ErrorBag errors, Package package)
             : base("expose", errors, package)
         {
         }

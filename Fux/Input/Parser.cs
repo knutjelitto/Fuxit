@@ -8,14 +8,14 @@ namespace Fux.Input
 {
     internal class Parser
     {
-        public Parser(ErrorBag errors, Lexer lexer)
+        public Parser(ErrorBag errors, ILexer lexer)
         {
             Errors = errors;
             Lexer = lexer;
         }
 
         public ErrorBag Errors { get; }
-        public Lexer Lexer { get; }
+        public ILexer Lexer { get; }
 
         public ModuleAst Module()
         {
@@ -54,19 +54,19 @@ namespace Fux.Input
             {
                 Expression? outer = null;
 
-                if (cursor.Is(Lex.HardKwModule) || cursor.IsWeak(Lex.Weak.Effect) || cursor.IsWeak(Lex.Weak.Port))
+                if (cursor.Is(Lex.KwModule) || cursor.IsWeak(Lex.Weak.Effect) || cursor.IsWeak(Lex.Weak.Port))
                 {
                     outer = ModuleHeader(cursor);
                 }
-                else if (cursor.Is(Lex.HardKwImport))
+                else if (cursor.Is(Lex.KwImport))
                 {
                     outer = Import(cursor);
                 }
-                else if (cursor.Is(Lex.HardKwInfix))
+                else if (cursor.Is(Lex.KwInfix))
                 {
                     outer = TopInfixDecl(cursor);
                 }
-                else if (cursor.Is(Lex.HardKwType))
+                else if (cursor.Is(Lex.KwType))
                 {
                     outer = TopType(cursor);
                 }
@@ -104,7 +104,7 @@ namespace Fux.Input
                     Assert(false);
                     throw new NotImplementedException();
                 }
-                cursor.Swallow(Lex.HardKwModule);
+                cursor.Swallow(Lex.KwModule);
 
                 var path = Identifier(cursor).MultiUpper();
 
@@ -146,13 +146,13 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.HardKwImport);
+                cursor.Swallow(Lex.KwImport);
 
                 var path = Identifier(cursor).MultiUpper();
 
                 Identifier? alias = null;
 
-                if (cursor.SwallowIf(Lex.HardKwAs))
+                if (cursor.SwallowIf(Lex.KwAs))
                 {
                     alias = Identifier(cursor).MultiUpper();
                 }
@@ -227,7 +227,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.HardKwInfix);
+                cursor.Swallow(Lex.KwInfix);
                 var assocTok = cursor.Swallow(Lex.LowerId);
                 var assoc = InfixAssoc.From(assocTok.Text);
                 if (assoc == null)
@@ -249,7 +249,7 @@ namespace Fux.Input
         {
             return cursor.Scope<Expression>(cursor =>
             {
-                var kwType = cursor.Swallow(Lex.HardKwType);
+                var kwType = cursor.Swallow(Lex.KwType);
 
                 var alias = false;
                 if (cursor.IsWeak("alias"))
@@ -356,27 +356,14 @@ namespace Fux.Input
 
                 do
                 {
-                    while (cursor.More()
-                        && cursor.IsNot(Lex.Bar)
-                        && cursor.IsNot(Lex.RParent)
-                        && cursor.IsNot(Lex.RBrace)
-                        && cursor.IsNot(Lex.RBracket)
-                        && cursor.IsNot(Lex.Comma)
-                        && cursor.IsNot(Lex.Arrow))
+                    while (cursor.More() && !cursor.TerminatesSomething)
                     {
                         var argument = TypeArgument(cursor);
 
                         arguments.Add(argument);
                     }
                 }
-                while (cursor.More()
-                    && cursor.IsNot(Lex.Bar)
-                    && cursor.IsNot(Lex.RParent)
-                    && cursor.IsNot(Lex.RBrace)
-                    && cursor.IsNot(Lex.RBracket)
-                    && cursor.IsNot(Lex.Comma)
-                    && cursor.IsNot(Lex.Arrow));
-
+                while (cursor.More() && !cursor.TerminatesSomething);
 
                 return new Type.Constructor(name, new TypeArguments(arguments));
             });
@@ -676,13 +663,11 @@ namespace Fux.Input
 
                 if (fields.All(f => f is FieldAssign))
                 {
-                    Assert(baseName == null || baseName is Identifier);
                     return new RecordExpr(baseName, fields.Cast<FieldAssign>());
                 }
                 else if (fields.All(f => f is FieldPattern))
                 {
                     Assert(baseName == null);
-                    //Assert(fields.Count == 1);
                     return new RecordPattern(fields.Cast<FieldPattern>());
                 }
 
@@ -736,11 +721,11 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.HardKwIf);
+                cursor.Swallow(Lex.KwIf);
                 var condition = Expression(cursor);
-                cursor.Swallow(Lex.HardKwThen);
+                cursor.Swallow(Lex.KwThen);
                 var whenTrue = Expression(cursor);
-                cursor.Swallow(Lex.HardKwElse);
+                cursor.Swallow(Lex.KwElse);
                 var whenFalse = Expression(cursor);
 
                 return new IfExpr(condition, whenTrue, whenFalse);
@@ -751,9 +736,9 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var kwLet = cursor.Swallow(Lex.HardKwLet);
+                var kwLet = cursor.Swallow(Lex.KwLet);
                 var lets = new List<Expression>();
-                while (cursor.IsNot(Lex.HardKwIn))
+                while (cursor.IsNot(Lex.KwIn))
                 {
                     var subCursor = cursor.Sub();
 
@@ -761,7 +746,7 @@ namespace Fux.Input
 
                     lets.Add(decl);
                 }
-                var kwIn = cursor.Swallow(Lex.HardKwIn);
+                var kwIn = cursor.Swallow(Lex.KwIn);
                 var expression = Expression(cursor);
 
                 return new LetExpr(lets, expression);
@@ -772,9 +757,9 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.HardKwCase);
+                cursor.Swallow(Lex.KwCase);
                 var expression = Expression(cursor);
-                cursor.Swallow(Lex.HardKwOf);
+                cursor.Swallow(Lex.KwOf);
 
                 var cases = new List<MatchCase>();
 
@@ -835,20 +820,20 @@ namespace Fux.Input
                 if (cursor.IsOperator())
                 {
                     var op = new OperatorSymbol(cursor.Advance());
-                    var argument = Sequence(cursor);
+                    var argument = Sequence(cursor, false);
 
                     app = new PrefixExpr(op, argument);
                 }
                 else
                 {
-                    app = Sequence(cursor);
+                    app = Sequence(cursor, false);
                 }
 
                 return app;
             });
         }
 
-        private Expression Sequence(TokensCursor cursor, bool always = true)
+        private Expression Sequence(TokensCursor cursor, bool always)
         {
             return cursor.Scope(cursor =>
             {
@@ -877,15 +862,15 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                if (cursor.Is(Lex.HardKwIf))
+                if (cursor.Is(Lex.KwIf))
                 {
                     return InlineIf(cursor);
                 }
-                else if (cursor.Is(Lex.HardKwLet))
+                else if (cursor.Is(Lex.KwLet))
                 {
                     return InlineLet(cursor);
                 }
-                else if (cursor.Is(Lex.HardKwCase))
+                else if (cursor.Is(Lex.KwCase))
                 {
                     return InlineCase(cursor);
                 }
@@ -895,7 +880,7 @@ namespace Fux.Input
 
                     var atom = Atom(cursor);
 
-                    if (cursor.SwallowIf(Lex.HardKwAs))
+                    if (cursor.SwallowIf(Lex.KwAs))
                     {
                         var alias = Identifier(cursor).SingleLower();
 

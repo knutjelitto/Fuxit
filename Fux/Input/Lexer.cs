@@ -1,28 +1,19 @@
 ﻿#pragma warning disable IDE1006 // Naming Styles
 
+using System.Collections;
+
 namespace Fux.Input
 {
-    internal class Lexer
+    internal class Lexer : ILexer
     {
         private static readonly Dictionary<string, (string name, Lex kwLex)> keywords = new();
 
         static Lexer()
         {
-            AddKw("module", Lex.HardKwModule);
-            AddKw("import", Lex.HardKwImport);
-            AddKw("as", Lex.HardKwAs);
-            AddKw("infix", Lex.HardKwInfix);
-            AddKw("type", Lex.HardKwType);
-
-            AddKw("if", Lex.HardKwIf);
-            AddKw("then", Lex.HardKwThen);
-            AddKw("else", Lex.HardKwElse);
-
-            AddKw("let", Lex.HardKwLet);
-            AddKw("in", Lex.HardKwIn);
-
-            AddKw("case", Lex.HardKwCase);
-            AddKw("of", Lex.HardKwOf);
+            foreach (var kw in Lex.AllLex.Where(l => l.IsKeyword))
+            {
+                AddKw(kw.Name, kw);
+            }
         }
 
         public Lexer(ErrorBag errors, Source source)
@@ -109,7 +100,7 @@ namespace Fux.Input
                     return String();
                 case '\'':
                     return Char();
-                case '_':
+                case '_' when !Next.IsLetterOrDigit():
                     return Wildcard();
                 default:
                     if (Current.IsLower())
@@ -489,5 +480,19 @@ namespace Fux.Input
         {
             keywords.Add(name, (name, kwLex));
         }
+
+        public IEnumerator<Tokens> GetEnumerator()
+        {
+            Tokens tokens;
+            do
+            {
+                tokens = Liner.GetLine();
+
+                yield return tokens;
+            }
+            while (!tokens.Eof);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

@@ -46,7 +46,7 @@
 
         public static bool IsOperator(this TokensCursor cursor)
         {
-            return cursor.More() && cursor.Current.IsOperator();
+            return cursor.More() && cursor.Current.Lex == Lex.Operator;
         }
 
     }

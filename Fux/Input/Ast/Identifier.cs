@@ -50,8 +50,6 @@ namespace Fux.Input.Ast
             return new Identifier(tokens);
         }
 
-        public TypeHint? TypeHint { get; set; } = null;
-
         public string Text => toString;
 
         public bool IsSingle(Lex lex) => Count == 1 && this[0].Lex == lex;

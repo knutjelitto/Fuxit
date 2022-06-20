@@ -1,46 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Fux.Building
 {
     internal class LetScope : Scope
     {
-        private readonly List<Identifier> identifiers = new();
-        private readonly Dictionary<Identifier, Identifier> identifiersIndex = new();
+        private readonly Dictionary<Identifier, Identifier> identifiers = new();
 
         public void Add(Identifier parameter)
         {
             var name = parameter.SingleLower();
 
-            Assert(!identifiersIndex.ContainsKey(name));
+            Assert(!identifiers.ContainsKey(name));
 
-            identifiers.Add(parameter);
-            identifiersIndex.Add(name, parameter);
-        }
-
-        public void Add(Identifier identifier, Dictionary<Identifier, TypeHint> hints)
-        {
-            var name = identifier.SingleLower();
-
-            Assert(!identifiersIndex.ContainsKey(name));
-
-            if (hints.TryGetValue(name, out var typeHint))
-            {
-                identifier.TypeHint = typeHint;
-                hints.Remove(name);
-            }
-
-            identifiers.Add(identifier);
-            identifiersIndex.Add(name, identifier);
+            identifiers.Add(name, parameter);
         }
 
         public bool LookupIdentifier(Identifier identifier, [MaybeNullWhen(false)] out Identifier var)
         {
-            return identifiersIndex.TryGetValue(identifier.SingleLowerOrOp(), out var);
+            return identifiers.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
         public override bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)

@@ -18,8 +18,9 @@
         public static bool IsBidi(this int rune) => 0x200E == rune || 0x200F == rune || 0x202A <= rune && rune <= 0x202E || 0x2066 <= rune && rune <= 0x2069;
         public static bool IsLower(this int rune) => 'a' <= rune && rune <= 'z';
         public static bool IsUpper(this int rune) => 'A' <= rune && rune <= 'Z';
-        public static bool IsLetter(this int rune) => IsLower(rune) || IsUpper(rune);
+        public static bool IsLetter(this int rune) => 'a' <= rune && rune <= 'z' || 'A' <= rune && rune <= 'Z';
         public static bool IsDigit(this int rune) => '0' <= rune && rune <= '9';
+        public static bool IsLetterOrDigit(this int rune) => 'a' <= rune && rune <= 'z' || 'A' <= rune && rune <= 'Z' || '0' <= rune && rune <= '9';
         public static bool IsPosDigit(this int rune) => '1' <= rune && rune <= '9';
         public static bool IsHexDigit(this int rune) => 'a' <= rune && rune <= 'f' || 'A' <= rune && rune <= 'F' || IsDigit(rune);
         public static bool IsSymbol(this int rune) => symbols.Contains(rune);

@@ -85,6 +85,11 @@ namespace Fux.Building
             natives.Add(name, decl);
         }
 
+        public bool ImportAddImport(ImportDecl import)
+        {
+            return imports.TryAdd(import.Name.MultiUpper(), import);
+        }
+
         public bool ImportAddAlias(AliasDecl decl)
         {
             return aliases.TryAdd(decl.Name.SingleUpper(), decl);
@@ -168,7 +173,6 @@ namespace Fux.Building
         {
             return modules.TryGetValue(identifier.MultiUpper(), out module);
         }
-
 
         public override bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)
         {

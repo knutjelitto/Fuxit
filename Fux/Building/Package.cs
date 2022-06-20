@@ -37,6 +37,17 @@ namespace Fux.Building
             exposedIndex.Add(module.Name, module);
         }
 
+        public void AddIntern(Module module)
+        {
+            intern.Add(module);
+            internIndex.Add(module.Name, module);
+        }
+
+        public Module? TryGetExposed(string name)
+        {
+            return exposedIndex.TryGetValue(name, out var module) ? module : null;
+        }
+
         public Module? FindImport(string importPath)
         {
             var module = FindIntern(importPath);
@@ -80,27 +91,6 @@ namespace Fux.Building
             if (internIndex.TryGetValue(name, out module))
             {
                 return module;
-            }
-
-            var partPath = $"src/{name.Replace('.', '/')}";
-
-            var fullPath = Folder.Combine(RootPath, partPath) + ".elm";
-
-            if (File.Exists(fullPath))
-            {
-                module = new Module(this, name);
-                intern.Add(module);
-                internIndex.Add(module.Name, module);
-            }
-            else
-            {
-                fullPath = Folder.Combine(RootPath, partPath) + ".js";
-                if (File.Exists(fullPath))
-                {
-                    module = new Module(this, name, true);
-                    intern.Add(module);
-                    internIndex.Add(module.Name, module);
-                }
             }
 
             return module;

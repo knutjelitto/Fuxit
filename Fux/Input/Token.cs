@@ -50,7 +50,6 @@
         public int Indent { get; set; } = 0;
         public bool First { get; set; } = false;
         public bool Last { get; set; } = false;
-        public bool Both => First && Last;
         public int Index { get; set; } = -1;
 
         public bool White => Lex == Lex.Newline || Lex == Lex.Space || Lex == Lex.BlockComment || Lex == Lex.LineComment;
@@ -73,8 +72,8 @@
             Lex == Lex.RBrace ||
             Lex == Lex.LBrace ||
             Lex == Lex.RBracket ||
-            Lex == Lex.HardKwThen ||
-            Lex == Lex.HardKwElse ||
+            Lex == Lex.KwThen ||
+            Lex == Lex.KwElse ||
             Lex == Lex.Comma;
 
         public bool EndContinuation =>
@@ -82,8 +81,8 @@
             Lex == Lex.LParent ||
             Lex == Lex.LBrace ||
             Lex == Lex.LBracket ||
-            Lex == Lex.HardKwThen ||
-            Lex == Lex.HardKwElse ||
+            Lex == Lex.KwThen ||
+            Lex == Lex.KwElse ||
             Lex == Lex.Comma;
 
         public Token TransferWhites(Whites whites)

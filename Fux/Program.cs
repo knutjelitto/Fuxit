@@ -54,9 +54,8 @@ namespace Fux
                 }
                 else
                 {
-                    builder.Load(ElmPackage.Latest("elm/browser"));
-                    builder.Load(ElmPackage.Latest("elm/bytes"));
                     builder.Load(ElmPackage.Latest("elm/core"));
+                    builder.Load(ElmPackage.Latest("elm/bytes"));
                     builder.Load(ElmPackage.Latest("elm/file"));
                     builder.Load(ElmPackage.Latest("elm/html"));
                     builder.Load(ElmPackage.Latest("elm/http"));
@@ -68,6 +67,7 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/svg"));
                     builder.Load(ElmPackage.Latest("elm/url"));
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
+                    builder.Load(ElmPackage.Latest("elm/browser"));
 
                     //TODO: resolve-error
                     //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
@@ -113,7 +113,10 @@ namespace Fux
 
                 var locsec = Math.Round(1000m * Collector.Instance.NumberOfLines / whole.ElapsedMilliseconds);
 
-                Terminal.Write($"[{Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} lps] ");
+                var mods = builder.Modules.ToList();
+                var max = mods.Max(m => m.Lines != null ? m.Lines.Count : 0);
+
+                Terminal.Write($"[{builder.Packages.Count()} paks, {mods.Count} mods, {max} lmax, {Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} lps] ");
             }
             catch (DiagnosticException diagnostics)
             {
@@ -133,7 +136,7 @@ namespace Fux
         {
             var builder = new Builder();
 
-            var parse = new Phases.Phase0Parse(builder.Errors, new Package(new ElmPackage("test", new SemVersion(0))));
+            var parse = new Phases.Phase2Parse(builder.Errors, new Package(new ElmPackage("test", new SemVersion(0))));
 
             foreach (var source in Tester.All())
             {

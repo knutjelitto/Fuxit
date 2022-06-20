@@ -18,7 +18,7 @@ namespace Fux.Input.Ast
         public override string ToString()
         {
             var parameters = Parameters.Count == 0 ? "" : $" {Parameters}";
-            return $"{Lex.HardKwType} {Name}{parameters} = {Constructors}";
+            return $"{Lex.KwType} {Name}{parameters} = {Constructors}";
         }
 
         public override void PP(Writer writer)

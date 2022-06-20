@@ -5,6 +5,7 @@
         public TypeParameters(IEnumerable<Identifier> items)
             : base(items)
         {
+            Assert(this.All(p => p.IsSingleLower));
         }
 
         public TypeParameters(params Identifier[] items)

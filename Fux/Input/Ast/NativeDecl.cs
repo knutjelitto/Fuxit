@@ -8,12 +8,13 @@
             ModuleName = moduleName;
         }
 
-        public TypeHint? TypeHint { get; set; } = null;
+        public Type? Type { get; set; } = null;
         public Identifier ModuleName { get; }
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{ModuleName}.{Name} : {TypeHint?.TypeDef}");
+            var type = Type == null ? "<???>" : $"{Type}";
+            writer.Write($"{ModuleName}.{Name} : {type}");
         }
     }
 }

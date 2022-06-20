@@ -8,9 +8,9 @@ using Fux.Tools;
 
 namespace Fux.Building.Phases
 {
-    internal class Phase1Declare : Phase
+    internal class Phase3Declare : Phase
     {
-        public Phase1Declare(ErrorBag errors, Package package)
+        public Phase3Declare(ErrorBag errors, Package package)
             : base("declare", errors, package)
         {
         }
@@ -37,7 +37,7 @@ namespace Fux.Building.Phases
 
         private void MakeModule(Writer writer, Module module)
         {
-            if (module.Parsed && module.Ast != null)
+            if (module.Ast != null)
             {
                 var ast = module.Ast;
                 var header = ast.Header;
@@ -65,7 +65,7 @@ namespace Fux.Building.Phases
                 {
                     Declare(declaration);
                 }
-                Assert(module.Scope.HintEmpty);
+                Assert(module.Scope.HintsAreEmpty);
             }
 
             void Declare(Declaration declaration)
@@ -108,32 +108,32 @@ namespace Fux.Building.Phases
 
         private void TypeHint(Writer writer, Scope scope, TypeHint hint)
         {
-            Collector.TypeHint.Add(hint);
+            Collector.DeclareHint.Add(hint);
 
             hint.PP(writer);
 
             scope.AddHint(hint);
         }
 
-        private void VarDecl(Writer writer, Scope scope, VarDecl decl)
+        private void VarDecl(Writer writer, Scope scope, VarDecl var)
         {
-            Collector.VarDecl.Add(decl);
+            Collector.DeclareVar.Add(var);
 
-            decl.PP(writer);
+            var.PP(writer);
 
-            scope.AddVar(decl);
+            scope.AddVar(var);
 
-            decl.Scope.Parent = scope;
+            var.Scope.Parent = scope;
 
-            foreach (var parameter in decl.Parameters)
+            foreach (var parameter in var.Parameters)
             {
                 foreach (var identifier in ExplodePattern(parameter))
                 {
-                    decl.Scope.Add(identifier);
+                    var.Scope.Add(identifier);
                 }
             }
 
-            ScopeExpr(decl.Scope, decl.Expression);
+            ScopeExpr(var.Scope, var.Expression);
         }
 
         private void Import(Writer writer, ModuleScope scope, ImportDecl import)
@@ -142,12 +142,12 @@ namespace Fux.Building.Phases
 
             import.PP(writer);
 
-            scope.AddImport(import);
+            scope.ImportAddImport(import);
         }
 
         private void Infix(Writer writer, ModuleScope scope, InfixDecl infix)
         {
-            Collector.Infix.Add(infix);
+            Collector.DeclareInfix.Add(infix);
 
             infix.PP(writer);
 
@@ -158,7 +158,7 @@ namespace Fux.Building.Phases
 
         private void Type(Writer writer, ModuleScope scope, TypeDecl type)
         {
-            Collector.Type.Add(type);
+            Collector.DeclareType.Add(type);
 
             type.PP(writer);
 
@@ -179,7 +179,7 @@ namespace Fux.Building.Phases
 
         private void Alias(Writer writer, ModuleScope scope, AliasDecl alias)
         {
-            Collector.Alias.Add(alias);
+            Collector.DeclareAlias.Add(alias);
 
             alias.PP(writer);
 
@@ -279,6 +279,7 @@ namespace Fux.Building.Phases
         private void ScopeLet(LetExpr let)
         {
             var hints = new Dictionary<Identifier, TypeHint>();
+            Assert(let.Scope.HintsAreEmpty);
 
             foreach (var expr in let.LetExpressions)
             {
@@ -286,10 +287,7 @@ namespace Fux.Building.Phases
                 {
                     case VarDecl var:
                         {
-                            Assert(hints.Count <= 1);
-
                             var.Scope.Parent = let.Scope;
-                            //let.Scope = var.Scope;
 
                             foreach (var parameter in var.Parameters)
                             {
@@ -298,56 +296,29 @@ namespace Fux.Building.Phases
                                     var.Scope.Add(identifier);
                                 }
                             }
-                            if (hints.Count == 1)
-                            {
-                                let.Scope.Add(var.Name, hints);
-                                Assert(hints.Count == 0);
-                            }
-                            else
-                            {
-                                let.Scope.Add(var.Name);
-                            }
+
+                            let.Scope.AddVar(var);
+
                             ScopeExpr(var.Scope, var.Expression);
                         }
                         break;
                     case LetAssign assign:
                         {
-                            Assert(hints.Count <= 1);
                             assign.Scope.Parent = let.Scope;
-                            //let.Scope = assign.Scope;
 
-                            var explode = ExplodePattern(assign.Pattern).ToList(); ;
+                            Assert(let.Scope.HintsAreEmpty);
 
-                            if (explode.Count == 1)
+                            foreach (var identifier in ExplodePattern(assign.Pattern))
                             {
-                                var identifier = explode[0];
-
-                                if (hints.Count == 1)
-                                {
-                                    let.Scope.Add(identifier, hints);
-                                    Assert(hints.Count == 0);
-                                }
-                                else
-                                {
-                                    let.Scope.Add(identifier, hints);
-                                }
-
+                                let.Scope.Add(identifier);
                             }
-                            else
-                            {
-                                foreach (var identifier in ExplodePattern(assign.Pattern))
-                                {
-                                    let.Scope.Add(identifier);
-                                }
-                            }
+
                             ScopeExpr(assign.Scope, assign.Expression);
                         }
                         break;
                     case TypeHint hint:
                         {
-                            var name = hint.Name.SingleLower();
-                            Assert(hints.Count == 0);
-                            hints.Add(name, hint);
+                            let.Scope.AddHint(hint);
                         }
                         break;
                     default:
@@ -357,6 +328,7 @@ namespace Fux.Building.Phases
             }
 
             Assert(hints.Count == 0);
+            Assert(let.Scope.HintsAreEmpty);
 
             ScopeExpr(let.Scope, let.InExpression);
         }

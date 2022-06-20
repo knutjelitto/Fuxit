@@ -15,7 +15,7 @@
 
         public override string ToString()
         {
-            return $"{Lex.HardKwIf} {Condition} {Lex.HardKwThen} {IfTrue} {Lex.HardKwElse} {IfFalse}";
+            return $"{Lex.KwIf} {Condition} {Lex.KwThen} {IfTrue} {Lex.KwElse} {IfFalse}";
         }
 
         public override void PP(Writer writer)
@@ -41,19 +41,19 @@
 
             void Write()
             {
-                writer.WriteLine($"{Lex.HardKwIf}");
+                writer.WriteLine($"{Lex.KwIf}");
                 writer.Indent(() =>
                 {
                     Condition.PP(writer);
                 });
                 writer.EndLine();
-                writer.WriteLine($"{Lex.HardKwThen}");
+                writer.WriteLine($"{Lex.KwThen}");
                 writer.Indent(() =>
                 {
                     IfTrue.PP(writer);
                 });
                 writer.EndLine();
-                writer.WriteLine($"{Lex.HardKwElse}");
+                writer.WriteLine($"{Lex.KwElse}");
                 writer.Indent(() =>
                 {
                     IfFalse.PP(writer);

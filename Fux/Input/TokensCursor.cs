@@ -92,6 +92,8 @@ namespace Fux.Input
             return Offset < Tokens.Count;
         }
 
+        public bool TerminatesSomething => Offset < Tokens.Count && Tokens[Offset].Lex.TerminatesSomething;
+
         public Token Swallow(Lex lexKind, [CallerMemberName] string? member = null)
         {
             if (this.Is(lexKind))

@@ -13,7 +13,7 @@
 
         public override string ToString()
         {
-            var cases = string.Join(" ", Cases.Select(x => $"{Lex.GroupOpen} {x} {Lex.GroupClose}"));
+            var cases = string.Join(" ", Cases.Select(@case => $"{Lex.GroupOpen} {@case} {Lex.GroupClose}"));
             return $"case {Expression} of {cases}";
         }
 
@@ -31,9 +31,9 @@
 
             void Write()
             {
-                writer.Write($"{Lex.HardKwCase} ");
+                writer.Write($"{Lex.KwCase} ");
                 Expression.PP(writer);
-                writer.WriteLine($" {Lex.HardKwOf}");
+                writer.WriteLine($" {Lex.KwOf}");
                 writer.Indent(() =>
                 {
                     foreach (var casee in Cases)

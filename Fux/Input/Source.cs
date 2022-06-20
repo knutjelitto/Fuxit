@@ -61,14 +61,19 @@ namespace Fux.Input
             return (lineNo, colNo);
         }
 
-        public int GetIndexFromLineNo(int lineNo)
+        public string GetText(ILocation location)
+        {
+            return new Runes(Text.Skip(location.Offset).Take(location.Length)).ToString();
+        }
+
+        private int GetIndexFromLineNo(int lineNo)
         {
             var lineIdx = Math.Max(0, Math.Min(lineNo - 1, Lines.Count - 1));
 
             return Lines[lineIdx];
         }
 
-        public int GetLineNoFromIndex(int index)
+        private int GetLineNoFromIndex(int index)
         {
             var line = Lines.BinarySearch(Math.Max(0, index));
             if (line < 0)
@@ -76,11 +81,6 @@ namespace Fux.Input
                 return ~line;
             }
             return line + 1;
-        }
-
-        public string GetText(ILocation location)
-        {
-            return new Runes(Text.Skip(location.Offset).Take(location.Length)).ToString();
         }
     }
 }

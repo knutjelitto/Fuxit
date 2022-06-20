@@ -39,6 +39,47 @@ namespace Fux.Building
                     package.AddExposed(new Module(package, exposed.Name));
                 }
 
+                var root = Folder.Combine(package.RootPath, "src");
+
+                foreach (var file in Directory.GetFiles(root, "*.elm", SearchOption.AllDirectories).Select(f => f.Replace('\\', '/')))
+                {
+                    if (file.Contains("/src/Examples/") || file.Contains("/src/DEPRECATED/"))
+                    {
+                        continue;
+                    }
+
+                    var name = file[(root.Name.Length + 1)..^4].Replace('/', '.');
+
+                    var module = package.TryGetExposed(name);
+
+                    if (module != null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        package.AddIntern(new Module(package, name));
+                        Assert(true);
+                    }
+                }
+
+                foreach (var file in Directory.GetFiles(root, "*.js", SearchOption.AllDirectories))
+                {
+                    var name = file[(root.Name.Length + 1)..^3].Replace('\\', '.');
+
+                    var module = package.TryGetExposed(name);
+
+                    if (module != null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        package.AddIntern(new Module(package, name, js: true));
+                        Assert(true);
+                    }
+                }
+
                 return Add(package);
             }
             else

@@ -4,9 +4,9 @@
 
 namespace Fux.Building.Phases
 {
-    internal class Phase3Import : Phase
+    internal class Phase5Import : Phase
     {
-        public Phase3Import(ErrorBag errors, Package package)
+        public Phase5Import(ErrorBag errors, Package package)
             : base("import", errors, package)
         {
         }
