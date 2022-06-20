@@ -1,11 +1,12 @@
-﻿#pragma warning disable CA1822 // Mark members as static
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable CA1822 // Mark members as static
 
 namespace Fux.Building.Phases
 {
     internal class Phase2Parse : Phase
     {
-        public Phase2Parse(ErrorBag errors, Package package)
-            : base("parse", errors, package)
+        public Phase2Parse(Ambience ambience, Package package)
+            : base("parse", ambience, package)
         {
         }
 
@@ -84,9 +85,12 @@ namespace Fux.Building.Phases
         {
             Assert(module.Ast != null);
 
-            using (var writer = MakeWriter(module, PhaseName))
+            if (Ambience.Config.WriteTheAst)
             {
-                module.Ast.PP(writer);
+                using (var writer = MakeWriter(module, "ast"))
+                {
+                    module.Ast.PP(writer);
+                }
             }
         }
     }

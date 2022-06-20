@@ -2,21 +2,21 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    public class Substitution
+    internal sealed class Substitution
     {
-        private readonly ImmutableDictionary<TypeVar, WType> map;
+        private readonly ImmutableDictionary<TypeVariable, Type> map;
 
-        public static Substitution Empty() => new(ImmutableDictionary<TypeVar, WType>.Empty);
+        public static Substitution Empty() => new(ImmutableDictionary<TypeVariable, Type>.Empty);
 
-        public Substitution(ImmutableDictionary<TypeVar, WType> map) => this.map = map;
+        public Substitution(ImmutableDictionary<TypeVariable, Type> map) => this.map = map;
 
-        public WType? TryGet(TypeVar typeVar) => map.TryGetValue(typeVar, out var type) ? type : null;
+        public Type? TryGet(TypeVariable typeVar) => map.TryGetValue(typeVar, out var type) ? type : null;
 
-        public Substitution Insert(TypeVar typeVar, WType type) => new(map.Add(typeVar, type));
+        public Substitution Insert(TypeVariable typeVar, Type type) => new(map.Add(typeVar, type));
 
-        public Substitution Remove(TypeVar typeVar) => new(map.Remove(typeVar));
+        public Substitution Remove(TypeVariable typeVar) => new(map.Remove(typeVar));
 
-        public IEnumerable<KeyValuePair<TypeVar, WType>> Enumerate() => map;
+        public IEnumerable<KeyValuePair<TypeVariable, Type>> Enumerate() => map;
 
         public Substitution UnionWith(Substitution other)
         {

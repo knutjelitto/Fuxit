@@ -2,29 +2,29 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    public static class TesterHelper
+    internal static class TesterHelper
     {
-        public static LetExpression let(string name, WExpr e1, WExpr e2)
+        public static LetExpression let(string name, Expr e1, Expr e2)
         {
             return new LetExpression(name, e1, e2);
         }
 
-        public static IffExpression iff(WExpr cond, WExpr then, WExpr @else)
+        public static IffExpression iff(Expr cond, Expr then, Expr @else)
         {
             return new IffExpression(cond, then, @else);
         }
 
-        public static AbstractionExpression abs(string var, WExpr e)
+        public static AbstractionExpression abs(string var, Expr e)
         {
             return new AbstractionExpression(var, e);
         }
 
-        public static ApplicationExpression app(WExpr e1, WExpr e2)
+        public static ApplicationExpression app(Expr e1, Expr e2)
         {
             return new ApplicationExpression(e1, e2);
         }
 
-        public static ApplicationExpression app(WExpr e1, WExpr e2, WExpr e3)
+        public static ApplicationExpression app(Expr e1, Expr e2, Expr e3)
         {
             return app(app(e1, e2), e3);
         }

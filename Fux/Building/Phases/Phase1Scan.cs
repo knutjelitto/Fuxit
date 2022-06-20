@@ -4,8 +4,8 @@ namespace Fux.Building.Phases
 {
     internal class Phase1Scan : Phase
     {
-        public Phase1Scan(ErrorBag errors, Package package)
-            : base("scan", errors, package)
+        public Phase1Scan(Ambience ambience, Package package)
+            : base("scan", ambience, package)
         {
         }
 
@@ -46,19 +46,17 @@ namespace Fux.Building.Phases
 
             Assert(module.Lines == null);
 
-#if false
-            module.Lines = new List<Tokens>(2000);
-            module.Lines.AddRange(lexer);
-#else
             module.Lines = lexer.ToList();
-#endif
 
-            using (var writer = MakeWriter(source.Display + "-lines.txt"))
+            if (Ambience.Config.WriteTheLines)
             {
-                foreach (var line in module.Lines)
+                using (var writer = MakeWriter(source.Display + "-lines.txt"))
                 {
-                    WriteLine(writer, line);
-                    writer.WriteLine();
+                    foreach (var line in module.Lines)
+                    {
+                        WriteLine(writer, line);
+                        writer.WriteLine();
+                    }
                 }
             }
 

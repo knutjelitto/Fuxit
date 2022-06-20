@@ -4,14 +4,17 @@
 #pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable IDE0063 // Use simple 'using' statement
 
+using Fux.Input;
 using Fux.Tools;
 
 namespace Fux.Building.Phases
 {
     internal class Phase3Declare : Phase
     {
-        public Phase3Declare(ErrorBag errors, Package package)
-            : base("declare", errors, package)
+        private List<Declaration> collector = new();
+
+        public Phase3Declare(Ambience ambience, Package package)
+            : base("declare", ambience, package)
         {
         }
 
@@ -21,21 +24,41 @@ namespace Fux.Building.Phases
             {
                 Terminal.Write(".");
 
-                using (var writer = MakeWriter(module, "decl"))
+                Make(module);
+
+                Write(module);
+            }
+        }
+
+        private void Make(Module module)
+        {
+            Collector.DeclareTime.Start();
+            MakeModule(module);
+            Collector.DeclareTime.Stop();
+        }
+
+        private void Write(Module module)
+        {
+            if (Ambience.Config.WriteTheDeclarations)
+            {
+                using (var writer = MakeWriter(module, "declarations"))
                 {
-                    Make(writer, module);
+                    foreach (var declaration in collector)
+                    {
+                        writer.Write($"{declaration.GetType().Name} - {declaration.Name}");
+                        writer.WriteLine();
+                        writer.Indent(() =>
+                        {
+                            declaration.PP(writer);
+                        });
+                        writer.EndLine();
+                        writer.WriteLine();
+                    }
                 }
             }
         }
 
-        private void Make(Writer writer, Module module)
-        {
-            Collector.DeclareTime.Start();
-            MakeModule(writer, module);
-            Collector.DeclareTime.Stop();
-        }
-
-        private void MakeModule(Writer writer, Module module)
+        private void MakeModule(Module module)
         {
             if (module.Ast != null)
             {
@@ -44,9 +67,7 @@ namespace Fux.Building.Phases
 
                 Assert(ast.Declarations.Count() == ast.Expressions.Count);
 
-                header.PP(writer);
-                writer.EndLine();
-                writer.WriteLine();
+                collector.Add(header);
 
                 foreach (var where in header.Where)
                 {
@@ -70,56 +91,48 @@ namespace Fux.Building.Phases
 
             void Declare(Declaration declaration)
             {
-                writer.Write($"{declaration.GetType().Name} - {declaration.Name}");
-
-                writer.Indent(() =>
+                switch (declaration)
                 {
-                    writer.WriteLine();
-                    switch (declaration)
-                    {
-                        case ImportDecl import:
-                            Import(writer, module.Scope, import);
-                            break;
-                        case InfixDecl infix:
-                            Infix(writer, module.Scope, infix);
-                            break;
-                        case TypeDecl type:
-                            Type(writer, module.Scope, type);
-                            break;
-                        case AliasDecl alias:
-                            Alias(writer, module.Scope, alias);
-                            break;
-                        case VarDecl varDecl:
-                            VarDecl(writer, module.Scope, varDecl);
-                            break;
-                        case TypeHint hint:
-                            TypeHint(writer, module.Scope, hint);
-                            break;
-                        default:
-                            Assert(false);
-                            throw new NotImplementedException();
-                            break;
-                    }
-                    writer.EndLine();
-                    writer.WriteLine();
-                });
+                    case ImportDecl import:
+                        Import(module.Scope, import);
+                        break;
+                    case InfixDecl infix:
+                        Infix(module.Scope, infix);
+                        break;
+                    case TypeDecl type:
+                        Type(module.Scope, type);
+                        break;
+                    case AliasDecl alias:
+                        Alias(module.Scope, alias);
+                        break;
+                    case VarDecl varDecl:
+                        VarDecl(module.Scope, varDecl);
+                        break;
+                    case TypeHint hint:
+                        TypeHint(module.Scope, hint);
+                        break;
+                    default:
+                        Assert(false);
+                        throw new NotImplementedException();
+                        break;
+                }
             }
         }
 
-        private void TypeHint(Writer writer, Scope scope, TypeHint hint)
+        private void TypeHint(Scope scope, TypeHint hint)
         {
             Collector.DeclareHint.Add(hint);
 
-            hint.PP(writer);
+            collector.Add(hint);
 
             scope.AddHint(hint);
         }
 
-        private void VarDecl(Writer writer, Scope scope, VarDecl var)
+        private void VarDecl(Scope scope, VarDecl var)
         {
             Collector.DeclareVar.Add(var);
 
-            var.PP(writer);
+            collector.Add(var);
 
             scope.AddVar(var);
 
@@ -136,31 +149,31 @@ namespace Fux.Building.Phases
             ScopeExpr(var.Scope, var.Expression);
         }
 
-        private void Import(Writer writer, ModuleScope scope, ImportDecl import)
+        private void Import(ModuleScope scope, ImportDecl import)
         {
             Collector.Import.Add(import);
 
-            import.PP(writer);
+            collector.Add(import);
 
             scope.ImportAddImport(import);
         }
 
-        private void Infix(Writer writer, ModuleScope scope, InfixDecl infix)
+        private void Infix(ModuleScope scope, InfixDecl infix)
         {
             Collector.DeclareInfix.Add(infix);
 
-            infix.PP(writer);
+            collector.Add(infix);
 
             scope.AddInfix(infix);
 
             ScopeExpr(scope, infix.Expression);
         }
 
-        private void Type(Writer writer, ModuleScope scope, TypeDecl type)
+        private void Type(ModuleScope scope, TypeDecl type)
         {
             Collector.DeclareType.Add(type);
 
-            type.PP(writer);
+            collector.Add(type);
 
             scope.AddType(type);
 
@@ -177,11 +190,11 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void Alias(Writer writer, ModuleScope scope, AliasDecl alias)
+        private void Alias(ModuleScope scope, AliasDecl alias)
         {
             Collector.DeclareAlias.Add(alias);
 
-            alias.PP(writer);
+            collector.Add(alias);
 
             scope.AddAlias(alias);
         }

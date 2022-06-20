@@ -8,8 +8,8 @@ namespace Fux.Building.Phases
 {
     internal class Phase4Expose : Phase
     {
-        public Phase4Expose(ErrorBag errors, Package package)
-            : base("expose", errors, package)
+        public Phase4Expose(Ambience ambience, Package package)
+            : base("expose", ambience, package)
         {
         }
 

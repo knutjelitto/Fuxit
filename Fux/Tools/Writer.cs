@@ -42,6 +42,11 @@
             return new Writer(System.Console.Out, indent);
         }
 
+        public static Writer Null(int? indent = 4)
+        {
+            return new Writer(TextWriter.Null, indent);
+        }
+
         public void WriteLine()
         {
             sink.WriteLine();

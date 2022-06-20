@@ -5,8 +5,6 @@ using Fux.Tests;
 
 using Semver;
 
-using Phases = Fux.Building.Phases;
-
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CS0162 // Unreachable code detected
 #pragma warning disable IDE0051 // Remove unused private members
@@ -17,8 +15,8 @@ namespace Fux
     {
         static void Main(string[] args)
         {
-#if true
-            Fux.Building.AlgorithmW.Tester.Run();
+#if false
+            Building.AlgorithmW.Tester.Run();
             WaitForKey();
 #endif
 #if false
@@ -136,7 +134,7 @@ namespace Fux
         {
             var builder = new Builder();
 
-            var parse = new Phases.Phase2Parse(builder.Errors, new Package(new ElmPackage("test", new SemVersion(0))));
+            var parse = new Phase2Parse(builder.Ambience, new Package(new ElmPackage("test", new SemVersion(0))));
 
             foreach (var source in Tester.All())
             {

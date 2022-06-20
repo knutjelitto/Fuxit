@@ -1,19 +1,19 @@
 ﻿namespace Fux.Building.AlgorithmW
 {
-    public class Polytype
+    internal class Polytype
     {
-        public Polytype(IReadOnlyList<TypeVar> typeVariables, WType type)
+        public Polytype(IReadOnlyList<TypeVariable> typeVariables, Type type)
         {
             TypeVariables = typeVariables;
             Type = type;
         }
 
-        public Polytype(WType type)
-            : this(Array.Empty<TypeVar>(), type)
+        public Polytype(Type type)
+            : this(Array.Empty<TypeVariable>(), type)
         {
         }
 
-        public IReadOnlyList<TypeVar> TypeVariables { get; }
-        public WType Type { get; }
+        public IReadOnlyList<TypeVariable> TypeVariables { get; }
+        public Type Type { get; }
     }
 }

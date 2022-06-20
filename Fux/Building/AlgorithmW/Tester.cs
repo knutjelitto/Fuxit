@@ -1,5 +1,6 @@
 ﻿using static Fux.Building.AlgorithmW.TesterHelper;
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable CS0162 // Unreachable code detected
 
@@ -23,8 +24,7 @@ namespace Fux.Building.AlgorithmW
 
             //return;
 
-
-
+#if false
             test(integer(5));
             test(lit("hello"));
             test(lit(true));
@@ -100,7 +100,6 @@ namespace Fux.Building.AlgorithmW
                                                        app(var("succ"),
                                                            app(var("succ"), var("zero")))))))))))));
 
-#if false
             // this case produces an incredibly large type
             test(let("zero",
                       abs("f", abs("x", var("x"))),
@@ -120,20 +119,19 @@ namespace Fux.Building.AlgorithmW
 #endif
         }
 
-        private static void test(WExpr expression)
+        private static void test(Expr expression)
         {
-            var typeInferrer = new TypeInferrer();
-            var typeVarGenerator = new TypeVarGenerator();
-            var typeEnvironment = typeInferrer.GetDefaultTypeEnvironment(typeVarGenerator);
+            var typeInferrer = new Inferrer();
+            var typeEnvironment = typeInferrer.GetDefaultEnvironment(new TypeVarGenerator());
 
             Console.WriteLine($"INPUT: {expression}");
-            var result = typeInferrer.Run(expression, typeEnvironment, typeVarGenerator);
+            var result = typeInferrer.Run(expression, typeEnvironment);
             switch (result)
             {
-                case (WType type, _):
+                case (Type type, _):
                     Console.WriteLine($"OUTPUT: {type}");
                     break;
-                case (_, WError(string error)):
+                case (_, Error(string error)):
                     Console.WriteLine($"FAIL: {error}");
                     break;
             }

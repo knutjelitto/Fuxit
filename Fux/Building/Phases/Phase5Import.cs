@@ -6,8 +6,8 @@ namespace Fux.Building.Phases
 {
     internal class Phase5Import : Phase
     {
-        public Phase5Import(ErrorBag errors, Package package)
-            : base("import", errors, package)
+        public Phase5Import(Ambience ambience, Package package)
+            : base("import", ambience, package)
         {
         }
 

@@ -1,4 +1,6 @@
-﻿namespace Fux.Input.Ast
+﻿using Fux.Tools;
+
+namespace Fux.Input.Ast
 {
     internal class NativeDecl : Declaration
     {
@@ -10,6 +12,11 @@
 
         public Type? Type { get; set; } = null;
         public Identifier ModuleName { get; }
+
+        public override string ToString()
+{
+            return $"{ModuleName}.{Name}";
+        }
 
         public override void PP(Writer writer)
         {

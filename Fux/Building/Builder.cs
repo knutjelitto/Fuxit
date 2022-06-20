@@ -13,16 +13,22 @@ namespace Fux.Building
     {
         public readonly SemVersion CurrentElmVersion = new(0, 19, 0);
 
-        private readonly ErrorBag errors;
         private readonly Loaded loaded;
 
         public Builder()
         {
-            errors = new ErrorBag();
             loaded = new Loaded();
+            Ambience = new Ambience(new ErrorBag())
+            {
+                Config = new Config
+                {
+                    WriteTheTyping = true,
+                }
+            };
         }
 
-        public ErrorBag Errors => errors;
+        public ErrorBag Errors => Ambience.Errors;
+        public Ambience Ambience { get; }
 
         public IEnumerable<Package> Packages => loaded;
         public IEnumerable<Module> Modules => loaded.SelectMany(p => p.Modules);
@@ -40,19 +46,19 @@ namespace Fux.Building
             Terminal.ClearHome();
 
             var prefix = $"{"scan",lwidth}";
-            Build(prefix, package => new Phase1Scan(Errors, package));
+            Build(prefix, package => new Phase1Scan(Ambience, package));
             prefix = $"{prefix}{"pars",lwidth}";
-            Build(prefix, package => new Phase2Parse(Errors, package));
+            Build(prefix, package => new Phase2Parse(Ambience, package));
             prefix = $"{prefix}{"decl",lwidth}";
-            Build(prefix, package => new Phase3Declare(Errors, package));
+            Build(prefix, package => new Phase3Declare(Ambience, package));
             prefix = $"{prefix}{"expo",lwidth}";
-            Build(prefix, package => new Phase4Expose(Errors, package));
+            Build(prefix, package => new Phase4Expose(Ambience, package));
             prefix = $"{prefix}{"impo",lwidth}";
-            Build(prefix, package => new Phase5Import(Errors, package));
+            Build(prefix, package => new Phase5Import(Ambience, package));
             prefix = $"{prefix}{"reso",lwidth}";
-            Build(prefix, package => new Phase6Resolve(Errors, package));
+            Build(prefix, package => new Phase6Resolve(Ambience, package));
             prefix = $"{prefix}{"type",lwidth}";
-            Build(prefix, package => new Phase7Type(Errors, package));
+            Build(prefix, package => new Phase7Typing(Ambience, package));
 
             Terminal.Write($"{"",53}");
             Terminal.Write($"{$"{Collector.Instance.ScanTime.ElapsedMilliseconds} ",rwidth}");

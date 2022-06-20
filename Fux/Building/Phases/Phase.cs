@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Building.Phases
+﻿namespace Fux.Building.Phases
 {
     internal abstract class Phase
     {
-        protected Phase(string phaseName, ErrorBag errors, Package package)
+        protected Phase(string phaseName, Ambience ambience, Package package)
         {
             PhaseName = phaseName;
-            Errors = errors;
+            Ambience = ambience;
             Package = package;
         }
 
@@ -20,10 +13,16 @@ namespace Fux.Building.Phases
 
 
         public string PhaseName { get; }
-        public ErrorBag Errors { get; }
+        public Ambience Ambience { get; }
+        public ErrorBag Errors => Ambience.Errors;
         public Package Package { get; }
 
         public abstract void Make();
+
+        protected Writer MakeWriter()
+        {
+            return Writer.Null();
+        }
 
         protected Writer MakeWriter(string name)
 {

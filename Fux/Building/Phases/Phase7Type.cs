@@ -1,18 +1,24 @@
 ﻿using W = Fux.Building.AlgorithmW;
+using A = Fux.Input.Ast;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+#pragma warning disable CS0162 // Unreachable code detected
 
 namespace Fux.Building.Phases
 {
-    internal class Phase7Type : Phase
+    internal class Phase7Typing : Phase
     {
         private static int resolvedCount = 0;
-        private const int resolvedCountMax = 1;
+        private const int resolvedCountMin = 1;
+        private const int resolvedCountMax = resolvedCountMin -1 + 10;
 
-        public Phase7Type(ErrorBag errors, Package package)
-            : base("type", errors, package)
+        private readonly TypeBuilder builder = new();
+
+        public Phase7Typing(Ambience ambience, Package package)
+            : base("typing", ambience, package)
         {
         }
 
@@ -23,6 +29,11 @@ namespace Fux.Building.Phases
                 Terminal.Write(".");
 
                 if (module.IsJs)
+                {
+                    continue;
+                }
+
+                if (resolvedCount >= resolvedCountMax)
                 {
                     continue;
                 }
@@ -47,155 +58,188 @@ namespace Fux.Building.Phases
                 return;
             }
 
-            Collector.TypeTime.Start();
-            foreach (var declaration in module.Ast.Declarations.OfType<VarDecl>())
+            var declarations = module.Ast.Declarations.OfType<VarDecl>().ToList();
+
+
+            if (resolvedCount + declarations.Count < resolvedCountMin)
             {
-                Type(module, declaration);
+                resolvedCount += declarations.Count;
+                return;
+            }
 
-                resolvedCount += 1;
+            if (resolvedCount + declarations.Count < resolvedCountMax)
+            {
+                resolvedCount += declarations.Count;
+                return;
+            }
 
-                if (resolvedCount >= resolvedCountMax)
+            using (var writer = Ambience.Config.WriteTheTyping ? MakeWriter(module) : MakeWriter())
+            {
+                foreach (var declaration in declarations)
                 {
-                    break;
+                    resolvedCount += 1;
+
+                    if (resolvedCount < resolvedCountMin)
+                    {
+                        continue;
+                    }
+
+                    TypeVar(writer, module, declaration);
+
+
+                    if (resolvedCount >= resolvedCountMax)
+                    {
+                        break;
+                    }
                 }
             }
-            Collector.TypeTime.Stop();
         }
 
-        private void Type(Module module, VarDecl var)
+        private void TypeVar(Writer writer, Module module, VarDecl var)
         {
-            Resolve(module, var);
-        }
+            var number = resolvedCount;
 
-        private void Resolve(Module module, VarDecl var)
-        {
-            ResolveExpr(var.Scope, var.Expression);
-        }
-
-        private void ResolveExpr(Scope scope, Expression expression)
-        {
-            switch (expression)
+            writer.WriteLine($"{number,4} {var.Name}");
+            writer.Indent(() =>
             {
-                case NumberLiteral:
-                case StringLiteral:
-                case CharLiteral:
-                case Unit:
-                case TypeHint:
-                case DotExpr:
-                    break; //TODO: what to do here
+                if (var.Type != null)
+                {
+                    writer.WriteLine($": {var.Type}");
+                }
+                if (var.Parameters.Count > 0)
+                {
+                    writer.Write($"{var.Parameters} ");
+                }
+                string text;
+
+                if (var.Expression.Resolved is NativeDecl native)
+                {
+                    var package = module.Package.Name;
+                    var stem = native.ModuleName.Text.Replace("Elm.Kernel.", "_");
+                    text = $"({package}){stem}_{native.Name}";
+                }
+                else
+                {
+                    text = var.Expression.ToString()!;
+                }
+                writer.WriteLine($"= {text}");
+            });
+
+            Resolve(writer, module, var);
+        }
+
+        private void Resolve(Writer writer, Module module, VarDecl var)
+        {
+            writer.Indent(() =>
+            {
+                var inferrer = new W.Inferrer();
+                var env = inferrer.GetEmptyEnvironment(new W.TypeVarGenerator());
+
+                var polytype = builder.Build(env, var.Type);
+
+                var name = new W.TermVariable(var.Name.Text);
+                env = env.Insert(name, polytype);
+
+                var wexpr = ExprFrom(var.Expression, env);
+
+                var variable = new W.Variable(name);
+                var def = new W.DefExpression(variable, wexpr);
+
+                writer.WriteLine();
+                Resolve(writer, inferrer, env, def);
+            });
+        }
+
+        private W.Expr ExprFrom(Expression expr, W.Environment env)
+        {
+            switch(expr)
+            {
                 case Identifier identifier:
+                    Assert(identifier.Resolved != null);
+                    if (identifier.Resolved != null)
                     {
-                        break;
-                    }
-                case IfExpr iff:
-                    ResolveExpr(scope, iff.Condition);
-                    ResolveExpr(scope, iff.IfTrue);
-                    ResolveExpr(scope, iff.IfFalse);
-                    break;
-                case MatchExpr match:
-                    ResolveExpr(scope, match.Expression);
-                    foreach (var matchCase in match.Cases)
-                    {
-                        ResolveExpr(scope, matchCase);
+                        return ExprFrom(identifier.Resolved, env);
                     }
                     break;
-                case MatchCase matchCase:
-                    ResolveExpr(matchCase.Scope, matchCase.Expression);
-                    break;
-                case LetExpr let:
-                    {
-                        foreach (var expr in let.LetExpressions)
-                        {
-                            ResolveExpr(scope, expr);
-                        }
-                        ResolveExpr(let.Scope, let.InExpression);
-                        break;
-                    }
-                case LetAssign letAssign:
-                    ResolveExpr(letAssign.Scope, letAssign.Expression);
-                    break;
-                case LambdaExpr lambda:
-                    ResolveExpr(lambda.Scope, lambda.Expression);
-                    break;
-                case VarDecl var:
-                    ResolveExpr(var.Scope, var.Expression);
-                    break;
-                case SequenceExpr sequence:
-                    Assert(sequence.IsApplication);
-                    foreach (var expr in sequence)
-                    {
-                        ResolveExpr(scope, expr);
-                    }
-                    break;
-                case TupleExpr tuple:
-                    foreach (var expr in tuple)
-                    {
-                        ResolveExpr(scope, expr);
-                    }
-                    break;
-                case ListExpr list:
-                    foreach (var expr in list)
-                    {
-                        ResolveExpr(scope, expr);
-                    }
-                    break;
-                case RecordExpr record:
-                    if (record.BaseRecord != null)
-                    {
-                        ResolveExpr(scope, record.BaseRecord);
-                    }
-                    foreach (var field in record.Fields)
-                    {
-                        ResolveExpr(scope, field);
-                    }
-                    break;
-                case FieldAssign fieldAssign:
-                    ResolveExpr(scope, fieldAssign.Expression);
-                    break;
-                case PrefixExpr prefix:
-                    //TODO: prefix operator
-                    //ResolveExpr(scope, prefix.Op);
-                    ResolveExpr(scope, prefix.Rhs);
-                    break;
-                case OpChain chain:
-                    ResolveInfix(scope, chain);
-                    break;
-                case SelectExpr select:
-                    ResolveExpr(scope, select.Lhs);
-                    break;
+                case NativeDecl native:
+                    return new W.NativeExpression(native);
                 default:
-                    Assert(false);
-                    throw new NotImplementedException();
+                    break;
+            }
+
+            Assert(false);
+            throw new NotImplementedException();
+        }
+
+
+        private static void Resolve(Writer writer, W.Inferrer inferrer, W.Environment env, W.Expr expression)
+        {
+            try
+            {
+                writer.WriteLine($"INPUT: {expression}");
+                var result = inferrer.Run(expression, env);
+                switch (result)
+                {
+                    case (W.Type type, _):
+                        writer.WriteLine($"OUTPUT: {type}");
+                        break;
+                    case (_, W.Error(string error)):
+                        writer.WriteLine($"FAIL: {error}");
+                        break;
+                }
+                writer.WriteLine();
+            }
+            catch (Exception any)
+            {
+                writer.WriteLine();
+                writer.WriteLine($"{any.Message}");
+                writer.WriteLine();
             }
         }
 
-        private void ResolveInfix(Scope scope, OpChain chain)
+        private class TypeBuilder
         {
-            Assert(chain.Rest.Count > 0);
+            private readonly List<W.TypeVariable> vars = new();
+            private readonly Dictionary<string, W.TypeVariable> index = new();
 
-            ResolveExpr(scope, chain.First);
-
-            foreach (var opExpr in chain.Rest)
+            public W.Polytype Build(W.Environment env, Type? type)
             {
-                if (scope.Resolve(opExpr.Op.Name, out var resolved))
+                if (type == null)
                 {
-                    if (resolved is InfixDecl op)
-                    {
-                        opExpr.Op.Resolved = op;
+                    return new W.Polytype(env.Generator.GetNext());
+                }
 
-                        ResolveExpr(scope, opExpr.Expression);
-                    }
-                    else
-                    {
+                vars.Clear();
+                index.Clear();
+
+                var wtype = Resolve(env, type);
+
+                return new W.Polytype(vars, wtype);
+            }
+
+            private W.Type Resolve(W.Environment env, Type type)
+            {
+                switch (type)
+                {
+                    case A.Type.Function function:
+                        return new W.FunctionType(Resolve(env, function.TypeIn), Resolve(env, function.TypeOut));
+                    case A.Type.NumberClass number:
+                        if (!index.TryGetValue(number.Text, out var typeVar))
+                        {
+                            typeVar = env.Generator.GetNext().TypeVar;
+                            index.Add(number.Text, typeVar);
+                            vars.Add(typeVar);
+                        }
+                        return new W.VariableType(typeVar);
+                    case A.Type.Concrete concrete:
+                        return new W.PrimitiveType(concrete.Name.Text);
+                    default:
                         Assert(false);
                         throw new NotImplementedException();
-                    }
                 }
+                Assert(false);
+                throw new NotImplementedException();
             }
-
-            var infix = chain.Resolve();
-
-            chain.Resolved = infix;
         }
     }
 }

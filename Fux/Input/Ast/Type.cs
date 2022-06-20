@@ -48,18 +48,18 @@
 
         public class Function : Type
         {
-            public Function(Type lhs, Type rhs)
+            public Function(Type typeIn, Type typeOut)
             {
-                Lhs = lhs;
-                Rhs = rhs;
+                TypeIn = typeIn;
+                TypeOut = typeOut;
             }
 
-            public Type Lhs { get; }
-            public Type Rhs { get; }
+            public Type TypeIn { get; }
+            public Type TypeOut { get; }
 
             public override string ToString()
             {
-                return Protected($"{Lhs} -> {Rhs}");
+                return Protected($"{TypeIn} → {TypeOut}");
             }
         }
 
@@ -124,33 +124,35 @@
 
             public Identifier Identifier { get; }
 
+            public string Text => Identifier.Text;
+
             public override string ToString()
             {
                 return Identifier.ToString();
             }
         }
 
-        public class Number : Special
+        public class NumberClass : Special
         {
-            public Number(Identifier identifier)
+            public NumberClass(Identifier identifier)
                 : base(identifier)
             {
                 Assert(identifier.Text == "number");
             }
         }
 
-        public class Appendable : Special
+        public class AppendableClass : Special
         {
-            public Appendable(Identifier identifier)
+            public AppendableClass(Identifier identifier)
                 : base(identifier)
             {
                 Assert(identifier.Text == "appendable");
             }
         }
 
-        public class Comparable : Special
+        public class ComparableClass : Special
         {
-            public Comparable(Identifier identifier)
+            public ComparableClass(Identifier identifier)
                 : base(identifier)
             {
                 Assert(identifier.Text == "comparable");

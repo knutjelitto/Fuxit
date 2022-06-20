@@ -516,17 +516,17 @@ namespace Fux.Input
 
                     if (name.ToString() == "number")
                     {
-                        return new Type.Number(name);
+                        return new Type.NumberClass(name);
                     }
 
                     if (name.ToString() == "appendable")
                     {
-                        return new Type.Appendable(name);
+                        return new Type.AppendableClass(name);
                     }
 
                     if (name.ToString() == "comparable")
                     {
-                        return new Type.Comparable(name);
+                        return new Type.ComparableClass(name);
                     }
 
                     return new Type.Parameter(name);

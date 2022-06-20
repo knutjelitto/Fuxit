@@ -6,8 +6,8 @@ namespace Fux.Building.Phases
 {
     internal class Phase6Resolve : Phase
     {
-        public Phase6Resolve(ErrorBag errors, Package package)
-            : base("resolve", errors, package)
+        public Phase6Resolve(Ambience ambience, Package package)
+            : base("resolve", ambience, package)
         {
         }
 
@@ -109,8 +109,8 @@ namespace Fux.Building.Phases
                     }
                     break;
                 case Type.Function function:
-                    ResolveType(scope, function.Lhs);
-                    ResolveType(scope, function.Rhs);
+                    ResolveType(scope, function.TypeIn);
+                    ResolveType(scope, function.TypeOut);
                     break;
                 case Type.Tuple tuple:
                     foreach (var item in tuple.Types)
@@ -135,9 +135,9 @@ namespace Fux.Building.Phases
                     }
                     break;
                 case Type.Parameter:
-                case Type.Number:
-                case Type.Appendable:
-                case Type.Comparable:
+                case Type.NumberClass:
+                case Type.AppendableClass:
+                case Type.ComparableClass:
                 case Type.Unit:
                     break;
                 default:
