@@ -79,7 +79,7 @@ namespace Fux.Building.Phases
             {
                 switch (element)
                 {
-                    case TypeDecl type:
+                    case UnionDecl type:
                         var exposedType = new ExposedType(type.Name, true);
                         foreach (var constructor in type.Constructors)
                         {

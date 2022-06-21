@@ -2,6 +2,8 @@
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
 
+using static Fux.Input.Ast.Type;
+
 namespace Fux.Building.Phases
 {
     internal class Phase6Resolve : Phase
@@ -47,7 +49,7 @@ namespace Fux.Building.Phases
                 case InfixDecl infix:
                     Resolve(module, infix);
                     break;
-                case TypeDecl type:
+                case UnionDecl type:
                     Resolve(module, type);
                     break;
                 case VarDecl var:
@@ -75,15 +77,9 @@ namespace Fux.Building.Phases
             ResolveExpr(var.Scope, var.Expression);
         }
 
-        private void Resolve(Module module, TypeDecl type)
+        private void Resolve(Module module, UnionDecl type)
         {
-            Assert(type.Parameters.Count >= 0);
-            Assert(type.Constructors.Count >= 1);
-
-            foreach (var ctor in type.Constructors)
-            {
-                ResolveType(type.Scope, ctor);
-            }
+            ResolveType(module.Scope, type.Type);
         }
 
         private void Resolve(Module module, TypeHint hint)
@@ -102,12 +98,6 @@ namespace Fux.Building.Phases
         {
             switch (type)
             {
-                case Type.Constructor ctor:
-                    foreach (var arg in ctor.Arguments)
-                    {
-                        ResolveType(scope, arg);
-                    }
-                    break;
                 case Type.Function function:
                     ResolveType(scope, function.TypeIn);
                     ResolveType(scope, function.TypeOut);
@@ -134,6 +124,24 @@ namespace Fux.Building.Phases
                         Assert(true);
                     }
                     break;
+                case Type.UnionType unionType:
+                    {
+                        if (unionType.Name.Text == "Int")
+                        {
+                            Assert(true);
+                        }
+                    }
+                    break;
+                case Type.Union union:
+                    if (union.Name.Text == "Int")
+                    {
+                        Assert(true);
+                    }
+                    if (scope.Resolve(union.Name, out _))
+                    {
+                        Assert(true);
+                    }
+                    break;
                 case Type.Parameter:
                 case Type.NumberClass:
                 case Type.AppendableClass:
@@ -153,13 +161,18 @@ namespace Fux.Building.Phases
                 case NumberLiteral:
                 case StringLiteral:
                 case CharLiteral:
-                case Unit:
+                case Fux.Input.Ast.Unit:
                 case DotExpr:
                     break; //TODO: what to do here
                 case Identifier identifier:
                     {
                         if (scope.Resolve(identifier, out var expr))
                         {
+                            if (expr is Identifier)
+                            {
+                                scope.Resolve(identifier, out expr);
+                            }
+                            Assert(expr is not Identifier);
                             expression.Resolved = expr;
                             break;
                         }

@@ -13,7 +13,7 @@ namespace Fux.Building.Phases
     {
         private static int resolvedCount = 0;
         private const int resolvedCountMin = 1;
-        private const int resolvedCountMax = resolvedCountMin -1 + 10;
+        private const int resolvedCountMax = resolvedCountMin -1 + 20;
 
         private readonly TypeBuilder builder = new();
 
@@ -86,7 +86,6 @@ namespace Fux.Building.Phases
 
                     TypeVar(writer, module, declaration);
 
-
                     if (resolvedCount >= resolvedCountMax)
                     {
                         break;
@@ -97,60 +96,77 @@ namespace Fux.Building.Phases
 
         private void TypeVar(Writer writer, Module module, VarDecl var)
         {
-            var number = resolvedCount;
-
-            writer.WriteLine($"{number,4} {var.Name}");
-            writer.Indent(() =>
+            try
             {
-                if (var.Type != null)
+                writer.WriteLine($"{resolvedCount,4} {var.Name}");
+                writer.Indent(() =>
                 {
-                    writer.WriteLine($": {var.Type}");
-                }
-                if (var.Parameters.Count > 0)
-                {
-                    writer.Write($"{var.Parameters} ");
-                }
-                string text;
+                    if (var.Type != null)
+                    {
+                        writer.WriteLine($": {var.Type}");
+                    }
+                    if (var.Parameters.Count > 0)
+                    {
+                        writer.Write($"{var.Parameters} ");
+                    }
+                    string text;
 
-                if (var.Expression.Resolved is NativeDecl native)
-                {
-                    var package = module.Package.Name;
-                    var stem = native.ModuleName.Text.Replace("Elm.Kernel.", "_");
-                    text = $"({package}){stem}_{native.Name}";
-                }
-                else
-                {
-                    text = var.Expression.ToString()!;
-                }
-                writer.WriteLine($"= {text}");
-            });
+                    if (var.Expression.Resolved is NativeDecl native)
+                    {
+                        var package = module.Package.Name;
+                        var stem = native.ModuleName.Text.Replace("Elm.Kernel.", "_");
+                        text = $"({package}){stem}_{native.Name}";
+                    }
+                    else
+                    {
+                        text = var.Expression.ToString()!;
+                    }
+                    writer.WriteLine($"= {text}");
+                });
 
-            Resolve(writer, module, var);
+                Resolve(writer, module, var);
+            }
+            catch (Exception any)
+            {
+                writer.WriteLine();
+                writer.WriteLine($"!!!! {any.Message}");
+                writer.WriteLine();
+            }
         }
 
         private void Resolve(Writer writer, Module module, VarDecl var)
         {
+            var inferrer = new W.Inferrer();
+            var env = inferrer.GetEmptyEnvironment();
+
+            Assert(var.Type != null);
+
+            if (var.Name.Text == "min")
+            {
+                Assert(true);
+            }
+
+            var polytype = builder.Build(env, var.Type);
+
+            var name = new W.TermVariable(var.Name.Text);
+            env = env.Insert(name, polytype);
+
+            var wexpr = ExprFrom(var.Expression, ref env);
+
+            var variable = new W.Variable(name);
+            var def = new W.DefExpression(variable, wexpr);
+
+            Assert(var.Parameters.Count == 0);
+
+            writer.WriteLine();
+
             writer.Indent(() =>
             {
-                var inferrer = new W.Inferrer();
-                var env = inferrer.GetEmptyEnvironment(new W.TypeVarGenerator());
-
-                var polytype = builder.Build(env, var.Type);
-
-                var name = new W.TermVariable(var.Name.Text);
-                env = env.Insert(name, polytype);
-
-                var wexpr = ExprFrom(var.Expression, env);
-
-                var variable = new W.Variable(name);
-                var def = new W.DefExpression(variable, wexpr);
-
-                writer.WriteLine();
                 Resolve(writer, inferrer, env, def);
             });
         }
 
-        private W.Expr ExprFrom(Expression expr, W.Environment env)
+        private W.Expr ExprFrom(Expression expr, ref W.Environment env)
         {
             switch(expr)
             {
@@ -158,43 +174,76 @@ namespace Fux.Building.Phases
                     Assert(identifier.Resolved != null);
                     if (identifier.Resolved != null)
                     {
-                        return ExprFrom(identifier.Resolved, env);
+                        switch (identifier.Resolved)
+                        {
+                            case NativeDecl native:
+                                return new W.NativeExpression(native);
+                            case VarDecl var:
+                                Assert(identifier.IsSingleLower);
+                                Assert(var.Type != null);
+                                var wtype = builder.Build(env, var.Type);
+                                var variable = new W.Variable(new W.TermVariable(identifier.Text));
+                                env = env.Insert(variable.Term, wtype);
+                                return variable;
+                            default:
+                                break;
+                        }
                     }
                     break;
                 case NativeDecl native:
                     return new W.NativeExpression(native);
+                case IfExpr ifExpr:
+                    {
+                        var condition = ExprFrom(ifExpr.Condition, ref env);
+                        var ifTrue = ExprFrom(ifExpr.IfTrue, ref env);
+                        var ifFalse = ExprFrom(ifExpr.IfFalse, ref env);
+
+                        return new W.IffExpression(condition, ifTrue, ifFalse);
+                    }
+                case SequenceExpr seqExpr:
+                    {
+                        Assert(seqExpr.Count >= 2);
+
+                        return Apply(seqExpr, seqExpr.Count - 1, ref env);
+
+                        break;
+                    }
                 default:
                     break;
             }
 
-            Assert(false);
-            throw new NotImplementedException();
+            //Assert(false);
+            throw new NotImplementedException($"expression not implemented: '{expr.GetType().FullName}' ({expr})");
+
+            W.Expr Apply(SequenceExpr seq, int index, ref W.Environment env)
+            {
+                if (index == 1)
+                {
+                    return new W.ApplicationExpression(ExprFrom(seq[0], ref env), ExprFrom(seq[1], ref env));
+                }
+                else
+                {
+                    Assert(index > 1);
+                    return new W.ApplicationExpression(Apply(seq, index - 1, ref env), ExprFrom(seq[index], ref env));
+                }
+            }
         }
 
 
         private static void Resolve(Writer writer, W.Inferrer inferrer, W.Environment env, W.Expr expression)
         {
-            try
+            writer.WriteLine($"INPUT: {expression}");
+            var result = inferrer.Run(expression, env);
+            switch (result)
             {
-                writer.WriteLine($"INPUT: {expression}");
-                var result = inferrer.Run(expression, env);
-                switch (result)
-                {
-                    case (W.Type type, _):
-                        writer.WriteLine($"OUTPUT: {type}");
-                        break;
-                    case (_, W.Error(string error)):
-                        writer.WriteLine($"FAIL: {error}");
-                        break;
-                }
-                writer.WriteLine();
+                case (W.Type type, _):
+                    writer.WriteLine($"OUTPUT: {type}");
+                    break;
+                case (_, W.Error(string error)):
+                    writer.WriteLine($"FAIL: {error}");
+                    break;
             }
-            catch (Exception any)
-            {
-                writer.WriteLine();
-                writer.WriteLine($"{any.Message}");
-                writer.WriteLine();
-            }
+            writer.WriteLine();
         }
 
         private class TypeBuilder
@@ -221,24 +270,31 @@ namespace Fux.Building.Phases
             {
                 switch (type)
                 {
-                    case A.Type.Function function:
+                    case Type.Function function:
                         return new W.FunctionType(Resolve(env, function.TypeIn), Resolve(env, function.TypeOut));
                     case A.Type.NumberClass number:
-                        if (!index.TryGetValue(number.Text, out var typeVar))
-                        {
-                            typeVar = env.Generator.GetNext().TypeVar;
-                            index.Add(number.Text, typeVar);
-                            vars.Add(typeVar);
-                        }
-                        return new W.VariableType(typeVar);
+                        return VT(number.Text);
+                    case A.Type.ComparableClass comparable:
+                        return VT(comparable.Text);
+                    case A.Type.Parameter parameter:
+                        return VT(parameter.Text);
                     case A.Type.Concrete concrete:
                         return new W.PrimitiveType(concrete.Name.Text);
-                    default:
-                        Assert(false);
-                        throw new NotImplementedException();
+                    case A.Type.Union union:
+                        break;
                 }
-                Assert(false);
-                throw new NotImplementedException();
+                throw new NotImplementedException($"type not implemented: '{type.GetType().FullName}' ({type})");
+
+                W.VariableType VT(string text)
+                {
+                    if (!index.TryGetValue(text, out var typeVar))
+                    {
+                        typeVar = env.Generator.GetNext(text).TypeVar;
+                        index.Add(text, typeVar);
+                        vars.Add(typeVar);
+                    }
+                    return new W.VariableType(typeVar);
+                }
             }
         }
     }

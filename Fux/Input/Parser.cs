@@ -262,13 +262,13 @@ namespace Fux.Input
 
                 var name = new Identifier(cursor.Swallow(Lex.UpperId));
 
-                var parameterList = new List<Identifier>();
+                var parameterList = new List<Type.Parameter>();
 
                 while (cursor.IsNot(Lex.Assign))
                 {
                     Assert(cursor.Is(Lex.LowerId));
 
-                    var parameter = new Identifier(cursor.Swallow(Lex.LowerId));
+                    var parameter = new Type.Parameter(new Identifier(cursor.Swallow(Lex.LowerId)));
 
                     parameterList.Add(parameter);
                 }
@@ -291,7 +291,7 @@ namespace Fux.Input
                     ctors.Add(Constructor(cursor));
                 }
 
-                return new TypeDecl(name, new TypeParameters(parameterList), new Constructors(ctors));
+                return new UnionDecl(name, new TypeParameters(parameterList), new Constructors(ctors));
             });
         }
 
@@ -307,7 +307,7 @@ namespace Fux.Input
                     {
                         cursor.Swallow(Lex.Assign);
 
-                        var parameters = new Parameters(left.Skip(1));
+                        var parameters = new Parameters(left.Skip(1).Select(e => new Parameter(e)));
 
                         Assert(name.IsSingleLower);
 
@@ -341,6 +341,39 @@ namespace Fux.Input
                     Assert(false);
                     throw Errors.Parser.NotImplemented(cursor.Current);
                 }
+            });
+        }
+
+        private Type UnionInstantiation(TokensCursor cursor)
+        {
+            return cursor.Scope<Type>(cursor =>
+            {
+                Assert(cursor.Is(Lex.UpperId));
+
+                var name = Identifier(cursor).MultiUpper();
+
+                var arguments = new List<Type>();
+
+                do
+                {
+                    while (cursor.More() && !cursor.TerminatesSomething)
+                    {
+                        var argument = TypeArgument(cursor);
+
+                        arguments.Add(argument);
+                    }
+                }
+                while (cursor.More() && !cursor.TerminatesSomething);
+
+                if (arguments.Count == 0)
+                {
+                    if (name.Text == "Int" || name.Text == "Float" || name.Text == "Bool")
+                    {
+                        return new Type.Concrete(name);
+                    }
+                }
+
+                return new Type.Union(name, new TypeArguments(arguments));
             });
         }
 
@@ -508,7 +541,7 @@ namespace Fux.Input
                 }
                 else if (cursor.Is(Lex.UpperId))
                 {
-                    return Constructor(cursor);
+                    return UnionInstantiation(cursor);
                 }
                 else if (cursor.Is(Lex.LowerId))
                 {

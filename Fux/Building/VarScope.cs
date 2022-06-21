@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal class LetScope : Scope
+    internal class VarScope : Scope
     {
         private readonly Dictionary<Identifier, Parameter> parameters = new();
 

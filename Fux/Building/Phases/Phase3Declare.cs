@@ -99,7 +99,7 @@ namespace Fux.Building.Phases
                     case InfixDecl infix:
                         Infix(module.Scope, infix);
                         break;
-                    case TypeDecl type:
+                    case UnionDecl type:
                         Type(module.Scope, type);
                         break;
                     case AliasDecl alias:
@@ -169,7 +169,7 @@ namespace Fux.Building.Phases
             ScopeExpr(scope, infix.Expression);
         }
 
-        private void Type(ModuleScope scope, TypeDecl type)
+        private void Type(ModuleScope scope, UnionDecl type)
         {
             Collector.DeclareType.Add(type);
 
@@ -356,12 +356,12 @@ namespace Fux.Building.Phases
             ScopeExpr(lambda.Scope, lambda.Expression);
         }
 
-        private IEnumerable<Identifier> ExplodePattern(Expression pattern)
+        private IEnumerable<Parameter> ExplodePattern(Expression pattern)
         {
             switch (pattern)
             {
                 case Identifier identifier when identifier.IsSingleLower:
-                    yield return identifier;
+                    yield return new Parameter(identifier);
                     break;
                 case SequenceExpr sequence:
                     {
@@ -410,22 +410,28 @@ namespace Fux.Building.Phases
                     }
                     break;
                 case InfixExpr infix:
-                    foreach (var identifier in ExplodePattern(infix.Lhs))
+                    foreach (var parameter in ExplodePattern(infix.Lhs))
                     {
-                        yield return identifier;
+                        yield return parameter;
                     }
-                    foreach (var identifier in ExplodePattern(infix.Rhs))
+                    foreach (var parameter in ExplodePattern(infix.Rhs))
                     {
-                        yield return identifier;
+                        yield return parameter;
                     }
                     break;
                 case RecordPattern recordPattern:
                     foreach (var field in recordPattern.Fields)
                     {
-                        foreach (var identifier in ExplodePattern(field.Pattern))
+                        foreach (var parameter in ExplodePattern(field.Pattern))
                         {
-                            yield return identifier;
+                            yield return parameter;
                         }
+                    }
+                    break;
+                case Parameter parameterer:
+                    foreach (var parameter in ExplodePattern(parameterer.Expression))
+                    {
+                        yield return parameter;
                     }
                     break;
                 case Identifier identifier when identifier.IsMultiUpper:
@@ -442,10 +448,11 @@ namespace Fux.Building.Phases
 
             if (pattern.Alias != null)
             {
-                yield return pattern.Alias.SingleLower();
+                yield return new Parameter(pattern.Alias.SingleLower());
             }
         }
 
+#if false
         static void ScopeParameter(LetScope scope, Expression expression)
         {
             switch (expression)
@@ -473,5 +480,6 @@ namespace Fux.Building.Phases
                     throw new NotImplementedException();
             }
         }
+#endif
     }
 }

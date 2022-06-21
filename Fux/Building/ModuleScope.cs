@@ -11,7 +11,7 @@ namespace Fux.Building
         private readonly Dictionary<Identifier, ImportDecl> imports = new();
         private readonly List<InfixDecl> infixes = new();
         private readonly Dictionary<Identifier, InfixDecl> infixesIndex = new();
-        private readonly Dictionary<Identifier, TypeDecl> types = new();
+        private readonly Dictionary<Identifier, UnionDecl> types = new();
         private readonly Dictionary<Identifier, AliasDecl> aliases = new();
         private readonly Dictionary<Identifier, Type.Constructor> constructors = new();
         private readonly Dictionary<Identifier, Module> modules = new();
@@ -43,7 +43,7 @@ namespace Fux.Building
             infixesIndex.Add(name, decl);
         }
 
-        public void AddType(TypeDecl decl)
+        public void AddType(UnionDecl decl)
         {
             var name = decl.Name.SingleUpper();
 
@@ -96,7 +96,7 @@ namespace Fux.Building
         }
 
 
-        public bool ImportAddType(TypeDecl decl)
+        public bool ImportAddType(UnionDecl decl)
         {
             return types.TryAdd(decl.Name.SingleUpper(), decl);
         }
@@ -149,7 +149,7 @@ namespace Fux.Building
             return infixesIndex.TryGetValue(identifier.SingleOp(), out infix);
         }
 
-        public bool LookupType(Identifier identifier, [MaybeNullWhen(false)]out TypeDecl type)
+        public bool LookupType(Identifier identifier, [MaybeNullWhen(false)]out UnionDecl type)
         {
             return types.TryGetValue(identifier.SingleUpper(), out type);
         }
@@ -195,8 +195,6 @@ namespace Fux.Building
                     expr = alias;
                     return true;
                 }
-                Assert(false);
-                throw new NotImplementedException();
             }
             if (identifier.IsSingleOp)
             {
@@ -234,8 +232,8 @@ namespace Fux.Building
                     }
                 }
 
-                Assert(false);
-                throw new InvalidOperationException();
+                expr = null;
+                return false;
             }
 
             return base.Resolve(identifier, out expr);

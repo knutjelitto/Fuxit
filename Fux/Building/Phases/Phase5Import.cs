@@ -2,6 +2,8 @@
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
 
+using Fux.Input.Ast;
+
 namespace Fux.Building.Phases
 {
     internal class Phase5Import : Phase
@@ -38,6 +40,13 @@ namespace Fux.Building.Phases
             if (!Package.IsCore)
             {
                 Prelude(module);
+            }
+            else
+            {
+                if (module.Name != "List")
+                {
+                    ListPrelude(module);
+                }
             }
 
             Assert(module.Ast != null);
@@ -160,18 +169,23 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void Prelude(Module module)
+        private void ListPrelude(Module module)
         {
-            Assert(Package.FindImport("Basics") != null);
-            Import(module,
-                new ImportDecl(Identifier.Artificial(module, "Basics"), null,
-                new ExposingAll()));
             Import(module,
                 new ImportDecl(
                     Identifier.Artificial(module, "List"), null,
                     new ExposingSome(
                         new ExposedType(Identifier.Artificial(module, "List"), false),
                         new ExposedVar(Identifier.Artificial(module, "(::)")))));
+        }
+
+        private void Prelude(Module module)
+        {
+            Assert(Package.FindImport("Basics") != null);
+            Import(module,
+                new ImportDecl(Identifier.Artificial(module, "Basics"), null,
+                new ExposingAll()));
+            ListPrelude(module);
             Import(module,
                 new ImportDecl(
                     Identifier.Artificial(module, "Maybe"), null,

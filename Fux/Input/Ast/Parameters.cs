@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal class Parameters : ListOf<Expression>
+    internal class Parameters : ListOf<Parameter>
     {
-        public Parameters(IEnumerable<Expression> items)
+        public Parameters(IEnumerable<Parameter> items)
             : base(items)
         {
         }
 
         public Parameters()
-            : this(Enumerable.Empty<Expression>())
+            : this(Enumerable.Empty<Parameter>())
         {
         }
 

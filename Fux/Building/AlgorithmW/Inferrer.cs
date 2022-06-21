@@ -143,7 +143,7 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case AbstractionExpression({ } term, { } exp):
                     {
-                        var varType = environment.Generator.GetNext();
+                        var varType = environment.Generator.GetNext(term.Name);
                         var env = environment.Remove(term).Insert(term, new Polytype(varType));
                         return InferType(exp, env) switch
                         {
@@ -367,7 +367,7 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private static Type InstantiateType(Polytype polytype, Environment environment)
         {
-            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
+            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext(typeVar.Name))).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
         }
@@ -381,16 +381,16 @@ namespace Fux.Building.AlgorithmW
             };
         }
 
-        public Environment GetEmptyEnvironment(TypeVarGenerator typeVarGenerator)
+        public Environment GetEmptyEnvironment()
         {
-            return Environment.Initial(typeVarGenerator);
+            return Environment.Initial(new TypeVarGenerator());
         }
 
         public Environment GetDefaultEnvironment(TypeVarGenerator typeVarGenerator)
         {
-            var number1 = typeVarGenerator.GetNext();
-            var number2 = typeVarGenerator.GetNext();
-            var number3 = typeVarGenerator.GetNext();
+            var number1 = typeVarGenerator.GetNext("number");
+            var number2 = typeVarGenerator.GetNext("number");
+            var number3 = typeVarGenerator.GetNext("number");
 
             return Environment.Initial(typeVarGenerator,
 

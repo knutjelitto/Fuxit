@@ -2,21 +2,20 @@
 
 namespace Fux.Building
 {
-    internal class LetScope : Scope
+    internal class TypeScope : Scope
     {
-        private readonly Dictionary<Identifier, Parameter> parameters = new();
+        private readonly Dictionary<Identifier, Type.Parameter> parameters = new();
 
-        public void Add(Parameter parameter)
+        public void Add(Type.Parameter parameter)
         {
-            Assert(parameter.Expression is Identifier);
-            var name = ((Identifier)parameter.Expression).SingleLower();
+            var name = parameter.Name.SingleLower();
 
             Assert(!parameters.ContainsKey(name));
 
             parameters.Add(name, parameter);
         }
 
-        public bool LookupParameter(Identifier identifier, [MaybeNullWhen(false)] out Parameter var)
+        public bool LookupParameter(Identifier identifier, [MaybeNullWhen(false)] out Type.Parameter var)
         {
             return parameters.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }

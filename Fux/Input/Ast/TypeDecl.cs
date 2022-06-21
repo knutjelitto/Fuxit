@@ -2,18 +2,22 @@
 
 namespace Fux.Input.Ast
 {
-    internal sealed class TypeDecl : Declaration
+    internal sealed class UnionDecl : Declaration
     {
-        public TypeDecl(Identifier name, TypeParameters parameters, Constructors constructors)
+        public UnionDecl(Identifier name, TypeParameters parameters, Constructors constructors)
             : base(name)
         {
             Parameters = parameters;
             Constructors = constructors;
+
+            Type = new Type.UnionType(Name, parameters, constructors);
         }
 
         public TypeParameters Parameters { get; }
         public Constructors Constructors { get; }
-        public LetScope Scope { get; } = new();
+        public TypeScope Scope { get; } = new();
+
+        public Type.UnionType Type { get; }
 
         public override string ToString()
         {

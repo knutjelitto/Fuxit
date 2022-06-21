@@ -10,7 +10,7 @@ namespace Fux.Building
     {
         const string list = "List";
 
-        public static TypeDecl MakeType(Module module)
+        public static UnionDecl MakeType(Module module)
         {
             Assert(module.Name == list);
 
@@ -20,8 +20,8 @@ namespace Fux.Building
             var args = new TypeArguments(para);
             var ctor = new Type.Constructor(listId, args);
             var ctors = new Constructors(ctor);
-            var parameters = new TypeParameters(paraId);
-            var type = new TypeDecl(listId, parameters, ctors);
+            var parameters = new TypeParameters(new Type.Parameter(paraId));
+            var type = new UnionDecl(listId, parameters, ctors);
 
             return type;
         }

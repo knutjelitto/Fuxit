@@ -7,7 +7,7 @@
             writer.Write($"{this}");
         }
 
-        public class Concrete : Type
+        public sealed class Concrete : Type
         {
             public Concrete(Identifier name)
             {
@@ -24,7 +24,7 @@
             }
         }
             
-        public class Parameter : Type
+        public sealed class Parameter : Type
         {
             public Parameter(Identifier name)
             {
@@ -39,6 +39,7 @@
             }
 
             public Identifier Name { get; }
+            public string Text => Name.Text;
 
             public override string ToString()
             {
@@ -46,7 +47,7 @@
             }
         }
 
-        public class Function : Type
+        public sealed class Function : Type
         {
             public Function(Type typeIn, Type typeOut)
             {
@@ -63,7 +64,7 @@
             }
         }
 
-        public class Tuple : Type
+        public sealed class Tuple : Type
         {
             public Tuple(IEnumerable<Type> types)
             {
@@ -80,19 +81,57 @@
             }
         }
 
-        public class Unit : Type
+        public sealed class Unit : Type
         {
-            public Unit()
-            {
-            }
-
             public override string ToString()
             {
                 return $"()";
             }
         }
 
-        public class Constructor : Type
+        public sealed class UnionType : Type
+        {
+            public UnionType(Identifier name, TypeParameters parameters, Constructors constructors)
+            {
+                Name = name;
+                Parameters = parameters;
+                Constructors = constructors;
+            }
+
+            public Identifier Name { get; }
+            public TypeParameters Parameters { get; }
+            public Constructors Constructors { get; }
+        }
+
+        public class Union : Type
+        {
+            public Union(Identifier name, TypeArguments arguments)
+            {
+                Name = name;
+                Arguments = arguments;
+
+                Assert(Name.IsMultiUpper);
+            }
+
+            public Identifier Name { get; }
+            public TypeArguments Arguments { get; }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write(ToString());
+            }
+
+            public override string ToString()
+            {
+                if (Arguments.Count == 0)
+                {
+                    return Protected($"{Name}");
+                }
+                return Protected($"{Name} {Arguments}");
+            }
+        }
+
+        public class Constructor : Expression
         {
             public Constructor(Identifier name, TypeArguments arguments)
             {
@@ -104,6 +143,11 @@
 
             public Identifier Name { get; }
             public TypeArguments Arguments { get; }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write(ToString());
+            }
 
             public override string ToString()
             {
@@ -132,7 +176,7 @@
             }
         }
 
-        public class NumberClass : Special
+        public sealed class NumberClass : Special
         {
             public NumberClass(Identifier identifier)
                 : base(identifier)
@@ -141,7 +185,7 @@
             }
         }
 
-        public class AppendableClass : Special
+        public sealed class AppendableClass : Special
         {
             public AppendableClass(Identifier identifier)
                 : base(identifier)
@@ -150,7 +194,7 @@
             }
         }
 
-        public class ComparableClass : Special
+        public sealed class ComparableClass : Special
         {
             public ComparableClass(Identifier identifier)
                 : base(identifier)
@@ -159,7 +203,7 @@
             }
         }
 
-        internal class Record : Type
+        internal sealed class Record : Type
         {
             public Record(Type? baseRecord, IEnumerable<FieldDefine> fields)
             {

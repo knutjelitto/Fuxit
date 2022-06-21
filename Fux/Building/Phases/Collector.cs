@@ -10,7 +10,7 @@
 
         public List<ModuleDecl> Module { get; } = new();
         public List<ImportDecl> Import { get; } = new();
-        public List<TypeDecl> DeclareType { get; } = new();
+        public List<UnionDecl> DeclareType { get; } = new();
         public List<AliasDecl> DeclareAlias { get; } = new();
         public List<InfixDecl> DeclareInfix { get; } = new();
         public List<VarDecl> DeclareVar { get; } = new();
