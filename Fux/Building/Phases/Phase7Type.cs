@@ -11,9 +11,10 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
+        private int wildcardNumber = 0;
         private static int resolvedCount = 0;
-        private const int resolvedCountMin = 1 + 40;
-        private const int resolvedCountMax = resolvedCountMin - 1 + 20;
+        private const int resolvedCountMin = 1 + 0;
+        private const int resolvedCountMax = resolvedCountMin - 1 + 60;
 
         private readonly TypeBuilder builder = new();
 
@@ -38,9 +39,12 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
+                Module = module;
                 Make(module);
             }
         }
+
+        private Module Module { get; set; }
 
         private void Make(Module module)
         {
@@ -117,69 +121,33 @@ namespace Fux.Building.Phases
             }
             catch (Exception any)
             {
-                writer.WriteLine();
+                var line = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).First().TrimStart();
+
+                writer.WriteLine();                
                 writer.WriteLine($"!!!! {any.Message}");
+                writer.WriteLine($"     {line}");
                 writer.WriteLine();
-            }
-        }
-
-        private IEnumerable<Identifier> Identifiers(Parameters parameters)
-        {
-            foreach (var parameter in parameters)
-            {
-                foreach (var identifier in ids(parameter.Expression))
-                {
-                    if (identifier.IsSingleLower)
-                    {
-                        yield return identifier;
-                    }
-                }
-            }
-
-            IEnumerable<Identifier> ids(Expression expression)
-            {
-                switch (expression)
-                {
-                    case A.Identifier id:
-                        yield return id;
-                        break;
-
-                    case A.TupleExpr tuple:
-                        foreach (var expr in tuple)
-                        {
-                            foreach (var id in ids(expr))
-                            {
-                                yield return id;
-                            }
-                        }
-                        break;
-
-                    case A.SequenceExpr sequence:
-                        foreach (var expr in sequence)
-                        {
-                            foreach (var id in ids(expr))
-                            {
-                                yield return id;
-                            }
-                        }
-                        break;
-
-                    case A.Wildcard:
-                        break;
-
-                    default:
-                        Assert(false);
-                        throw new NotImplementedException();
-                }
             }
         }
 
         private void Resolve(Writer writer, Module module, VarDecl var)
         {
+            wildcardNumber = 0;
+
             var inferrer = new W.Inferrer();
             var env = inferrer.GetEmptyEnvironment();
 
+            if (var.Name.Text == "negate")
+            {
+                Assert(resolvedCount == 28);
+            }
+
             if (var.Name.Text == "fromPolar")
+            {
+                Assert(true);
+            }
+
+            if (var.Name.Text == "min")
             {
                 Assert(true);
             }
@@ -187,16 +155,15 @@ namespace Fux.Building.Phases
             Assert(var.Type != null);
 
             Assert(var.Parameters.Count >= 0);
-            //Assert(var.Parameters.All(p => p.Expression is Identifier));
 
             var polytype = builder.Build(env, var.Type);
-
-            var parameters = Identifiers(var.Parameters).ToList();
 
             var name = new W.TermVariable(var.Name.Text);
             env = env.Insert(name, polytype);
 
-            var wexpr = Binder(parameters, polytype.Type);
+            var parameters = new List<Parameter>(var.Parameters);
+
+            var wexpr = Binder(var.Expression, parameters, polytype.Type, ref env);
 
             var variable = new W.Variable(name);
             var def = new W.DefExpression(variable, wexpr);
@@ -205,43 +172,125 @@ namespace Fux.Building.Phases
 
             writer.Indent(() =>
             {
+                if (var.Name.Text == "negate")
+                {
+                    Assert(resolvedCount == 28);
+                }
                 Resolve(writer, inferrer, env, def);
             });
 
-            W.Expr Binder(List<Identifier> parameters, W.Type type)
+        }
+
+        private IEnumerable<Identifier> BindIdentifiers(Parameter parameter)
+        {
+            return BindIdentifiers(parameter.Expression).Where(id => id.IsSingleLower);
+        }
+
+        private IEnumerable<Identifier> BindIdentifiers(Expression expression)
+        {
+            switch (expression)
             {
-                if (parameters.Count > 0)
-                {
-                    switch (type)
+                case A.Identifier id:
+                    yield return id;
+                    break;
+
+                case A.TupleExpr tuple:
+                    foreach (var expr in tuple)
                     {
-                        case W.FunctionType:
-                            {
-                                Assert(type is W.FunctionType);
-
-                                var term = new W.TermVariable(parameters[0].Text);
-                                parameters.RemoveAt(0);
-
-                                var func = (W.FunctionType)type;
-
-                                env = env.Insert(term, new W.Polytype(func.InType));
-
-                                return new W.AbstractionExpression(term, Binder(parameters, func.OutType));
-                            }
-                        case W.Tuple2Type:
-                            {
-                                break;
-                            }
-
-                        default:
-                            Assert(false);
-                            throw new NotImplementedException();
+                        foreach (var id in BindIdentifiers(expr))
+                        {
+                            yield return id;
+                        }
                     }
+                    break;
+
+                case A.SequenceExpr sequence:
+                    foreach (var expr in sequence)
+                    {
+                        foreach (var id in BindIdentifiers(expr))
+                        {
+                            yield return id;
+                        }
+                    }
+                    break;
+
+                case A.Wildcard:
+                    yield return Identifier.Artificial(Module, $"_{++wildcardNumber}");
+                    break;
+
+                default:
                     Assert(false);
                     throw new NotImplementedException();
-                }
-
-                return ExprFrom(var.Expression, ref env);
             }
+        }
+
+        private IEnumerable<W.Type> BindTypes(W.Type type)
+        {
+            switch (type)
+            {
+                case W.VariableType variableType:
+                    yield return variableType;
+                    break;
+                case W.PrimitiveType primitiveType:
+                    yield return primitiveType;
+                    break;
+                case W.FunctionType functionType:
+                    foreach (var ty in BindTypes(functionType.InType))
+                    {
+                        yield return ty;
+                    }
+                    break;
+                case W.Tuple2Type tuple2Type:
+                    foreach (var ty in BindTypes(tuple2Type.Type1))
+                    {
+                        yield return ty;
+                    }
+                    foreach (var ty in BindTypes(tuple2Type.Type2))
+                    {
+                        yield return ty;
+                    }
+                    break;
+                default:
+                    Assert(false);
+                    throw new NotImplementedException();
+            }
+        }
+
+        private W.Expr Binder(Expression expression, List<Parameter> parameters, W.Type type, ref W.Environment env)
+        {
+            var expr = ExprFrom(expression, ref env);
+
+            for (var p = parameters.Count - 1; p >= 0; p--)
+            {
+                switch (type)
+                {
+                    case W.FunctionType func:
+                        {
+                            var identifiers = BindIdentifiers(parameters[p]).ToList();
+                            var types = BindTypes(func.InType).ToList();
+                            Assert(identifiers.Count == types.Count);
+
+                            for (var i = identifiers.Count - 1; i >= 0; i--)
+                            {
+                                var term = new W.TermVariable(identifiers[i].Text);
+                                env = env.Insert(term, new W.Polytype(types[i]));
+
+                                expr = new W.AbstractionExpression(term, expr);
+                            }
+
+                            type = func.OutType;
+
+                            break;
+                        }
+
+                    default:
+                        Assert(false);
+                        throw new NotImplementedException();
+                }
+            }
+
+
+            return expr;
         }
 
         private W.Expr ExprFrom(Expression expr, ref W.Environment env)
@@ -314,7 +363,7 @@ namespace Fux.Building.Phases
                         }
                         break;
                     }
-                case IntegerLiteral literal:
+                case A.IntegerLiteral literal:
                     return new W.IntegerLiteral(literal.Value);
                 default:
                     break;
@@ -341,17 +390,8 @@ namespace Fux.Building.Phases
         private static void Resolve(Writer writer, W.Inferrer inferrer, W.Environment env, W.Expr expression)
         {
             writer.WriteLine($"INPUT: {expression}");
-            var result = inferrer.Run(expression, env);
-            switch (result)
-            {
-                case (W.Type type, _):
-                    writer.WriteLine($"OUTPUT: {type}");
-                    break;
-                case (_, W.Error(string error)):
-                    throw new InvalidOperationException($"{error}");
-                    writer.WriteLine($"FAIL: {error}");
-                    break;
-            }
+            var type = inferrer.Run(expression, env);
+            writer.WriteLine($"OUTPUT: {type}");
             writer.WriteLine();
         }
 

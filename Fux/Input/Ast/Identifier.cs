@@ -41,7 +41,7 @@ namespace Fux.Input.Ast
                 {
                     tokens.Add(Token.Artifical(Lex.OperatorId, location, text));
                 }
-                else if (char.IsLower(text, 0))
+                else if (char.IsLower(text, 0) || text[0] == '_')
                 {
                     tokens.Add(Token.Artifical(Lex.LowerId, location, text));
                 }

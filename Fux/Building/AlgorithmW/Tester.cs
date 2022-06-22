@@ -125,16 +125,8 @@ namespace Fux.Building.AlgorithmW
             var typeEnvironment = typeInferrer.GetDefaultEnvironment(new TypeVarGenerator());
 
             Console.WriteLine($"INPUT: {expression}");
-            var result = typeInferrer.Run(expression, typeEnvironment);
-            switch (result)
-            {
-                case (Type type, _):
-                    Console.WriteLine($"OUTPUT: {type}");
-                    break;
-                case (_, Error(string error)):
-                    Console.WriteLine($"FAIL: {error}");
-                    break;
-            }
+            var type = typeInferrer.Run(expression, typeEnvironment);
+            Console.WriteLine($"OUTPUT: {type}");
             Console.WriteLine();
         }
     }

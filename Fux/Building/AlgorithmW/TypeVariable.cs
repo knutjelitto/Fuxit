@@ -11,7 +11,7 @@
         public int ID { get; }
         public string? Name { get; }
 
-        public override string ToString() => Name ?? $"'t{ID}";
+        public override string ToString() => Name == null ? $"'t{ID}" : $"{Name}";
         public override bool Equals(object? obj) => obj is TypeVariable other && other.ID == ID;
         public override int GetHashCode() => ID.GetHashCode();
     }
