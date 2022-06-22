@@ -8,6 +8,11 @@
             Assert(Count >= 1);
         }
 
+        public SequenceExpr(params Expression[] expressions)
+            : this(expressions.AsEnumerable())
+        {
+        }
+
         public bool IsApplication => Count >= 2;
         public bool IsSingle => Count == 1;
 

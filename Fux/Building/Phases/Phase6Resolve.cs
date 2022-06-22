@@ -99,8 +99,8 @@ namespace Fux.Building.Phases
             switch (type)
             {
                 case Type.Function function:
-                    ResolveType(scope, function.TypeIn);
-                    ResolveType(scope, function.TypeOut);
+                    ResolveType(scope, function.InType);
+                    ResolveType(scope, function.OutType);
                     break;
                 case Type.Tuple tuple:
                     foreach (var item in tuple.Types)
@@ -123,6 +123,8 @@ namespace Fux.Building.Phases
                     {
                         Assert(true);
                     }
+                    break;
+                case Type.Primitive primitive:
                     break;
                 case Type.UnionType unionType:
                     {
@@ -158,10 +160,9 @@ namespace Fux.Building.Phases
         {
             switch (expression)
             {
-                case NumberLiteral:
-                case StringLiteral:
-                case CharLiteral:
+                case Literal:
                 case Fux.Input.Ast.Unit:
+                case NativeDecl:
                 case DotExpr:
                     break; //TODO: what to do here
                 case Identifier identifier:
@@ -173,6 +174,7 @@ namespace Fux.Building.Phases
                                 scope.Resolve(identifier, out expr);
                             }
                             Assert(expr is not Identifier);
+                            Assert(expr != null);
                             expression.Resolved = expr;
                             break;
                         }

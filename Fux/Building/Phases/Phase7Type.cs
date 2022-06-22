@@ -12,8 +12,8 @@ namespace Fux.Building.Phases
     internal class Phase7Typing : Phase
     {
         private static int resolvedCount = 0;
-        private const int resolvedCountMin = 1;
-        private const int resolvedCountMax = resolvedCountMin -1 + 20;
+        private const int resolvedCountMin = 1 + 40;
+        private const int resolvedCountMax = resolvedCountMin - 1 + 20;
 
         private readonly TypeBuilder builder = new();
 
@@ -67,7 +67,7 @@ namespace Fux.Building.Phases
                 return;
             }
 
-            if (resolvedCount + declarations.Count < resolvedCountMax)
+            if (resolvedCount + declarations.Count > resolvedCountMax)
             {
                 resolvedCount += declarations.Count;
                 return;
@@ -109,19 +109,8 @@ namespace Fux.Building.Phases
                     {
                         writer.Write($"{var.Parameters} ");
                     }
-                    string text;
 
-                    if (var.Expression.Resolved is NativeDecl native)
-                    {
-                        var package = module.Package.Name;
-                        var stem = native.ModuleName.Text.Replace("Elm.Kernel.", "_");
-                        text = $"({package}){stem}_{native.Name}";
-                    }
-                    else
-                    {
-                        text = var.Expression.ToString()!;
-                    }
-                    writer.WriteLine($"= {text}");
+                    writer.WriteLine($"= {var.Expression}");
                 });
 
                 Resolve(writer, module, var);
@@ -134,29 +123,83 @@ namespace Fux.Building.Phases
             }
         }
 
+        private IEnumerable<Identifier> Identifiers(Parameters parameters)
+        {
+            foreach (var parameter in parameters)
+            {
+                foreach (var identifier in ids(parameter.Expression))
+                {
+                    if (identifier.IsSingleLower)
+                    {
+                        yield return identifier;
+                    }
+                }
+            }
+
+            IEnumerable<Identifier> ids(Expression expression)
+            {
+                switch (expression)
+                {
+                    case A.Identifier id:
+                        yield return id;
+                        break;
+
+                    case A.TupleExpr tuple:
+                        foreach (var expr in tuple)
+                        {
+                            foreach (var id in ids(expr))
+                            {
+                                yield return id;
+                            }
+                        }
+                        break;
+
+                    case A.SequenceExpr sequence:
+                        foreach (var expr in sequence)
+                        {
+                            foreach (var id in ids(expr))
+                            {
+                                yield return id;
+                            }
+                        }
+                        break;
+
+                    case A.Wildcard:
+                        break;
+
+                    default:
+                        Assert(false);
+                        throw new NotImplementedException();
+                }
+            }
+        }
+
         private void Resolve(Writer writer, Module module, VarDecl var)
         {
             var inferrer = new W.Inferrer();
             var env = inferrer.GetEmptyEnvironment();
 
-            Assert(var.Type != null);
-
-            if (var.Name.Text == "min")
+            if (var.Name.Text == "fromPolar")
             {
                 Assert(true);
             }
 
+            Assert(var.Type != null);
+
+            Assert(var.Parameters.Count >= 0);
+            //Assert(var.Parameters.All(p => p.Expression is Identifier));
+
             var polytype = builder.Build(env, var.Type);
+
+            var parameters = Identifiers(var.Parameters).ToList();
 
             var name = new W.TermVariable(var.Name.Text);
             env = env.Insert(name, polytype);
 
-            var wexpr = ExprFrom(var.Expression, ref env);
+            var wexpr = Binder(parameters, polytype.Type);
 
             var variable = new W.Variable(name);
             var def = new W.DefExpression(variable, wexpr);
-
-            Assert(var.Parameters.Count == 0);
 
             writer.WriteLine();
 
@@ -164,6 +207,41 @@ namespace Fux.Building.Phases
             {
                 Resolve(writer, inferrer, env, def);
             });
+
+            W.Expr Binder(List<Identifier> parameters, W.Type type)
+            {
+                if (parameters.Count > 0)
+                {
+                    switch (type)
+                    {
+                        case W.FunctionType:
+                            {
+                                Assert(type is W.FunctionType);
+
+                                var term = new W.TermVariable(parameters[0].Text);
+                                parameters.RemoveAt(0);
+
+                                var func = (W.FunctionType)type;
+
+                                env = env.Insert(term, new W.Polytype(func.InType));
+
+                                return new W.AbstractionExpression(term, Binder(parameters, func.OutType));
+                            }
+                        case W.Tuple2Type:
+                            {
+                                break;
+                            }
+
+                        default:
+                            Assert(false);
+                            throw new NotImplementedException();
+                    }
+                    Assert(false);
+                    throw new NotImplementedException();
+                }
+
+                return ExprFrom(var.Expression, ref env);
+            }
         }
 
         private W.Expr ExprFrom(Expression expr, ref W.Environment env)
@@ -179,12 +257,31 @@ namespace Fux.Building.Phases
                             case NativeDecl native:
                                 return new W.NativeExpression(native);
                             case VarDecl var:
-                                Assert(identifier.IsSingleLower);
-                                Assert(var.Type != null);
-                                var wtype = builder.Build(env, var.Type);
-                                var variable = new W.Variable(new W.TermVariable(identifier.Text));
-                                env = env.Insert(variable.Term, wtype);
-                                return variable;
+                                {
+                                    Assert(identifier.IsSingleLower);
+                                    Assert(var.Type != null);
+                                    var variable = new W.Variable(new W.TermVariable(identifier.Text));
+                                    var already = env.TryGet(variable.Term);
+                                    var wtype = builder.Build(env, var.Type);
+                                    if (already != null)
+                                    {
+                                        Assert(true);
+                                        Assert(already.ToString() == wtype.ToString());
+                                    }
+                                    else
+                                    {
+                                        env = env.Insert(variable.Term, wtype);
+                                    }
+                                    return variable;
+                                }
+                            case Parameter parameter:
+                                {
+                                    Assert(parameter.Expression is Identifier);
+                                    var name = ((Identifier)parameter.Expression);
+                                    var termVar = new W.TermVariable(name.Text);
+                                    var variable = new W.Variable(termVar);
+                                    return variable;
+                                }
                             default:
                                 break;
                         }
@@ -205,15 +302,26 @@ namespace Fux.Building.Phases
                         Assert(seqExpr.Count >= 2);
 
                         return Apply(seqExpr, seqExpr.Count - 1, ref env);
-
+                    }
+                case TupleExpr tupleExpr:
+                    {
+                        if (tupleExpr.Count == 2)
+                        {
+                            return new W.Tuple2Expression(
+                                ExprFrom(tupleExpr[0], ref env),
+                                ExprFrom(tupleExpr[1], ref env)
+                                );
+                        }
                         break;
                     }
+                case IntegerLiteral literal:
+                    return new W.IntegerLiteral(literal.Value);
                 default:
                     break;
             }
 
             //Assert(false);
-            throw new NotImplementedException($"expression not implemented: '{expr.GetType().FullName}' ({expr})");
+            throw new NotImplementedException($"expression not implemented: '{expr.GetType().FullName} - {expr}'");
 
             W.Expr Apply(SequenceExpr seq, int index, ref W.Environment env)
             {
@@ -240,6 +348,7 @@ namespace Fux.Building.Phases
                     writer.WriteLine($"OUTPUT: {type}");
                     break;
                 case (_, W.Error(string error)):
+                    throw new InvalidOperationException($"{error}");
                     writer.WriteLine($"FAIL: {error}");
                     break;
             }
@@ -271,21 +380,33 @@ namespace Fux.Building.Phases
                 switch (type)
                 {
                     case Type.Function function:
-                        return new W.FunctionType(Resolve(env, function.TypeIn), Resolve(env, function.TypeOut));
+                        return new W.FunctionType(Resolve(env, function.InType), Resolve(env, function.OutType));
+                    case Type.Tuple2 tuple2:
+                        return new W.Tuple2Type(Resolve(env, tuple2.Type1), Resolve(env, tuple2.Type2));
                     case A.Type.NumberClass number:
-                        return VT(number.Text);
+                        return VarType(number.Text);
                     case A.Type.ComparableClass comparable:
-                        return VT(comparable.Text);
+                        return VarType(comparable.Text);
+                    case A.Type.AppendableClass appendable:
+                        return VarType(appendable.Text);
                     case A.Type.Parameter parameter:
-                        return VT(parameter.Text);
+                        return VarType(parameter.Text);
+                    case A.Type.Primitive.Bool:
+                        return new W.BoolType();
+                    case A.Type.Primitive.Int:
+                        return new W.IntegerType();
+                    case A.Type.Primitive.Float:
+                        return new W.FloatType();
+                    case A.Type.Primitive.String:
+                        return new W.StringType();
                     case A.Type.Concrete concrete:
                         return new W.PrimitiveType(concrete.Name.Text);
                     case A.Type.Union union:
                         break;
                 }
-                throw new NotImplementedException($"type not implemented: '{type.GetType().FullName}' ({type})");
+                throw new NotImplementedException($"type not implemented: '{type.GetType().FullName} - {type}'");
 
-                W.VariableType VT(string text)
+                W.VariableType VarType(string text)
                 {
                     if (!index.TryGetValue(text, out var typeVar))
                     {

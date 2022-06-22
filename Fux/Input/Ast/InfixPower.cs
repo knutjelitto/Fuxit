@@ -4,7 +4,7 @@
     {
         public InfixPower(Token number)
         {
-            Assert(number.Lex == Lex.Number);
+            Assert(number.Lex == Lex.Integer);
 
             Number = number;
 

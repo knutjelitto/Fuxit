@@ -204,10 +204,9 @@ namespace Fux.Building.Phases
             switch (expression)
             {
                 case Identifier:
-                case NumberLiteral:
-                case StringLiteral:
-                case CharLiteral:
+                case Literal:
                 case Unit:
+                case NativeDecl:
                     break;
                 case DotExpr: //TODO: what to do here?
                     break;
@@ -360,6 +359,12 @@ namespace Fux.Building.Phases
         {
             switch (pattern)
             {
+                case Identifier identifier when identifier.IsMultiUpper:
+                case Wildcard:
+                case Literal:
+                case Unit:
+                    break;
+
                 case Identifier identifier when identifier.IsSingleLower:
                     yield return new Parameter(identifier);
                     break;
@@ -433,13 +438,6 @@ namespace Fux.Building.Phases
                     {
                         yield return parameter;
                     }
-                    break;
-                case Identifier identifier when identifier.IsMultiUpper:
-                case Wildcard:
-                case NumberLiteral:
-                case StringLiteral:
-                case CharLiteral:
-                case Unit:
                     break;
                 default:
                     Assert(false);

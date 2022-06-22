@@ -15,5 +15,10 @@
 
         public IReadOnlyList<TypeVariable> TypeVariables { get; }
         public Type Type { get; }
+
+        public override string ToString()
+        {
+            return Type.ToString();
+        }
     }
 }

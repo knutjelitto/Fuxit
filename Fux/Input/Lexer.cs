@@ -1,6 +1,4 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
-
-using System.Collections;
+﻿using System.Collections;
 
 namespace Fux.Input
 {
@@ -25,6 +23,8 @@ namespace Fux.Input
         }
 
         public Source Source { get; }
+        ISource ILexer.Source => Source;
+
         public int Offset { get; private set; }
         public int Start { get; private set; }
         public Liner Liner { get; }
@@ -241,6 +241,8 @@ namespace Fux.Input
                 {
                     Offset += 1;
                 }
+
+                return Lex.Integer;
             }
             else
             {
@@ -250,7 +252,11 @@ namespace Fux.Input
                 }
             }
 
-            if (Current == '.')
+            if (Current != '.')
+            {
+                return Lex.Integer;
+            }
+            else
             {
                 Offset += 1;
 
@@ -261,11 +267,11 @@ namespace Fux.Input
                     Offset += 1;
                 }
                 while (Current.IsDigit());
+
+                Assert(Current != '.');
+
+                return Lex.Float;
             }
-
-            Assert(Current != '.');
-
-            return Lex.Number;
         }
 
         private Token String()

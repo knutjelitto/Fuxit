@@ -12,7 +12,7 @@
     /// </summary>
     internal abstract record Literal : Expr;
 
-    internal sealed record IntegerLiteral(int Value) : Literal
+    internal sealed record IntegerLiteral(long Value) : Literal
     {
         public override string ToString() => Value.ToString();
     }
@@ -41,7 +41,7 @@
 
     internal sealed record ApplicationExpression(Expr Exp1, Expr Exp2) : Expr
     {
-        public override string ToString() => $"({Exp1} {Exp2})";
+        public override string ToString() => $"(apply {Exp1} {Exp2})";
     }
 
     internal sealed record AbstractionExpression(TermVariable Term, Expr Exp) : Expr
@@ -62,6 +62,18 @@
     internal sealed record IffExpression(Expr Cond, Expr Then, Expr Else) : Expr
     {
         public override string ToString() => $"(if {Cond} then {Then} else {Else})";
+    }
+
+    internal abstract record TupleExpression(IReadOnlyList<Expr> Exprs) : Expr;
+
+    internal sealed record Tuple2Expression(Expr Expr1, Expr Expr2) : TupleExpression(new Expr[] {Expr1, Expr2})
+    {
+        public override string ToString() => $"(tuple {Expr1}, {Expr2})";
+    }
+
+    internal sealed record Tuple3Expression(Expr Expr1, Expr Expr2, Expr Expr3) : TupleExpression(new Expr[] { Expr1, Expr2, Expr3 })
+    {
+        public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
     }
 
     internal sealed record NativeExpression(NativeDecl Native) : Expr

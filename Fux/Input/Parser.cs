@@ -1,8 +1,11 @@
-﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+﻿using A = Fux.Input.Ast;
+
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
 #pragma warning disable IDE0028 // Simplify collection initialization
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable CS0219 // Variable is assigned but its value is never used
+#pragma warning disable IDE0066 // Convert switch statement to expression
 
 namespace Fux.Input
 {
@@ -16,6 +19,7 @@ namespace Fux.Input
 
         public ErrorBag Errors { get; }
         public ILexer Lexer { get; }
+        public ISource Source => Lexer.Source;
 
         public ModuleAst Module()
         {
@@ -234,7 +238,7 @@ namespace Fux.Input
                 {
                     throw Errors.Parser.IllegalInfixAssoc(assocTok);
                 }
-                var prioTok = cursor.Swallow(Lex.Number);
+                var prioTok = cursor.Swallow(Lex.Integer);
                 var power = new InfixPower(prioTok);
                 var operatorTok = cursor.Swallow(Lex.OperatorId);
                 var operatorSymbol = new Identifier(operatorTok);
@@ -367,10 +371,19 @@ namespace Fux.Input
 
                 if (arguments.Count == 0)
                 {
-                    if (name.Text == "Int" || name.Text == "Float" || name.Text == "Bool")
+                    switch (name.Text)
                     {
-                        return new Type.Concrete(name);
+                        case Lex.Primitive.Int:
+                            return new Type.Primitive.Int();
+                        case Lex.Primitive.Float:
+                            return new Type.Primitive.Float();
+                        case Lex.Primitive.Bool:
+                            return new Type.Primitive.Bool();
+                        case Lex.Primitive.String:
+                            return new Type.Primitive.String();
                     }
+
+                    return new Type.Concrete(name);
                 }
 
                 return new Type.Union(name, new TypeArguments(arguments));
@@ -530,10 +543,17 @@ namespace Fux.Input
                         type.Protect = true;
                         return type;
                     }
-                    else
+                    else if (types.Count == 2)
                     {
-                        return new Type.Tuple(types);
+                        return new Type.Tuple2(types[0], types[1]);
                     }
+                    else if (types.Count == 3)
+                    {
+                        return new Type.Tuple3(types[0], types[1], types[2]);
+                    }
+
+                    Assert(false);
+                    throw new NotImplementedException();
                 }
                 else if (cursor.Is(Lex.LBrace))
                 {
@@ -855,7 +875,16 @@ namespace Fux.Input
                     var op = new OperatorSymbol(cursor.Advance());
                     var argument = Sequence(cursor, false);
 
-                    app = new PrefixExpr(op, argument);
+                    switch (op.Text)
+                    {
+                        case "-":
+                            app = new SequenceExpr(Fake.NativeNegate(Source), argument);
+                            break;
+                        default:
+                            Assert(false);
+                            app = new PrefixExpr(op, argument);
+                            break;
+                    }
                 }
                 else
                 {
@@ -960,9 +989,13 @@ namespace Fux.Input
                     {
                         return Wildcard(cursor);
                     }
-                    else if (cursor.Is(Lex.Number))
+                    else if (cursor.Is(Lex.Integer))
                     {
-                        return NumberLiteral(cursor);
+                        return IntegerLiteral(cursor);
+                    }
+                    else if (cursor.Is(Lex.Float))
+                    {
+                        return FloatLiteral(cursor);
                     }
                     else if (cursor.Is(Lex.String))
                     {
@@ -1039,13 +1072,23 @@ namespace Fux.Input
             });
         }
 
-        private Expression NumberLiteral(TokensCursor cursor)
+        private Expression IntegerLiteral(TokensCursor cursor)
         {
             return cursor.Scope(cursor =>
             {
-                var token = cursor.Swallow(Lex.Number);
+                var token = cursor.Swallow(Lex.Integer);
 
-                return new NumberLiteral(token);
+                return new IntegerLiteral(token);
+            });
+        }
+
+        private Expression FloatLiteral(TokensCursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                var token = cursor.Swallow(Lex.Float);
+
+                return new FloatLiteral(token);
             });
         }
 

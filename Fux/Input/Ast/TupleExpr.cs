@@ -5,7 +5,7 @@
         public TupleExpr(IEnumerable<Expression> expressions)
             : base(expressions)
         {
-            Assert(this.Count >= 1);
+            Assert(this.Count >= 1 && this.Count <= 3);
         }
 
         public override string ToString()

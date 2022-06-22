@@ -8,6 +8,7 @@ namespace Fux.Input
 {
     internal interface ILexer : IEnumerable<Tokens>
     {
+        ISource Source { get; }
         Tokens GetLine();
     }
 }

@@ -46,6 +46,7 @@ namespace Fux.Building.Phases
 
             Assert(module.Lines == null);
 
+            module.Source = source;
             module.Lines = lexer.ToList();
 
             if (Ambience.Config.WriteTheLines)

@@ -10,13 +10,16 @@ namespace Fux.Input
     internal class ParseLexer : ILexer
     {
         private int index;
-        public ParseLexer(List<Tokens> lines)
+        public ParseLexer(ISource source, List<Tokens> lines)
         {
             Lines = lines;
+            Source = source;
             index = 0;
         }
 
         public List<Tokens> Lines { get; }
+
+        public ISource Source { get; }
 
         public Tokens GetLine()
         {

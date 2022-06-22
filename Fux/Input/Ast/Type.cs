@@ -7,7 +7,7 @@
             writer.Write($"{this}");
         }
 
-        public sealed class Concrete : Type
+        public class Concrete : Type
         {
             public Concrete(Identifier name)
             {
@@ -23,7 +23,27 @@
                 return $"{Name}";
             }
         }
-            
+
+        public abstract class Primitive : Type
+        {
+            public Primitive(string text)
+            {
+                Text = text;
+            }
+
+            public string Text { get; }
+
+            public sealed class Int : Primitive { public Int() : base(Lex.Primitive.Int) { } }
+            public sealed class Float : Primitive { public Float() : base(Lex.Primitive.Float) { } }
+            public sealed class Bool : Primitive { public Bool() : base(Lex.Primitive.Bool) { } }
+            public sealed class String : Primitive { public String() : base(Lex.Primitive.String) { } }
+
+            public override string ToString()
+            {
+                return Text;
+            }
+        }
+
         public sealed class Parameter : Type
         {
             public Parameter(Identifier name)
@@ -49,28 +69,28 @@
 
         public sealed class Function : Type
         {
-            public Function(Type typeIn, Type typeOut)
+            public Function(Type inType, Type outType)
             {
-                TypeIn = typeIn;
-                TypeOut = typeOut;
+                InType = inType;
+                OutType = outType;
             }
 
-            public Type TypeIn { get; }
-            public Type TypeOut { get; }
+            public Type InType { get; }
+            public Type OutType { get; }
 
             public override string ToString()
             {
-                return Protected($"{TypeIn} → {TypeOut}");
+                return Protected($"{InType} → {OutType}");
             }
         }
 
-        public sealed class Tuple : Type
+        public abstract class Tuple : Type
         {
-            public Tuple(IEnumerable<Type> types)
+            public Tuple(params Type[] types)
             {
-                Types = types.ToArray();
+                Types = types;
 
-                Assert(Types.Count >= 2);
+                Assert(Types.Count >= 2 && Types.Count <= 3);
             }
 
             public IReadOnlyList<Type> Types { get; }
@@ -79,6 +99,34 @@
             {
                 return $"({string.Join(", ", Types)})";
             }
+        }
+
+        public sealed class Tuple2 : Tuple
+        {
+            public Tuple2(Type type1, Type type2)
+                : base(type1, type2)
+            {
+                Type1 = type1;
+                Type2 = type2;
+            }
+
+            public Type Type1 { get; }
+            public Type Type2 { get; }
+        }
+
+        public sealed class Tuple3 : Tuple
+        {
+            public Tuple3(Type type1, Type type2, Type type3)
+                : base(type1, type2, type3)
+            {
+                Type1 = type1;
+                Type2 = type2;
+                Type3 = type3;
+            }
+
+            public Type Type1 { get; }
+            public Type Type2 { get; }
+            public Type Type3 { get; }
         }
 
         public sealed class Unit : Type

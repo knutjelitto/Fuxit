@@ -39,9 +39,10 @@ namespace Fux.Building.Phases
 
         private void Parse(Module module)
         {
+            Assert(module.Source != null);
             Assert(module.Lines != null);
 
-            var lexer = new ParseLexer(module.Lines);
+            var lexer = new ParseLexer(module.Source, module.Lines);
             var parser = new Parser(Errors, lexer);
 
             try

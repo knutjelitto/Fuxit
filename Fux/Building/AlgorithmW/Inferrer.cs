@@ -33,6 +33,27 @@ namespace Fux.Building.AlgorithmW
                         return result1; // error
                     }
 
+                case Tuple2Expression({ } expr1, { } expr2):
+                    {
+                        var result1 = InferType(expr1, environment);
+                        if (result1 is ((Substitution s1, Type t1), _))
+                        {
+                            var result2 = InferType(expr2, environment);
+                            if (result2 is ((Substitution s2, Type t2), _))
+                            {
+                                var ty1 = ApplySubstitution(t1, s2);
+                                var ty2 = t2;
+                                var tuple2 = (Type)new Tuple2Type(ty1, ty2);
+                                
+                                return Result.Ok((ComposeSubstitutions(s2, s1), tuple2));
+                            }
+                            return result2; // error
+                        }
+                        return result1; // error
+
+                        break;
+                    }
+
                 case NativeExpression:
                     {
                         var type = (Type)environment.Generator.GetNext();
@@ -93,7 +114,7 @@ namespace Fux.Building.AlgorithmW
                                     FloatLiteral(_) => new FloatType(),
                                     BoolLiteral(_) => new BoolType(),
                                     StringLiteral(_) => new StringType(),
-                                    _ => throw new InvalidOperationException($"unknown literal type '{literal}'"),
+                                    _ => throw new InvalidOperationException($"can not infer - unknown literal type '{literal}'"),
                                 }
                             ));
                     }
@@ -143,7 +164,9 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case AbstractionExpression({ } term, { } exp):
                     {
-                        var varType = environment.Generator.GetNext(term.Name);
+                        var name = (environment.TryGet(term)?.Type as VariableType)?.TypeVar.Name;
+
+                        var varType = environment.Generator.GetNext(name);
                         var env = environment.Remove(term).Insert(term, new Polytype(varType));
                         return InferType(exp, env) switch
                         {
@@ -180,7 +203,7 @@ namespace Fux.Building.AlgorithmW
                         return result1; // error
                     }
             }
-            throw new InvalidOperationException($"unknown expression type '{expression.GetType().Name}' [{expression}]");
+            throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
         }
 
         private static Type ApplySubstitution(Type type, Substitution substitution)
@@ -194,10 +217,10 @@ namespace Fux.Building.AlgorithmW
                 // To apply to a function, we simply apply to each of the input and output.
                 FunctionType({ } t1, { } t2) => new FunctionType(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
 
+                // A primitive type is not changed by a substitution.
                 PrimitiveType => type,
 
-                // A primitive type is not changed by a substitution.
-                _ => throw new InvalidOperationException($"unexpected type '{type}'")
+                _ => throw new InvalidOperationException($"can not infer - unknown type '{type.GetType().FullName} - {type}'")
             };
         }
 
@@ -273,11 +296,19 @@ namespace Fux.Building.AlgorithmW
                     {
                         return BindVariable(v, t);
                     }
+
                 // If they are both primitives, no substitution needs to be done.
-                case (IntegerType, IntegerType) or (FloatType, FloatType) or (BoolType, BoolType) or (StringType, StringType):
+                case
+                    (IntegerType, IntegerType) or
+                    (FloatType, FloatType) or
+                    (BoolType, BoolType) or
+                    (StringType, StringType) or
+                    (FloatType, IntegerType) or
+                    (IntegerType, FloatType):
                     {
                         return Result.Ok(Substitution.Empty());
                     }
+
                 // Otherwise, the types cannot be unified.
                 case (var t1, var t2):
                     {

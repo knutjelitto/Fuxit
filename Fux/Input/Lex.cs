@@ -55,9 +55,10 @@
             OperatorId = Add(new("OperatorId", startsAtomic: true));
             Wildcard = Add(new("_wildcard_", startsAtomic: true));
             Operator = Add(new("_operator_"));
-            Number = Add(new("_number_", startsAtomic: true));
-            String = Add(new("_string_", startsAtomic: true));
-            Char = Add(new("_char_", startsAtomic: true));
+            Integer = Add(new("Int", startsAtomic: true));
+            Float = Add(new("Float", startsAtomic: true));
+            String = Add(new("String", startsAtomic: true));
+            Char = Add(new("Char", startsAtomic: true));
             Dot = Add(new(".", startsAtomic: true));
             Colon = Add(new(":", terminatesSomething: true));
             Assign = Add(new("=", terminatesSomething: true));
@@ -98,7 +99,8 @@
         public static readonly Lex OperatorId;
         public static readonly Lex Wildcard;
         public static readonly Lex Operator;
-        public static readonly Lex Number;
+        public static readonly Lex Integer;
+        public static readonly Lex Float;
         public static readonly Lex String;
         public static readonly Lex Char;
         public static readonly Lex Dot;
@@ -134,6 +136,14 @@
             public const string Port = "port";
             public const string Where = "where";
             public const string ExposeAll = "(..)";
+        }
+
+        public static class Primitive
+        {
+            public const string Int = "Int";
+            public const string Float = "Float";
+            public const string Bool = "Bool";
+            public const string String = "String";
         }
 
         public static class Term

@@ -25,6 +25,7 @@ namespace Fux.Building
         public string NickName { get; }
         public string FileName { get; }
 
+        public ISource? Source { get; set; } = null;
         public List<Tokens>? Lines { get; set; } = null;
         public ModuleAst? Ast { get; set; } = null;
         public ModuleScope Scope { get; }
