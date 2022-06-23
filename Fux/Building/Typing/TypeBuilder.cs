@@ -1,5 +1,4 @@
 ﻿using W = Fux.Building.AlgorithmW;
-using A = Fux.Input.Ast;
 
 namespace Fux.Building.Typing
 {
@@ -8,7 +7,7 @@ namespace Fux.Building.Typing
         private readonly List<W.TypeVariable> vars = new();
         private readonly Dictionary<string, W.TypeVariable> index = new();
 
-        public W.Polytype Build(W.Environment env, Type? type)
+        public W.Polytype Build(W.Environment env, A.Type? type)
         {
             if (type == null)
             {
@@ -23,13 +22,13 @@ namespace Fux.Building.Typing
             return new W.Polytype(vars, wtype);
         }
 
-        private W.Type Resolve(W.Environment env, Type type)
+        private W.Type Resolve(W.Environment env, A.Type type)
         {
             switch (type)
             {
-                case Type.Function function:
+                case A.Type.Function function:
                     return new W.Type.Function(Resolve(env, function.InType), Resolve(env, function.OutType));
-                case Type.Tuple2 tuple2:
+                case A.Type.Tuple2 tuple2:
                     return new W.Type.Tuple2(Resolve(env, tuple2.Type1), Resolve(env, tuple2.Type2));
                 case A.Type.NumberClass number:
                     return VarType(number.Text);
@@ -49,7 +48,7 @@ namespace Fux.Building.Typing
                     return new W.Type.String();
                 case A.Type.Concrete concrete:
                     return new W.Type.Primitive(concrete.Name.Text);
-                case A.Type.Union union:
+                case A.Type.Union:
                     break;
             }
             throw new NotImplementedException($"type not implemented: '{type.GetType().FullName} - {type}'");

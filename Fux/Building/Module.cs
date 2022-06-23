@@ -27,10 +27,10 @@ namespace Fux.Building
 
         public ISource? Source { get; set; } = null;
         public List<Tokens>? Lines { get; set; } = null;
-        public ModuleAst? Ast { get; set; } = null;
+        public A.ModuleAst? Ast { get; set; } = null;
         public ModuleScope Scope { get; }
 
-        public List<Exposed> Exposed { get; } = new();
+        public List<A.Exposed> Exposed { get; } = new();
         
         public Source GetSource()
         {

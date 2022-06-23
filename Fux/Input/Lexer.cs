@@ -331,7 +331,7 @@ namespace Fux.Input
             Assert(Current == '"');
             Offset += 1;
 
-            return Build(Lex.String);
+            return Build(Lex.LongString);
         }
 
         private Token Char()

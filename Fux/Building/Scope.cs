@@ -4,8 +4,8 @@ namespace Fux.Building
 {
     internal class Scope
     {
-        private readonly Dictionary<Identifier, VarDecl> vars = new();
-        private readonly Dictionary<Identifier, TypeHint> hints = new();
+        private readonly Dictionary<A.Identifier, A.VarDecl> vars = new();
+        private readonly Dictionary<A.Identifier, A.TypeHint> hints = new();
         private Scope? parent;
 
         public Scope? Parent
@@ -19,7 +19,7 @@ namespace Fux.Building
         }
         public bool HintsAreEmpty => hints.Count == 0;
 
-        public void AddHint(TypeHint hint)
+        public void AddHint(A.TypeHint hint)
         {
             var name = hint.Name.SingleLower();
 
@@ -28,7 +28,7 @@ namespace Fux.Building
             hints.Add(name, hint);
         }
 
-        public void AddVar(VarDecl decl)
+        public void AddVar(A.VarDecl decl)
         {
             var name = decl.Name.SingleLower();
 
@@ -43,17 +43,17 @@ namespace Fux.Building
             }
         }
 
-        public bool ImportAddVar(VarDecl decl)
+        public bool ImportAddVar(A.VarDecl decl)
         {
             return vars.TryAdd(decl.Name.SingleLower(), decl);
         }
 
-        public bool LookupVar(Identifier identifier, [MaybeNullWhen(false)] out VarDecl var)
+        public bool LookupVar(A.Identifier identifier, [MaybeNullWhen(false)] out A.VarDecl var)
         {
             return vars.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public virtual bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)
+        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expression expr)
         {
             if (identifier.IsSingleLower && LookupVar(identifier, out var var))
             {

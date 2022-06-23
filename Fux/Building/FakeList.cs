@@ -10,29 +10,29 @@ namespace Fux.Building
     {
         const string list = "List";
 
-        public static UnionDecl MakeType(Module module)
+        public static A.UnionDecl MakeType(Module module)
         {
             Assert(module.Name == list);
 
-            var listId = Identifier.Artificial(module, list);
-            var paraId = Identifier.Artificial(module, "a");
-            var para = new Type.Parameter(paraId);
-            var args = new TypeArguments(para);
-            var ctor = new Type.Constructor(listId, args);
-            var ctors = new Constructors(ctor);
-            var parameters = new TypeParameters(new Type.Parameter(paraId));
-            var type = new UnionDecl(listId, parameters, ctors);
+            var listId = A.Identifier.Artificial(module, list);
+            var paraId = A.Identifier.Artificial(module, "a");
+            var para = new A.Type.Parameter(paraId);
+            var args = new A.TypeArguments(para);
+            var ctor = new A.Type.Constructor(listId, args);
+            var ctors = new A.Constructors(ctor);
+            var parameters = new A.TypeParameters(new A.Type.Parameter(paraId));
+            var type = new A.UnionDecl(listId, parameters, ctors);
 
             return type;
         }
 
-        public static Exposing MakeExposing(Module module)
+        public static A.Exposing MakeExposing(Module module)
         {
             Assert(module.Name == list);
 
-            var listId = Identifier.Artificial(module, list);
+            var listId = A.Identifier.Artificial(module, list);
 
-            return new ExposingSome(new ExposedType(listId, true));
+            return new A.ExposingSome(new A.ExposedType(listId, true));
         }
     }
 }

@@ -63,7 +63,7 @@ namespace Fux.Building.Phases
             }
         }
 
-        public ModuleAst? Parse(Source source)
+        public A.ModuleAst? Parse(Source source)
         {
             var lexer = new Lexer(Errors, source);
             var parser = new Parser(Errors, lexer);

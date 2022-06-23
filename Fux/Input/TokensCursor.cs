@@ -35,7 +35,7 @@ namespace Fux.Input
         }
 
         public T Scope<T>(Func<TokensCursor, T> parser)
-            where T : Expression
+            where T : A.Expression
         {
             var start = Tokens.Start + Offset;
             var expression = parser(this);

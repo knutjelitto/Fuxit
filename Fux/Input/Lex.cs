@@ -58,6 +58,7 @@
             Integer = Add(new("Int", startsAtomic: true));
             Float = Add(new("Float", startsAtomic: true));
             String = Add(new("String", startsAtomic: true));
+            LongString = Add(new("LongString", startsAtomic: true));
             Char = Add(new("Char", startsAtomic: true));
             Dot = Add(new(".", startsAtomic: true));
             Colon = Add(new(":", terminatesSomething: true));
@@ -102,6 +103,7 @@
         public static readonly Lex Integer;
         public static readonly Lex Float;
         public static readonly Lex String;
+        public static readonly Lex LongString;
         public static readonly Lex Char;
         public static readonly Lex Dot;
         public static readonly Lex Colon;

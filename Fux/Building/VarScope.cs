@@ -4,24 +4,24 @@ namespace Fux.Building
 {
     internal class VarScope : Scope
     {
-        private readonly Dictionary<Identifier, Parameter> parameters = new();
+        private readonly Dictionary<A.Identifier, A.Parameter> parameters = new();
 
-        public void Add(Parameter parameter)
+        public void Add(A.Parameter parameter)
         {
-            Assert(parameter.Expression is Identifier);
-            var name = ((Identifier)parameter.Expression).SingleLower();
+            Assert(parameter.Expression is A.Identifier);
+            var name = ((A.Identifier)parameter.Expression).SingleLower();
 
             Assert(!parameters.ContainsKey(name));
 
             parameters.Add(name, parameter);
         }
 
-        public bool LookupParameter(Identifier identifier, [MaybeNullWhen(false)] out Parameter var)
+        public bool LookupParameter(A.Identifier identifier, [MaybeNullWhen(false)] out A.Parameter var)
         {
             return parameters.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public override bool Resolve(Identifier identifier, [MaybeNullWhen(false)] out Expression expr)
+        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expression expr)
         {
             if (identifier.IsSingleLower)
             {

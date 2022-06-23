@@ -49,6 +49,11 @@
         public override string ToString() => $"({Term} => {Exp})";
     }
 
+    internal sealed record UnifyExpression(Type Type, Expr Expr) : Expr
+    {
+        public override string ToString() => $"(unify {Expr})";
+    }
+
     internal sealed record DefExpression(Variable Variable, Expr Expr) : Expr
     {
         public override string ToString() => $"(def {Variable} = {Expr})";
@@ -76,7 +81,7 @@
         public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
     }
 
-    internal sealed record NativeExpression(NativeDecl Native) : Expr
+    internal sealed record NativeExpression(A.NativeDecl Native) : Expr
     {
         public override string ToString() => $"(native {Native})";
     }

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using W = Fux.Building.AlgorithmW;
 
-using W = Fux.Building.AlgorithmW;
+#pragma warning disable IDE0051 // Remove unused private members
 
 namespace Fux.Building.Typing
 {
@@ -21,75 +17,88 @@ namespace Fux.Building.Typing
         public Module Module { get; }
         public ExprBuilder ExprBuilder { get; }
 
-        public W.Expr Bind(W.Type type, W.Expr expr, Parameters parameters, ref W.Environment env, bool investigated)
+        public (W.Expr, W.Type) Bind(W.Type type, W.Expr expr, A.Parameters parameters, ref W.Environment env, bool investigated)
         {
             if (investigated)
             {
                 Assert(true);
+            }
+            else
+            {
+                //Assert(parameters.Count == 0);
             }
 
             var (types, result) = Flatten(type);
 
             Assert(parameters.Count <= types.Count);
 
-            for (var p = parameters.Count - 1; p >= 0; p--)
+            for (var p = parameters.Count - 1; p >= 0; --p)
             {
                 var pr = parameters[p];
                 var ty = types[p];
 
-                var identifiers = BindIdentifiers(pr).ToList();
-                var types2 = BindTypes(ty).ToList();
-                Assert(identifiers.Count == types2.Count);
-
-                switch (ty)
+                var parameterNames = BindIdentifiers(pr).ToList();
+                List<W.Type> parameterTypes;
+                if (parameterNames.Count == 1)
                 {
-                    case W.Type.Variable:
-                        break;
-                    case W.Type.Primitive:
-                        break;
-                    case W.Type.Tuple2:
-                        break;
-                    case W.Type.Function:
-                        break;
-                    default:
-                        Assert(false);
-                        throw new NotImplementedException();
+                    parameterTypes = new List<W.Type> { ty };
                 }
-            }
-
-            for (var p = parameters.Count - 1; p >= 0; p--)
-            {
-                switch (type)
+                else
                 {
-                    case W.Type.Function func:
-                        {
-                            var identifiers = BindIdentifiers(parameters[p]).ToList();
-                            var types2 = BindTypes(func.InType).ToList();
-                            Assert(identifiers.Count == types2.Count);
+                    parameterTypes = BindTypes(ty).ToList();
+                }
+                Assert(parameterNames.Count == parameterTypes.Count);
+                var count = parameterNames.Count;
 
-                            for (var i = identifiers.Count - 1; i >= 0; i--)
+                for (var i = 0; i < count; i++)
+                {
+                    var parameterName = parameterNames[i];
+                    var parameterType = parameterTypes[i];
+
+                    switch (parameterType)
+                    {
+                        case W.Type.Variable:
                             {
-                                var term = new W.TermVariable(identifiers[i].Text);
-                                env = env.Insert(term, new W.Polytype(types2[i]));
-                                expr = new W.AbstractionExpression(term, expr);
+                                var term = new W.TermVariable(parameterName.Text);
+                                env = env.Insert(term, new W.Polytype(parameterType));
+                                break;
                             }
-
-                            type = func.OutType;
-
+                        case W.Type.Primitive:
+                            {
+                                var term = new W.TermVariable(parameterName.Text);
+                                env = env.Insert(term, new W.Polytype(parameterType));
+                                break;
+                            }
+                        case W.Type.Tuple2:
                             break;
-                        }
-
-                    default:
-                        Assert(false);
-                        throw new NotImplementedException();
+                        case W.Type.Function:
+                            {
+                                var term = new W.TermVariable(parameterName.Text);
+                                env = env.Insert(term, new W.Polytype(parameterType));
+                                break;
+                            }
+                        default:
+                            Assert(false);
+                            throw new NotImplementedException();
+                    }
                 }
             }
 
+            result = Recombine(types, parameters.Count, result);
 
-            return expr;
+            return (expr, result);
         }
 
-        private (List<W.Type>, W.Type) Flatten(W.Type type)
+        private W.Type Recombine(List<W.Type> types, int index, W.Type type)
+        {
+            if (index < types.Count)
+            {
+                return new W.Type.Function(types[index], Recombine(types, index + 1, type));
+            }
+            return type;
+        }
+
+        private static (List<W.Type>, W.Type) Flatten(W.Type type)
         {
             var result = new List<W.Type>();
 
@@ -103,20 +112,20 @@ namespace Fux.Building.Typing
             return (result, type);
         }
 
-        private IEnumerable<Identifier> BindIdentifiers(Parameter parameter)
+        private IEnumerable<A.Identifier> BindIdentifiers(A.Parameter parameter)
         {
             return BindIdentifiers(parameter.Expression).Where(id => id.IsSingleLower);
         }
 
-        private IEnumerable<Identifier> BindIdentifiers(Expression expression)
+        private IEnumerable<A.Identifier> BindIdentifiers(A.Expression expression)
         {
             switch (expression)
             {
-                case Identifier id:
+                case A.Identifier id:
                     yield return id;
                     break;
 
-                case TupleExpr tuple:
+                case A.TupleExpr tuple:
                     foreach (var expr in tuple)
                     {
                         foreach (var id in BindIdentifiers(expr))
@@ -126,7 +135,7 @@ namespace Fux.Building.Typing
                     }
                     break;
 
-                case SequenceExpr sequence:
+                case A.SequenceExpr sequence:
                     foreach (var expr in sequence)
                     {
                         foreach (var id in BindIdentifiers(expr))
@@ -136,8 +145,8 @@ namespace Fux.Building.Typing
                     }
                     break;
 
-                case Wildcard:
-                    yield return Identifier.Artificial(Module, $"_{++wildcardNumber}");
+                case A.Wildcard:
+                    yield return A.Identifier.Artificial(Module, $"_{++wildcardNumber}");
                     break;
 
                 default:

@@ -1,6 +1,5 @@
 ﻿using W = Fux.Building.AlgorithmW;
 using T = Fux.Building.Typing;
-using A = Fux.Input.Ast;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1822 // Mark members as static
@@ -12,9 +11,13 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
+        private const int underInvestigation = -1;
         private static int resolvedCount = 0;
         private const int resolvedCountMin = 1 + 0;
-        private const int resolvedCountMax = resolvedCountMin - 1 + 60;
+        private const int resolvedCountMax = resolvedCountMin - 1 + 100;
+
+        //private static Func<int, bool> Qualify = (no => no == huntingFor);
+        private static readonly Func<int, bool> Qualify = no => true;
 
         public Phase7Typing(Ambience ambience, Package package)
             : base("typing", ambience, package)
@@ -57,7 +60,7 @@ namespace Fux.Building.Phases
                 return;
             }
 
-            var declarations = module.Ast.Declarations.OfType<VarDecl>().ToList();
+            var declarations = module.Ast.Declarations.OfType<A.VarDecl>().ToList();
 
 
             if (resolvedCount + declarations.Count < resolvedCountMin)
@@ -79,7 +82,10 @@ namespace Fux.Building.Phases
                         continue;
                     }
 
-                    resolver.TypeVar(declaration, resolvedCount);
+                    if (Qualify(resolvedCount))
+                    {
+                        resolver.TypeVar(declaration, resolvedCount, resolvedCount == underInvestigation);
+                    }
 
                     if (resolvedCount >= resolvedCountMax)
                     {

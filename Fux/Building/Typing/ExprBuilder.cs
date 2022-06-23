@@ -11,19 +11,19 @@ namespace Fux.Building.Typing
             type = typeBuilder;
         }
 
-        public W.Expr Build(Expression expr, ref W.Environment env)
+        public W.Expr Build(A.Expression expr, ref W.Environment env)
         {
             switch (expr)
             {
-                case Identifier identifier:
+                case A.Identifier identifier:
                     Assert(identifier.Resolved != null);
                     if (identifier.Resolved != null)
                     {
                         switch (identifier.Resolved)
                         {
-                            case NativeDecl native:
+                            case A.NativeDecl native:
                                 return new W.NativeExpression(native);
-                            case VarDecl var:
+                            case A.VarDecl var:
                                 {
                                     Assert(identifier.IsSingleLower);
                                     Assert(var.Type != null);
@@ -41,10 +41,10 @@ namespace Fux.Building.Typing
                                     }
                                     return variable;
                                 }
-                            case Parameter parameter:
+                            case A.Parameter parameter:
                                 {
-                                    Assert(parameter.Expression is Identifier);
-                                    var name = (Identifier)parameter.Expression;
+                                    Assert(parameter.Expression is A.Identifier);
+                                    var name = (A.Identifier)parameter.Expression;
                                     var termVar = new W.TermVariable(name.Text);
                                     var variable = new W.Variable(termVar);
                                     return variable;
@@ -54,9 +54,9 @@ namespace Fux.Building.Typing
                         }
                     }
                     break;
-                case NativeDecl native:
+                case A.NativeDecl native:
                     return new W.NativeExpression(native);
-                case IfExpr ifExpr:
+                case A.IfExpr ifExpr:
                     {
                         var condition = Build(ifExpr.Condition, ref env);
                         var ifTrue = Build(ifExpr.IfTrue, ref env);
@@ -64,13 +64,13 @@ namespace Fux.Building.Typing
 
                         return new W.IffExpression(condition, ifTrue, ifFalse);
                     }
-                case SequenceExpr seqExpr:
+                case A.SequenceExpr seqExpr:
                     {
                         Assert(seqExpr.Count >= 2);
 
                         return Apply(seqExpr, seqExpr.Count - 1, ref env);
                     }
-                case TupleExpr tupleExpr:
+                case A.TupleExpr tupleExpr:
                     {
                         if (tupleExpr.Count == 2)
                         {
@@ -81,8 +81,14 @@ namespace Fux.Building.Typing
                         }
                         break;
                     }
-                case IntegerLiteral literal:
+                case A.IntegerLiteral literal:
                     return new W.IntegerLiteral(literal.Value);
+                case A.StringLiteral literal:
+                    return new W.StringLiteral(literal.Value);
+
+                case A.OpChain chain:
+                    Assert(chain.Resolved is A.InfixExpr);
+                    return Build(chain.Resolved, ref env);
                 default:
                     break;
             }
@@ -90,7 +96,7 @@ namespace Fux.Building.Typing
             //Assert(false);
             throw new NotImplementedException($"expression not implemented: '{expr.GetType().FullName} - {expr}'");
 
-            W.Expr Apply(SequenceExpr seq, int index, ref W.Environment env)
+            W.Expr Apply(A.SequenceExpr seq, int index, ref W.Environment env)
             {
                 if (index == 1)
                 {

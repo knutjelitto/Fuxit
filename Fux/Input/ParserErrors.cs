@@ -51,7 +51,7 @@ namespace Fux.Input
         public DiagnosticException IllegalInfixAssoc(Token assoc)
         {
             return Add(
-                new ParserError(assoc.Location, $"illegal infix associativity '{assoc.Text}' (known are {InfixAssoc.KnownAssocs})")
+                new ParserError(assoc.Location, $"illegal infix associativity '{assoc.Text}' (known are {A.InfixAssoc.KnownAssocs})")
             );
         }
     }

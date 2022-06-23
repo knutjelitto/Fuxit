@@ -8,14 +8,14 @@
 
         public int NumberOfLines = 0;
 
-        public List<ModuleDecl> Module { get; } = new();
-        public List<ImportDecl> Import { get; } = new();
-        public List<UnionDecl> DeclareType { get; } = new();
-        public List<AliasDecl> DeclareAlias { get; } = new();
-        public List<InfixDecl> DeclareInfix { get; } = new();
-        public List<VarDecl> DeclareVar { get; } = new();
-        public List<TypeHint> DeclareHint { get; } = new();
-        public List<NativeDecl> NativeDecl { get; } = new();
+        public List<A.ModuleDecl> Module { get; } = new();
+        public List<A.ImportDecl> Import { get; } = new();
+        public List<A.UnionDecl> DeclareType { get; } = new();
+        public List<A.AliasDecl> DeclareAlias { get; } = new();
+        public List<A.InfixDecl> DeclareInfix { get; } = new();
+        public List<A.VarDecl> DeclareVar { get; } = new();
+        public List<A.TypeHint> DeclareHint { get; } = new();
+        public List<A.NativeDecl> NativeDecl { get; } = new();
 
         public Stopwatch ScanTime { get; } = new();
         public Stopwatch ParseTime { get; } = new();
@@ -37,7 +37,7 @@
             WriteCompact("all-native.text", NativeDecl, writePP);
 
             void Write<T>(string name, IEnumerable<T> expressions)
-                where T : Declaration
+                where T : A.Declaration
             {
                 using (var writer = name.Writer())
                 {
@@ -60,7 +60,7 @@
                 }
             }
 
-            void writePP(Writer writer, Expression expr)
+            void writePP(Writer writer, A.Expression expr)
             {
                 expr.PP(writer);
                 if (writer.LinePending)
@@ -70,12 +70,12 @@
             }
 
 
-            void writeStr(Writer writer, Expression expr)
+            void writeStr(Writer writer, A.Expression expr)
             {
                 writer.WriteLine($"{expr}");
             }
 
-            void WriteCompact(string name, IEnumerable<Declaration> expressions, Action<Writer, Expression> write)
+            void WriteCompact(string name, IEnumerable<A.Declaration> expressions, Action<Writer, A.Expression> write)
             {
                 using (var writer = name.Writer())
                 {

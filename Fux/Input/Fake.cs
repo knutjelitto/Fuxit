@@ -1,22 +1,20 @@
-﻿using A = Fux.Input.Ast;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     internal static class Fake
     {
-        public static VarDecl Negate(ISource source)
+        public static A.VarDecl Negate(ISource source)
         {
             var basics = A.Identifier.Artificial(source, "Elm.Kernel.Basics");
             var name = A.Identifier.Artificial(source, "negate");
-            var native = new NativeDecl(basics, name);
-            return new VarDecl(name, new Parameters(), native);
+            var native = new A.NativeDecl(basics, name);
+            return new A.VarDecl(name, new A.Parameters(), native);
         }
 
-        public static NativeDecl NativeNegate(ISource source)
+        public static A.NativeDecl NativeNegate(ISource source)
         {
             var basics = A.Identifier.Artificial(source, "Elm.Kernel.Basics");
             var name = A.Identifier.Artificial(source, "negate");
-            return new NativeDecl(basics, name);
+            return new A.NativeDecl(basics, name);
         }
     }
 }

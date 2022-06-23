@@ -60,12 +60,40 @@ namespace Fux.Input.Ast
             Assert(token.Lex == Lex.Char);
         }
     }
+
     internal class StringLiteral : Literal
     {
         public StringLiteral(Token token)
             : base(token)
         {
             Assert(token.Lex == Lex.String);
+
+            var text = token.Text;
+
+            Assert(text.StartsWith('\"') && !text.StartsWith("\"\"\""));
+            Assert(text.EndsWith('\"') && !text.EndsWith("\"\"\""));
+
+            Value = text[1..^1];
         }
+
+        public string Value { get; }
+    }
+
+    internal class LongStringLiteral : Literal
+    {
+        public LongStringLiteral(Token token)
+            : base(token)
+        {
+            Assert(token.Lex == Lex.LongString);
+
+            var text = token.Text;
+
+            Assert(text.StartsWith("\"\"\""));
+            Assert(text.EndsWith("\"\"\""));
+
+            Value = text[3..^3];
+        }
+
+        public string Value { get; }
     }
 }

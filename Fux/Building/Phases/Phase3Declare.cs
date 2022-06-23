@@ -4,14 +4,11 @@
 #pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable IDE0063 // Use simple 'using' statement
 
-using Fux.Input;
-using Fux.Tools;
-
 namespace Fux.Building.Phases
 {
     internal class Phase3Declare : Phase
     {
-        private List<Declaration> collector = new();
+        private readonly List<A.Declaration> collector = new();
 
         public Phase3Declare(Ambience ambience, Package package)
             : base("declare", ambience, package)
@@ -76,7 +73,7 @@ namespace Fux.Building.Phases
 
                 if (module.Name == "List")
                 {
-                    if (!module.Scope.LookupType(Identifier.Artificial(module, "List"), out _))
+                    if (!module.Scope.LookupType(A.Identifier.Artificial(module, "List"), out _))
                     {
                         Declare(FakeList.MakeType(module));
                     }
@@ -89,26 +86,26 @@ namespace Fux.Building.Phases
                 Assert(module.Scope.HintsAreEmpty);
             }
 
-            void Declare(Declaration declaration)
+            void Declare(A.Declaration declaration)
             {
                 switch (declaration)
                 {
-                    case ImportDecl import:
+                    case A.ImportDecl import:
                         Import(module.Scope, import);
                         break;
-                    case InfixDecl infix:
+                    case A.InfixDecl infix:
                         Infix(module.Scope, infix);
                         break;
-                    case UnionDecl type:
+                    case A.UnionDecl type:
                         Type(module.Scope, type);
                         break;
-                    case AliasDecl alias:
+                    case A.AliasDecl alias:
                         Alias(module.Scope, alias);
                         break;
-                    case VarDecl varDecl:
+                    case A.VarDecl varDecl:
                         VarDecl(module.Scope, varDecl);
                         break;
-                    case TypeHint hint:
+                    case A.TypeHint hint:
                         TypeHint(module.Scope, hint);
                         break;
                     default:
@@ -119,7 +116,7 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void TypeHint(Scope scope, TypeHint hint)
+        private void TypeHint(Scope scope, A.TypeHint hint)
         {
             Collector.DeclareHint.Add(hint);
 
@@ -128,7 +125,7 @@ namespace Fux.Building.Phases
             scope.AddHint(hint);
         }
 
-        private void VarDecl(Scope scope, VarDecl var)
+        private void VarDecl(Scope scope, A.VarDecl var)
         {
             Collector.DeclareVar.Add(var);
 
@@ -149,7 +146,7 @@ namespace Fux.Building.Phases
             ScopeExpr(var.Scope, var.Expression);
         }
 
-        private void Import(ModuleScope scope, ImportDecl import)
+        private void Import(ModuleScope scope, A.ImportDecl import)
         {
             Collector.Import.Add(import);
 
@@ -158,7 +155,7 @@ namespace Fux.Building.Phases
             scope.ImportAddImport(import);
         }
 
-        private void Infix(ModuleScope scope, InfixDecl infix)
+        private void Infix(ModuleScope scope, A.InfixDecl infix)
         {
             Collector.DeclareInfix.Add(infix);
 
@@ -169,7 +166,7 @@ namespace Fux.Building.Phases
             ScopeExpr(scope, infix.Expression);
         }
 
-        private void Type(ModuleScope scope, UnionDecl type)
+        private void Type(ModuleScope scope, A.UnionDecl type)
         {
             Collector.DeclareType.Add(type);
 
@@ -190,7 +187,7 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void Alias(ModuleScope scope, AliasDecl alias)
+        private void Alias(ModuleScope scope, A.AliasDecl alias)
         {
             Collector.DeclareAlias.Add(alias);
 
@@ -199,23 +196,23 @@ namespace Fux.Building.Phases
             scope.AddAlias(alias);
         }
 
-        private void ScopeExpr(Scope scope, Expression expression)
+        private void ScopeExpr(Scope scope, A.Expression expression)
         {
             switch (expression)
             {
-                case Identifier:
-                case Literal:
-                case Unit:
-                case NativeDecl:
+                case A.Identifier:
+                case A.Literal:
+                case A.Unit:
+                case A.NativeDecl:
                     break;
-                case DotExpr: //TODO: what to do here?
+                case A.DotExpr: //TODO: what to do here?
                     break;
-                case IfExpr iff:
+                case A.IfExpr iff:
                     ScopeExpr(scope, iff.Condition);
                     ScopeExpr(scope, iff.IfTrue);
                     ScopeExpr(scope, iff.IfFalse);
                     break;
-                case MatchExpr match:
+                case A.MatchExpr match:
                     ScopeExpr(scope, match.Expression);
                     foreach (var matchCase in match.Cases)
                     {
@@ -223,7 +220,7 @@ namespace Fux.Building.Phases
                         Assert(matchCase.Scope.Parent != null);
                     }
                     break;
-                case MatchCase matchCase:
+                case A.MatchCase matchCase:
                     Assert(matchCase.Scope.Parent == null);
                     matchCase.Scope.Parent = scope;
                     foreach (var identifier in ExplodePattern(matchCase.Pattern))
@@ -232,53 +229,53 @@ namespace Fux.Building.Phases
                     }
                     ScopeExpr(matchCase.Scope, matchCase.Expression);
                     break;
-                case SequenceExpr sequence:
+                case A.SequenceExpr sequence:
                     foreach (var expr in sequence)
                     {
                         ScopeExpr(scope, expr);
                     }
                     break;
-                case TupleExpr tuple:
+                case A.TupleExpr tuple:
                     foreach (var expr in tuple)
                     {
                         ScopeExpr(scope, expr);
                     }
                     break;
-                case ListExpr list:
+                case A.ListExpr list:
                     foreach (var expr in list)
                     {
                         ScopeExpr(scope, expr);
                     }
                     break;
-                case PrefixExpr prefix:
+                case A.PrefixExpr prefix:
                     ScopeExpr(scope, prefix.Rhs);
                     break;
-                case InfixExpr infix:
+                case A.InfixExpr infix:
                     ScopeExpr(scope, infix.Lhs);
                     ScopeExpr(scope, infix.Rhs);
                     break;
-                case OpChain opChain:
+                case A.OpChain opChain:
                     ScopeExpr(scope, opChain.First);
                     foreach (var rest in opChain.Rest)
                     {
                         ScopeExpr(scope, rest.Expression);
                     }
                     break;
-                case LetExpr let:
+                case A.LetExpr let:
                     let.Scope.Parent = scope;
                     ScopeLet(let);
                     break;
-                case LambdaExpr lambda:
+                case A.LambdaExpr lambda:
                     lambda.Scope.Parent = scope;
                     ScopeLambda(lambda);
                     break;
-                case RecordExpr record:
+                case A.RecordExpr record:
                     foreach (var field in record.Fields)
                     {
                         ScopeExpr(scope, field.Expression);
                     }
                     break;
-                case SelectExpr select:
+                case A.SelectExpr select:
                     ScopeExpr(scope, select.Lhs);
                     ScopeExpr(scope, select.Rhs);
                     break;
@@ -288,16 +285,16 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void ScopeLet(LetExpr let)
+        private void ScopeLet(A.LetExpr let)
         {
-            var hints = new Dictionary<Identifier, TypeHint>();
+            var hints = new Dictionary<A.Identifier, A.TypeHint>();
             Assert(let.Scope.HintsAreEmpty);
 
             foreach (var expr in let.LetExpressions)
             {
                 switch (expr)
                 {
-                    case VarDecl var:
+                    case A.VarDecl var:
                         {
                             var.Scope.Parent = let.Scope;
 
@@ -314,7 +311,7 @@ namespace Fux.Building.Phases
                             ScopeExpr(var.Scope, var.Expression);
                         }
                         break;
-                    case LetAssign assign:
+                    case A.LetAssign assign:
                         {
                             assign.Scope.Parent = let.Scope;
 
@@ -328,7 +325,7 @@ namespace Fux.Building.Phases
                             ScopeExpr(assign.Scope, assign.Expression);
                         }
                         break;
-                    case TypeHint hint:
+                    case A.TypeHint hint:
                         {
                             let.Scope.AddHint(hint);
                         }
@@ -345,7 +342,7 @@ namespace Fux.Building.Phases
             ScopeExpr(let.Scope, let.InExpression);
         }
 
-        private void ScopeLambda(LambdaExpr lambda)
+        private void ScopeLambda(A.LambdaExpr lambda)
         {
             foreach (var identifier in ExplodePattern(lambda.Parameters))
             {
@@ -355,20 +352,20 @@ namespace Fux.Building.Phases
             ScopeExpr(lambda.Scope, lambda.Expression);
         }
 
-        private IEnumerable<Parameter> ExplodePattern(Expression pattern)
+        private IEnumerable<A.Parameter> ExplodePattern(A.Expression pattern)
         {
             switch (pattern)
             {
-                case Identifier identifier when identifier.IsMultiUpper:
-                case Wildcard:
-                case Literal:
-                case Unit:
+                case A.Identifier identifier when identifier.IsMultiUpper:
+                case A.Wildcard:
+                case A.Literal:
+                case A.Unit:
                     break;
 
-                case Identifier identifier when identifier.IsSingleLower:
-                    yield return new Parameter(identifier);
+                case A.Identifier identifier when identifier.IsSingleLower:
+                    yield return new A.Parameter(identifier);
                     break;
-                case SequenceExpr sequence:
+                case A.SequenceExpr sequence:
                     {
                         foreach(var expr in sequence)
                         {
@@ -379,7 +376,7 @@ namespace Fux.Building.Phases
                         }
                     }
                     break;
-                case TupleExpr tuple:
+                case A.TupleExpr tuple:
                     {
                         foreach (var expr in tuple)
                         {
@@ -390,7 +387,7 @@ namespace Fux.Building.Phases
                         }
                     }
                     break;
-                case ListExpr list:
+                case A.ListExpr list:
                     {
                         foreach (var expr in list)
                         {
@@ -401,7 +398,7 @@ namespace Fux.Building.Phases
                         }
                     }
                     break;
-                case OpChain opChain:
+                case A.OpChain opChain:
                     foreach (var identifier in ExplodePattern(opChain.First))
                     {
                         yield return identifier;
@@ -414,7 +411,7 @@ namespace Fux.Building.Phases
                         }
                     }
                     break;
-                case InfixExpr infix:
+                case A.InfixExpr infix:
                     foreach (var parameter in ExplodePattern(infix.Lhs))
                     {
                         yield return parameter;
@@ -424,7 +421,7 @@ namespace Fux.Building.Phases
                         yield return parameter;
                     }
                     break;
-                case RecordPattern recordPattern:
+                case A.RecordPattern recordPattern:
                     foreach (var field in recordPattern.Fields)
                     {
                         foreach (var parameter in ExplodePattern(field.Pattern))
@@ -433,7 +430,7 @@ namespace Fux.Building.Phases
                         }
                     }
                     break;
-                case Parameter parameterer:
+                case A.Parameter parameterer:
                     foreach (var parameter in ExplodePattern(parameterer.Expression))
                     {
                         yield return parameter;
@@ -446,7 +443,7 @@ namespace Fux.Building.Phases
 
             if (pattern.Alias != null)
             {
-                yield return new Parameter(pattern.Alias.SingleLower());
+                yield return new A.Parameter(pattern.Alias.SingleLower());
             }
         }
 

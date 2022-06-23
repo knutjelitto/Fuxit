@@ -9,22 +9,33 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// The meat of the type inference algorithm.
         /// </summary>
-        private static (Substitution, Type) InferType(Expr expression, Environment env)
+        private static (Substitution, Type) InferType(Expr expression, Environment env, bool investigated)
         {
+            if (investigated)
+            {
+                Assert(true);
+            }
             switch (expression)
             {
+                case UnifyExpression({ } type, { } expr):
+                    {
+                        var (s1, type2) = InferType(expr, env, investigated);
+                        var s2 = MostGeneralUnifier(type, type2);
+                        return (ComposeSubstitutions(s2, s1), ApplySubstitution(type, s2));
+                    }
+
                 case DefExpression({ } variable, { } expr):
                     {
-                        var (s1, t1) = InferType(variable, env);
-                        var (s2, t2) = InferType(expr, env);
+                        var (s1, t1) = InferType(variable, env, investigated);
+                        var (s2, t2) = InferType(expr, env, investigated);
                         var s3 = MostGeneralUnifier(t1, t2);
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3));
                     }
 
                 case Tuple2Expression({ } expr1, { } expr2):
                     {
-                        var (s1, t1) = InferType(expr1, env);
-                        var (s2, t2) = InferType(expr2, env);
+                        var (s1, t1) = InferType(expr1, env, investigated);
+                        var (s2, t2) = InferType(expr2, env, investigated);
                         var ty1 = ApplySubstitution(t1, s2);
                         var ty2 = t2;
                         var tuple2 = (Type)new Type.Tuple2(ty1, ty2);
@@ -50,10 +61,10 @@ namespace Fux.Building.AlgorithmW
                 case LetExpression({ } term, { } expr1, { } expr2):
                     {
                         var env1 = env.Remove(term);
-                        var (s1, t1) = InferType(expr1, env);
+                        var (s1, t1) = InferType(expr1, env, investigated);
                         var tp = GeneralizePolytype(ApplySubstitution(env1, s1), t1);
                         var env2 = env1.Insert(term, tp);
-                        var (s2, t2) = InferType(expr2, ApplySubstitution(env2, s1));
+                        var (s2, t2) = InferType(expr2, ApplySubstitution(env2, s1), investigated);
                         return (ComposeSubstitutions(s2, s1), t2);
                     }
 
@@ -91,13 +102,13 @@ namespace Fux.Building.AlgorithmW
                 case IffExpression({ } cond, { } expr1, { } expr2):
                     {
                         {
-                            var (_, t1) = InferType(cond, env);
+                            var (_, t1) = InferType(cond, env, investigated);
                             var t2 = new Type.Bool();
                             _ = MostGeneralUnifier(t1, t2);
                         }
                         {
-                            var (s1, t1) = InferType(expr1, env);
-                            var (s2, t2) = InferType(expr2, env);
+                            var (s1, t1) = InferType(expr1, env, investigated);
+                            var (s2, t2) = InferType(expr2, env, investigated);
                             var s3 = MostGeneralUnifier(t1, t2);
                             return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3));
                         }
@@ -114,7 +125,7 @@ namespace Fux.Building.AlgorithmW
 
                         var varType = env.Generator.GetNext(name);
                         var nenv = env.Remove(term).Insert(term, new Polytype(varType));
-                        var (substitution, type) = InferType(exp, nenv);
+                        var (substitution, type) = InferType(exp, nenv, investigated);
                         return (substitution, new Type.Function(ApplySubstitution(varType, substitution), type));
                     }
 
@@ -127,9 +138,16 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the unifier to the new type variable.
                 case ApplicationExpression({ } callee, { } argument):
                     {
-                        var (s1, t1) = InferType(callee, env);
-                        var (s2, t2) = InferType(argument, ApplySubstitution(env, s1));
-                        var varType = env.Generator.GetNext();
+                        var (s1, t1) = InferType(callee, env, investigated);
+                        var (s2, t2) = InferType(argument, ApplySubstitution(env, s1), investigated);
+
+                        string? name = null;
+                        if (t1 is Type.Function func && func.OutType is Type.Variable variable)
+                        {
+                            name = variable.TypeVar.Name;
+                        }
+
+                        var varType = env.Generator.GetNext(name);
                         var s3 = MostGeneralUnifier(type1: ApplySubstitution(t1, s2), type2: new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3));
                     }
@@ -206,6 +224,16 @@ namespace Fux.Building.AlgorithmW
                         return ComposeSubstitutions(sub1, sub2);
                     }
 
+                // For 2-tuples, we find the most general unifier for the first types, apply the resulting
+                // substitution to the outputs, find the outputs' most general unifier, and finally
+                // compose the two resulting substitutions.
+                case (Type.Tuple2({ } type11, { } type12), Type.Tuple2({ } type21, { } type22)):
+                    {
+                        var sub1 = MostGeneralUnifier(type11, type21);
+                        var sub2 = MostGeneralUnifier(ApplySubstitution(type12, sub1), ApplySubstitution(type22, sub1));
+                        return ComposeSubstitutions(sub1, sub2);
+                    }
+
                 // If one of the types is variable, we can bind the variable to the type.
                 // This also handles the case where they are both variables.
                 case (Type.Variable({ } v), { } t):
@@ -226,6 +254,11 @@ namespace Fux.Building.AlgorithmW
                     (Type.String, Type.String) or
                     (Type.Float, Type.Integer) or
                     (Type.Integer, Type.Float):
+                    {
+                        return Substitution.Empty();
+                    }
+
+                case (Type.Primitive p1, Type.Primitive p2) when (p1.Name == p2.Name):
                     {
                         return Substitution.Empty();
                     }
@@ -326,9 +359,9 @@ namespace Fux.Building.AlgorithmW
             return ApplySubstitution(polytype.Type, substitution);
         }
 
-        public Type Run(Expr expression, Environment typeEnvironment)
+        public Type Run(Expr expression, Environment typeEnvironment, bool investigated)
         {
-            var (substitution, type) = InferType(expression, typeEnvironment);
+            var (substitution, type) = InferType(expression, typeEnvironment, investigated);
             return ApplySubstitution(type, substitution);
         }
 
