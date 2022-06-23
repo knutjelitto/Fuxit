@@ -3,6 +3,6 @@
     internal class TypeVarGenerator
     {
         private int supply = 0;
-        public VariableType GetNext(string? name = null) => new VariableType(new TypeVariable(supply++, name));
+        public Type.Variable GetNext(string? name = null) => new Type.Variable(new TypeVariable(supply++, name));
     }
 }

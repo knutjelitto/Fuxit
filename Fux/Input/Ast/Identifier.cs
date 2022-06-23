@@ -29,7 +29,11 @@ namespace Fux.Input.Ast
 
         public static Identifier Artificial(ISource source, string artifical)
         {
-            var location = new Location(source, 0, 0);
+            return Artificial(new Location(source, 0, 0), artifical);
+        }
+
+        public static Identifier Artificial(ILocation location, string artifical)
+        {
             var tokens = new List<Token>();
             foreach (var text in artifical.Split('.'))
             {

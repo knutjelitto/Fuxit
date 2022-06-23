@@ -27,7 +27,7 @@ namespace Fux.Building.AlgorithmW
                         var (s2, t2) = InferType(expr2, env);
                         var ty1 = ApplySubstitution(t1, s2);
                         var ty2 = t2;
-                        var tuple2 = (Type)new Tuple2Type(ty1, ty2);
+                        var tuple2 = (Type)new Type.Tuple2(ty1, ty2);
 
                         return (ComposeSubstitutions(s2, s1), tuple2);
                     }
@@ -80,10 +80,10 @@ namespace Fux.Building.AlgorithmW
                             Substitution.Empty(),
                             literal switch
                             {
-                                IntegerLiteral(_) => new IntegerType(),
-                                FloatLiteral(_) => new FloatType(),
-                                BoolLiteral(_) => new BoolType(),
-                                StringLiteral(_) => new StringType(),
+                                IntegerLiteral(_) => new Type.Integer(),
+                                FloatLiteral(_) => new Type.Float(),
+                                BoolLiteral(_) => new Type.Bool(),
+                                StringLiteral(_) => new Type.String(),
                                 _ => throw new WError($"can not infer - unknown literal type '{literal}'"),
                             });
                     }
@@ -92,7 +92,7 @@ namespace Fux.Building.AlgorithmW
                     {
                         {
                             var (_, t1) = InferType(cond, env);
-                            var t2 = new BoolType();
+                            var t2 = new Type.Bool();
                             _ = MostGeneralUnifier(t1, t2);
                         }
                         {
@@ -110,12 +110,12 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case AbstractionExpression({ } term, { } exp):
                     {
-                        var name = (env.TryGet(term)?.Type as VariableType)?.TypeVar.Name;
+                        var name = (env.TryGet(term)?.Type as Type.Variable)?.TypeVar.Name;
 
                         var varType = env.Generator.GetNext(name);
                         var nenv = env.Remove(term).Insert(term, new Polytype(varType));
                         var (substitution, type) = InferType(exp, nenv);
-                        return (substitution, new FunctionType(ApplySubstitution(varType, substitution), type));
+                        return (substitution, new Type.Function(ApplySubstitution(varType, substitution), type));
                     }
 
                 // An application is typed by:
@@ -130,7 +130,7 @@ namespace Fux.Building.AlgorithmW
                         var (s1, t1) = InferType(callee, env);
                         var (s2, t2) = InferType(argument, ApplySubstitution(env, s1));
                         var varType = env.Generator.GetNext();
-                        var s3 = MostGeneralUnifier(type1: ApplySubstitution(t1, s2), type2: new FunctionType(t2, varType));
+                        var s3 = MostGeneralUnifier(type1: ApplySubstitution(t1, s2), type2: new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3));
                     }
             }
@@ -143,15 +143,15 @@ namespace Fux.Building.AlgorithmW
             {
                 // If this type references a variable that is in the substitution, return it's
                 // replacement type. Otherwise, return the existing type.
-                VariableType({ } tv) => substitution.TryGet(tv) ?? type,
+                Type.Variable({ } tv) => substitution.TryGet(tv) ?? type,
 
                 // To apply to a function, we simply apply to each of the input and output.
-                FunctionType({ } t1, { } t2) => new FunctionType(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
+                Type.Function({ } t1, { } t2) => new Type.Function(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
 
-                Tuple2Type({ } t1, { } t2) => new Tuple2Type(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
+                Type.Tuple2({ } t1, { } t2) => new Type.Tuple2(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
 
                 // A primitive type is not changed by a substitution.
-                PrimitiveType => type,
+                Type.Primitive => type,
 
                 _ => throw new InvalidOperationException($"can not infer - unknown type '{type.GetType().FullName} - {type}'")
             };
@@ -199,7 +199,7 @@ namespace Fux.Building.AlgorithmW
                 // For functions, we find the most general unifier for the inputs, apply the resulting
                 // substitution to the outputs, find the outputs' most general unifier, and finally
                 // compose the two resulting substitutions.
-                case (FunctionType({ } type1In, { } type1Out), FunctionType({ } type2In, { } type2Out)):
+                case (Type.Function({ } type1In, { } type1Out), Type.Function({ } type2In, { } type2Out)):
                     {
                         var sub1 = MostGeneralUnifier(type1In, type2In);
                         var sub2 = MostGeneralUnifier(ApplySubstitution(type1Out, sub1), ApplySubstitution(type2Out, sub1));
@@ -208,24 +208,24 @@ namespace Fux.Building.AlgorithmW
 
                 // If one of the types is variable, we can bind the variable to the type.
                 // This also handles the case where they are both variables.
-                case (VariableType({ } v), { } t):
+                case (Type.Variable({ } v), { } t):
                     {
                         return BindVariable(v, t);
                     }
 
-                case ({ } t, VariableType({ } v)):
+                case ({ } t, Type.Variable({ } v)):
                     {
                         return BindVariable(v, t);
                     }
 
                 // If they are both primitives, no substitution needs to be done.
                 case
-                    (IntegerType, IntegerType) or
-                    (FloatType, FloatType) or
-                    (BoolType, BoolType) or
-                    (StringType, StringType) or
-                    (FloatType, IntegerType) or
-                    (IntegerType, FloatType):
+                    (Type.Integer, Type.Integer) or
+                    (Type.Float, Type.Float) or
+                    (Type.Bool, Type.Bool) or
+                    (Type.String, Type.String) or
+                    (Type.Float, Type.Integer) or
+                    (Type.Integer, Type.Float):
                     {
                         return Substitution.Empty();
                     }
@@ -244,7 +244,7 @@ namespace Fux.Building.AlgorithmW
         private static Substitution BindVariable(TypeVariable typeVar, Type type)
         {
             // Check for binding a variable to itself
-            if (type is VariableType({ } u) && u == typeVar)
+            if (type is Type.Variable({ } u) && u == typeVar)
             {
                 return Substitution.Empty();
             }
@@ -264,13 +264,15 @@ namespace Fux.Building.AlgorithmW
             return type switch
             {
                 // For a type variable, there is one free variable: the variable itself.
-                VariableType({ } typeVar) => new HashSet<TypeVariable>(new[] { typeVar }),
+                Type.Variable({ } typeVar) => new HashSet<TypeVariable>(new[] { typeVar }),
 
                 // For functions, we take the union of the free type variables of the input and output.
-                FunctionType({ } inType, { } outType) => union(GetFreeTypeVariables(inType), GetFreeTypeVariables(outType)),
+                Type.Function({ } inType, { } outType) => union(GetFreeTypeVariables(inType), GetFreeTypeVariables(outType)),
+
+                Type.Tuple2({ } type1, { } type2) => union(GetFreeTypeVariables(type1), GetFreeTypeVariables(type2)),
 
                 // Primitive types have no free variables
-                PrimitiveType => new HashSet<TypeVariable>(),
+                Type.Primitive => new HashSet<TypeVariable>(),
 
                 _ => throw new InvalidOperationException($"unexpected type '{type}'")
             };
@@ -344,16 +346,16 @@ namespace Fux.Building.AlgorithmW
             return Environment.Initial(typeVarGenerator,
 
                 // + :: number -> number -> number -- binary addition
-                ("+", new Polytype(new FunctionType(number1, new FunctionType(number1, number1)))),
+                ("+", new Polytype(new Type.Function(number1, new Type.Function(number1, number1)))),
 
                 // - :: number -> number -- unary negation
-                ("-", new Polytype(new FunctionType(number2, number2))),
+                ("-", new Polytype(new Type.Function(number2, number2))),
 
                 // less-than :: number -> number -> bool
-                ("<", new Polytype(new FunctionType(number3, new FunctionType(number3, new BoolType())))),
+                ("<", new Polytype(new Type.Function(number3, new Type.Function(number3, new Type.Bool())))),
 
                 // - :: integer -> float -- conversion
-                ("toFloat", new Polytype(new FunctionType(new IntegerType(), new FloatType())))
+                ("toFloat", new Polytype(new Type.Function(new Type.Integer(), new Type.Float())))
             );
         }
     }
