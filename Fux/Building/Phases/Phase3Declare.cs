@@ -137,9 +137,21 @@ namespace Fux.Building.Phases
 
             foreach (var parameter in var.Parameters)
             {
-                foreach (var identifier in ExplodePattern(parameter))
+                Assert(parameter.Expression is A.Pattern);
+
+                if (parameter.Expression is A.Pattern pattern)
                 {
-                    var.Scope.Add(identifier);
+                    foreach (var identifier in pattern.Flatten())
+                    {
+                        var.Scope.Add(new A.Parameter(identifier));
+                    }
+                }
+                else
+                {
+                    foreach (var identifier in ExplodePattern(parameter))
+                    {
+                        var.Scope.Add(identifier);
+                    }
                 }
             }
 
@@ -344,9 +356,9 @@ namespace Fux.Building.Phases
 
         private void ScopeLambda(A.LambdaExpr lambda)
         {
-            foreach (var identifier in ExplodePattern(lambda.Parameters))
+            foreach (var identifier in lambda.Parameters.Flatten())
             {
-                lambda.Scope.Add(identifier);
+                lambda.Scope.Add(new A.Parameter(identifier));
             }
 
             ScopeExpr(lambda.Scope, lambda.Expression);
@@ -356,6 +368,72 @@ namespace Fux.Building.Phases
         {
             switch (pattern)
             {
+                case A.Pattern.LowerId identifier:
+                    {
+                        yield return new A.Parameter(identifier.Identifier);
+                        break;
+                    }
+                case A.Pattern.Tuple tuple:
+                    {
+                        foreach (var item in tuple.Patterns)
+                        {
+                            foreach (var pim in ExplodePattern(item))
+                            {
+                                yield return pim;
+                            }
+                        }
+                        break;
+                    }
+                case A.Pattern.Ctor ctor:
+                    {
+                        foreach (var argument in ctor.Arguments)
+                        {
+                            foreach (var pim in ExplodePattern(argument))
+                            {
+                                yield return pim;
+                            }
+                        }
+                        break;
+                    }
+                case A.Pattern.List list:
+                    {
+                        foreach (var item in list)
+                        {
+                            foreach (var pim in ExplodePattern(item))
+                            {
+                                yield return pim;
+                            }
+                        }
+                        break;
+                    }
+                case A.Pattern.WithAlias with:
+                    {
+                        foreach (var pim in ExplodePattern(with.Pattern))
+                        {
+                            yield return pim;
+                        }
+                        foreach (var pim in ExplodePattern(with.Alias))
+                        {
+                            yield return pim;
+                        }
+                        break;
+                    }
+                case A.Pattern.Record record:
+                    {
+                        foreach (var item in record.Patterns)
+                        {
+                            foreach (var pim in ExplodePattern(item))
+                            {
+                                yield return pim;
+                            }
+                        }
+                        break;
+                    }
+
+                case A.Pattern.Wildcard:
+                case A.Pattern.Unit:
+                    break;
+
                 case A.Identifier identifier when identifier.IsMultiUpper:
                 case A.Wildcard:
                 case A.Literal:
@@ -363,8 +441,10 @@ namespace Fux.Building.Phases
                     break;
 
                 case A.Identifier identifier when identifier.IsSingleLower:
-                    yield return new A.Parameter(identifier);
-                    break;
+                    {
+                        yield return new A.Parameter(identifier);
+                        break;
+                    }
                 case A.SequenceExpr sequence:
                     {
                         foreach(var expr in sequence)
@@ -438,7 +518,7 @@ namespace Fux.Building.Phases
                     break;
                 default:
                     Assert(false);
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"{pattern}");
             }
 
             if (pattern.Alias != null)

@@ -17,6 +17,17 @@ namespace Fux.Input
         public Tokens Tokens { get; }
         public bool StartsAtomic => More() && Current.Lex.StartsAtomic;
 
+        public bool StartsTypeHint
+        {
+            get
+            {
+                return
+                    Tokens[Offset].Lex == Lex.LowerId &&
+                    Offset + 1 < Tokens.Count &&
+                    Tokens[Offset + 1].Lex == Lex.Colon;
+            }
+        }
+
         public bool StartsPrefix
         {
             get

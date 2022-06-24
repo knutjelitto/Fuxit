@@ -149,6 +149,12 @@
             public const string Char = "Char";
         }
 
+        public static class Symbol
+        {
+            public const string Wildcard = "_";
+            public const string Unit = "()";
+        }
+
         public static class Term
         {
             public const string Type = "Type";

@@ -51,7 +51,7 @@ namespace Fux.Building.Typing
                 case A.Type.Concrete concrete:
                     return new W.Type.Concrete(concrete.Name.Text);
                 case A.Type.Union union:
-                    Assert(union.Arguments.All(a => a is A.Type.Concrete));
+                    //Assert(union.Arguments.All(a => a is A.Type.Concrete || a is A.Type.Primitive));
                     return new W.Type.Concrete(union.Name.Text, union.Arguments.Cast<A.Type.Concrete>().Select(a => new W.Type.Concrete(a.Name.Text)).ToArray());
             }
             throw new NotImplementedException($"type not implemented: '{type.GetType().FullName} - {type}'");

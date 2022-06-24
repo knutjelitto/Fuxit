@@ -286,6 +286,55 @@ namespace Fux.Building.Phases
                         ResolveExpr(scope, parameter.Expression);
                         break;
                     }
+
+                case A.Pattern.List patterns:
+                    {
+                        foreach (var pattern in patterns)
+                        {
+                            ResolveExpr(scope, pattern);
+                        }
+                        break;
+                    }
+                case A.Pattern.Tuple tuple:
+                    {
+                        foreach (var pattern in tuple.Patterns)
+                        {
+                            ResolveExpr(scope, pattern);
+                        }
+                        break;
+                    }
+                case A.Pattern.Record record:
+                    {
+                        foreach (var pattern in record.Patterns)
+                        {
+                            ResolveExpr(scope, pattern);
+                        }
+                        break;
+                    }
+                case A.Pattern.Ctor ctor:
+                    {
+                        foreach (var pattern in ctor.Arguments)
+                        {
+                            ResolveExpr(scope, pattern);
+                        }
+                        break;
+                    }
+                case A.Pattern.WithAlias with:
+{
+                        ResolveExpr(scope, with.Pattern);
+                        ResolveExpr(scope, with.Alias);
+                        break;
+                    }
+                case A.Pattern.LowerId identifier:
+                    {
+                        ResolveExpr(scope, identifier.Identifier);
+                        break;
+                    }
+                case A.Pattern.Wildcard:
+                case A.Pattern.Unit:
+                    break;
+
+
                 default:
                     Assert(false);
                     throw new NotImplementedException();

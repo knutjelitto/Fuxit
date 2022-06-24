@@ -16,7 +16,8 @@
         public List<A.VarDecl> DeclareVar { get; } = new();
         public List<A.TypeHint> DeclareHint { get; } = new();
         public List<A.NativeDecl> NativeDecl { get; } = new();
-        public List<A.Expression> Pattern { get; } = new();
+        public List<A.Expression> VarPattern { get; } = new();
+        public List<A.Expression> MatchPattern { get; } = new();
 
         public Stopwatch ScanTime { get; } = new();
         public Stopwatch ParseTime { get; } = new();
@@ -39,21 +40,40 @@
             WriteCompact("all-decl-hint.text", DeclareHint, writeStr);
             WriteCompact("all-native.text", NativeDecl, writePP);
 
-            WritePatterns("all-pattern.text");
+            WriteVarPatterns("all-pattern-var.text");
+            WriteMatchPatterns("all-pattern-match.text");
 
-            void WritePatterns(string name)
+            void WriteVarPatterns(string name)
             {
-                var patterns = Pattern
+                var patterns = VarPattern
                     .Select(p => p.ToString())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
                     .OrderBy(s => s)
                     .Distinct()
                     .ToList();
 
+                WriteAll(name, patterns);
+            }
+
+            void WriteMatchPatterns(string name)
+            {
+                var patterns = MatchPattern
+                    .Select(p => p.ToString())
+                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                    .OrderBy(s => s)
+                    .Distinct()
+                    .ToList();
+
+                WriteAll(name, patterns);
+            }
+
+            void WriteAll(string name, IEnumerable<string?> items)
+            {
                 using (var writer = name.Writer())
                 {
-                    foreach (var pattern in patterns)
+                    foreach (var item in items.Where(i => i is not null))
                     {
-                        writer.WriteLine($"{pattern}");
+                        writer.WriteLine($"{item}");
                     }
                 }
             }

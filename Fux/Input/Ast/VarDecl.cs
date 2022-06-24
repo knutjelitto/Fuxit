@@ -10,7 +10,7 @@ namespace Fux.Input.Ast
             Parameters = parameters;
             Expression = expression;
 
-            Collector.Instance.Pattern.Add(parameters);
+            Collector.Instance.VarPattern.Add(parameters);
         }
 
         public Parameters Parameters { get; }

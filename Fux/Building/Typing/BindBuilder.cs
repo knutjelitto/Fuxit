@@ -120,6 +120,15 @@ namespace Fux.Building.Typing
 
         private IEnumerable<A.Identifier> BindIdentifiers(A.Parameter parameter)
         {
+            Assert(parameter.Expression is A.Pattern);
+
+            if (parameter.Expression is A.Pattern pattern)
+            {
+                return pattern.Flatten(() =>
+                {
+                    return A.Identifier.Artificial(Module, $"_{++wildcardNumber}");
+                });
+            }
             return BindIdentifiers(parameter.Expression).Where(id => id.IsSingleLower);
         }
 
@@ -157,7 +166,7 @@ namespace Fux.Building.Typing
 
                 default:
                     Assert(false);
-                    throw new NotImplementedException();
+                    throw new NotImplementedException($"{expression}");
             }
         }
 

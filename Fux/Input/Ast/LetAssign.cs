@@ -1,24 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Fux.Building;
+﻿using Fux.Building;
 
 namespace Fux.Input.Ast
 {
     internal class LetAssign : Expression
     {
-        public LetAssign(SequenceExpr pattern, Expression expression)
+        public LetAssign(Pattern pattern, Expression expression)
         {
+            Assert(pattern is not Pattern.LowerId);
+
             Pattern = pattern;
             Expression = expression;
 
-            Collector.Instance.Pattern.Add(pattern);
+            Collector.Instance.VarPattern.Add(pattern);
         }
 
-        public SequenceExpr Pattern { get; }
+        public Pattern Pattern { get; }
         public Expression Expression { get; }
         public LetScope Scope { get; } = new();
 

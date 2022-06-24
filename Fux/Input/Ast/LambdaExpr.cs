@@ -4,13 +4,13 @@ namespace Fux.Input.Ast
 {
     internal class LambdaExpr : Expression
     {
-        public LambdaExpr(SequenceExpr parameters, Expression expr)
+        public LambdaExpr(Pattern.List parameters, Expression expr)
         {
             Parameters = parameters;
             Expression = expr;
         }
 
-        public SequenceExpr Parameters { get; }
+        public Pattern.List Parameters { get; }
         public Expression Expression { get; }
 
         public LetScope Scope { get; } = new();
