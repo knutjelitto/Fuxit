@@ -2,10 +2,15 @@
 {
     internal class OpChain : Expression
     {
+        public static int OpChains = 0;
+        public static int ResolvedOpChains = 0;
+
         public OpChain(Expression first, IEnumerable<OpExpr> rest)
         {
             First = first;
             Rest = rest.ToArray();
+
+            OpChains++;
         }
 
         public Expression First { get; }
@@ -13,7 +18,13 @@
 
         public Expression Resolve()
         {
-            return Resolve(First, 0, Rest.ToList());
+            Assert(Resolved == this);
+
+            var resolved = Resolve(First, 0, Rest.ToList());
+
+            this.Resolved = resolved;
+
+            return resolved;
         }
 
         private Expression Resolve(Expression lhs, int minPower, List<OpExpr> Rest)
@@ -51,6 +62,8 @@
                 Assert(lhs.Resolved != null && rhs.Resolved != null);
                 lhs = opop.Combine(lhs.Resolved, rhs.Resolved);
                 lhs.Resolved = lhs;
+
+                ResolvedOpChains++; ;
             }
 
             return lhs;

@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-using Fux.Building.Phases;
-
 namespace Fux.Building
 {
     internal class ModuleScope : Scope

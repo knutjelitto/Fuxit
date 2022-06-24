@@ -14,6 +14,8 @@ namespace Fux.Input.Ast
         {
             Pattern = pattern;
             Expression = expression;
+
+            Collector.Instance.Pattern.Add(Pattern);
         }
 
         public Expression Pattern { get; }

@@ -4,54 +4,54 @@ namespace Fux.Building.AlgorithmW
 {
     internal static class TesterHelper
     {
-        public static LetExpression let(string name, Expr e1, Expr e2)
+        public static Expr.Let let(string name, Expr e1, Expr e2)
         {
-            return new LetExpression(name, e1, e2);
+            return new Expr.Let(name, e1, e2);
         }
 
-        public static IffExpression iff(Expr cond, Expr then, Expr @else)
+        public static Expr.Iff iff(Expr cond, Expr then, Expr @else)
         {
-            return new IffExpression(cond, then, @else);
+            return new Expr.Iff(cond, then, @else);
         }
 
-        public static AbstractionExpression abs(string var, Expr e)
+        public static Expr.Abstraction abs(string var, Expr e)
         {
-            return new AbstractionExpression(var, e);
+            return new Expr.Abstraction(var, e);
         }
 
-        public static ApplicationExpression app(Expr e1, Expr e2)
+        public static Expr.Application app(Expr e1, Expr e2)
         {
-            return new ApplicationExpression(e1, e2);
+            return new Expr.Application(e1, e2);
         }
 
-        public static ApplicationExpression app(Expr e1, Expr e2, Expr e3)
+        public static Expr.Application app(Expr e1, Expr e2, Expr e3)
         {
             return app(app(e1, e2), e3);
         }
 
-        public static IntegerLiteral integer(int value)
+        public static Expr.Literal.Integer integer(int value)
         {
-            return new IntegerLiteral(value);
+            return new Expr.Literal.Integer(value);
         }
 
-        public static FloatLiteral floating(double value)
+        public static Expr.Literal.Float floating(double value)
         {
-            return new FloatLiteral(value);
+            return new Expr.Literal.Float(value);
         }
 
-        public static BoolLiteral lit(bool value)
+        public static Expr.Literal.Bool lit(bool value)
         {
-            return new BoolLiteral(value);
+            return new Expr.Literal.Bool(value);
         }
 
-        public static StringLiteral lit(string value)
+        public static Expr.Literal.String lit(string value)
         {
-            return new StringLiteral(value);
+            return new Expr.Literal.String(value);
         }
 
-        public static Variable var(string name)
+        public static Expr.Variable var(string name)
         {
-            return new Variable(name);
+            return new Expr.Variable(name);
         }
     }
 }

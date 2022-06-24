@@ -17,14 +17,14 @@ namespace Fux.Building.AlgorithmW
             }
             switch (expression)
             {
-                case UnifyExpression({ } type, { } expr):
+                case Expr.Unify({ } type, { } expr):
                     {
                         var (s1, type2) = InferType(expr, env, investigated);
                         var s2 = MostGeneralUnifier(type, type2);
                         return (ComposeSubstitutions(s2, s1), ApplySubstitution(type, s2));
                     }
 
-                case DefExpression({ } variable, { } expr):
+                case Expr.Def({ } variable, { } expr):
                     {
                         var (s1, t1) = InferType(variable, env, investigated);
                         var (s2, t2) = InferType(expr, env, investigated);
@@ -32,7 +32,7 @@ namespace Fux.Building.AlgorithmW
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3));
                     }
 
-                case Tuple2Expression({ } expr1, { } expr2):
+                case Expr.Tuple2({ } expr1, { } expr2):
                     {
                         var (s1, t1) = InferType(expr1, env, investigated);
                         var (s2, t2) = InferType(expr2, env, investigated);
@@ -43,7 +43,7 @@ namespace Fux.Building.AlgorithmW
                         return (ComposeSubstitutions(s2, s1), tuple2);
                     }
 
-                case NativeExpression:
+                case Expr.Native:
                     {
                         var type = (Type)env.Generator.GetNext();
 
@@ -58,7 +58,7 @@ namespace Fux.Building.AlgorithmW
                 // * Inserting the generalized type to the binding variable in the new environment.
                 // * Applying the substution for the binding to the environment and inferring the type of the expression.
                 //
-                case LetExpression({ } term, { } expr1, { } expr2):
+                case Expr.Let({ } term, { } expr1, { } expr2):
                     {
                         var env1 = env.Remove(term);
                         var (s1, t1) = InferType(expr1, env, investigated);
@@ -72,7 +72,7 @@ namespace Fux.Building.AlgorithmW
                 // A variable is typed as an instantiation of the corresponding type in the
                 // environment.
                 //
-                case Variable(var term):
+                case Expr.Variable(var term):
                     {
                         if (env.TryGet(term) is Polytype polytype)
                         {
@@ -85,21 +85,21 @@ namespace Fux.Building.AlgorithmW
                 //
                 // A literal is typed as it's primitive type.
                 //
-                case Literal literal:
+                case Expr.Literal literal:
                     {
                         return (
                             Substitution.Empty(),
                             literal switch
                             {
-                                IntegerLiteral(_) => new Type.Integer(),
-                                FloatLiteral(_) => new Type.Float(),
-                                BoolLiteral(_) => new Type.Bool(),
-                                StringLiteral(_) => new Type.String(),
+                                Expr.Literal.Integer(_) => new Type.Integer(),
+                                Expr.Literal.Float(_) => new Type.Float(),
+                                Expr.Literal.Bool(_) => new Type.Bool(),
+                                Expr.Literal.String(_) => new Type.String(),
                                 _ => throw new WError($"can not infer - unknown literal type '{literal}'"),
                             });
                     }
 
-                case IffExpression({ } cond, { } expr1, { } expr2):
+                case Expr.Iff({ } cond, { } expr1, { } expr2):
                     {
                         {
                             var (_, t1) = InferType(cond, env, investigated);
@@ -119,7 +119,7 @@ namespace Fux.Building.AlgorithmW
                 // * Inserting a new type variable for the argument.
                 // * Inferring the type of the expression in the new environment to define the type of the expression.
                 // * Applying the resulting substitution to the argument to define the type of the argument.
-                case AbstractionExpression({ } term, { } exp):
+                case Expr.Abstraction({ } term, { } exp):
                     {
                         var name = (env.TryGet(term)?.Type as Type.Variable)?.TypeVar.Name;
 
@@ -136,7 +136,7 @@ namespace Fux.Building.AlgorithmW
                 // argument type to a new type variable. This combines the previously known type of the
                 // function and the type as it is now being used.
                 // * Applying the unifier to the new type variable.
-                case ApplicationExpression({ } callee, { } argument):
+                case Expr.Application({ } callee, { } argument):
                     {
                         var (s1, t1) = InferType(callee, env, investigated);
                         var (s2, t2) = InferType(argument, ApplySubstitution(env, s1), investigated);
@@ -170,6 +170,9 @@ namespace Fux.Building.AlgorithmW
 
                 // A primitive type is not changed by a substitution.
                 Type.Primitive => type,
+
+                // A concrete type is not changed by a substitution.
+                Type.Concrete => type,
 
                 _ => throw new InvalidOperationException($"can not infer - unknown type '{type.GetType().FullName} - {type}'")
             };
@@ -263,6 +266,11 @@ namespace Fux.Building.AlgorithmW
                         return Substitution.Empty();
                     }
 
+                case (Type.Concrete c1, Type.Concrete c2) when (c1.ToString() == c2.ToString()):
+                    {
+                        return Substitution.Empty();
+                    }
+
                 // Otherwise, the types cannot be unified.
                 case (var t1, var t2):
                     {
@@ -306,6 +314,9 @@ namespace Fux.Building.AlgorithmW
 
                 // Primitive types have no free variables
                 Type.Primitive => new HashSet<TypeVariable>(),
+
+                // Concrete types have no free variables
+                Type.Concrete => new HashSet<TypeVariable>(),
 
                 _ => throw new InvalidOperationException($"unexpected type '{type}'")
             };

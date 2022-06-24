@@ -161,6 +161,8 @@ namespace Fux.Building.Phases
                 case A.Literal:
                 case A.Unit:
                 case A.NativeDecl:
+                case A.Wildcard:
+                    break;
                 case A.DotExpr:
                     break; //TODO: what to do here
                 case A.Identifier identifier:
@@ -192,6 +194,7 @@ namespace Fux.Building.Phases
                     }
                     break;
                 case A.MatchCase matchCase:
+                    ResolveExpr(matchCase.Scope, matchCase.Pattern);
                     ResolveExpr(matchCase.Scope, matchCase.Expression);
                     break;
                 case A.LetExpr let:
@@ -204,12 +207,15 @@ namespace Fux.Building.Phases
                         break;
                     }
                 case A.LetAssign letAssign:
+                    ResolveExpr(letAssign.Scope, letAssign.Pattern);
                     ResolveExpr(letAssign.Scope, letAssign.Expression);
                     break;
                 case A.LambdaExpr lambda:
+                    ResolveExpr(lambda.Scope, lambda.Parameters);
                     ResolveExpr(lambda.Scope, lambda.Expression);
                     break;
                 case A.VarDecl var:
+                    ResolveExpr(var.Scope, var.Parameters);
                     ResolveExpr(var.Scope, var.Expression);
                     break;
                 case A.SequenceExpr sequence:
@@ -249,6 +255,7 @@ namespace Fux.Building.Phases
                     ResolveExpr(scope, prefix.Rhs);
                     break;
                 case A.OpChain chain:
+                    Assert(chain.Resolved is A.OpChain);
                     ResolveInfix(scope, chain);
                     break;
                 case A.SelectExpr select:
@@ -257,6 +264,28 @@ namespace Fux.Building.Phases
                 case A.TypeHint typeHint:
                     ResolveType(scope, typeHint.Type);
                     break;
+                case A.RecordPattern recordPattern:
+                    foreach (var field in recordPattern.Fields)
+                    {
+                        ResolveExpr(scope, field);
+                    }
+                    break;
+                case A.FieldPattern fieldPattern:
+                    ResolveExpr(scope, fieldPattern.Pattern);
+                    break;
+                case A.Parameters parameters:
+                    {
+                        foreach (var parameter in parameters)
+                        {
+                            ResolveExpr(scope, parameter);
+                        }
+                        break;
+                    }
+                case A.Parameter parameter:
+                    {
+                        ResolveExpr(scope, parameter.Expression);
+                        break;
+                    }
                 default:
                     Assert(false);
                     throw new NotImplementedException();
@@ -290,6 +319,8 @@ namespace Fux.Building.Phases
             var infix = chain.Resolve();
 
             chain.Resolved = infix;
+
+            Assert(chain.Resolved is A.InfixExpr);
         }
     }
 }

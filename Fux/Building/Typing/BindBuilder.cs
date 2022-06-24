@@ -69,14 +69,20 @@ namespace Fux.Building.Typing
                                 env = env.Insert(term, new W.Polytype(parameterType));
                                 break;
                             }
-                        case W.Type.Tuple2:
-                            break;
                         case W.Type.Function:
                             {
                                 var term = new W.TermVariable(parameterName.Text);
                                 env = env.Insert(term, new W.Polytype(parameterType));
                                 break;
                             }
+                        case W.Type.Concrete:
+                            {
+                                var term = new W.TermVariable(parameterName.Text);
+                                env = env.Insert(term, new W.Polytype(parameterType));
+                                break;
+                            }
+                        case W.Type.Tuple2:
+                            break;
                         default:
                             Assert(false);
                             throw new NotImplementedException();

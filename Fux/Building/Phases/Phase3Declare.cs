@@ -446,35 +446,5 @@ namespace Fux.Building.Phases
                 yield return new A.Parameter(pattern.Alias.SingleLower());
             }
         }
-
-#if false
-        static void ScopeParameter(LetScope scope, Expression expression)
-        {
-            switch (expression)
-            {
-                case Identifier identifier when identifier.IsSingleLower:
-                    scope.Add(identifier);
-                    break;
-                case SequenceExpr sequence:
-                    foreach (var expr in sequence)
-                    {
-                        ScopeParameter(scope, expr);
-                    }
-                    break;
-                case TupleExpr tuple:
-                    foreach (var expr in tuple)
-                    {
-                        ScopeParameter(scope, expr);
-                    }
-                    break;
-                case Identifier identifier when identifier.IsMultiUpper:
-                case Wildcard:
-                    break;
-                default:
-                    Assert(false);
-                    throw new NotImplementedException();
-            }
-        }
-#endif
     }
 }

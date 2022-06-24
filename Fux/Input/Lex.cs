@@ -146,6 +146,7 @@
             public const string Float = "Float";
             public const string Bool = "Bool";
             public const string String = "String";
+            public const string Char = "Char";
         }
 
         public static class Term

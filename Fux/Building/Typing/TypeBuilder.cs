@@ -46,10 +46,13 @@ namespace Fux.Building.Typing
                     return new W.Type.Float();
                 case A.Type.Primitive.String:
                     return new W.Type.String();
+                case A.Type.Primitive.Char:
+                    return new W.Type.Char();
                 case A.Type.Concrete concrete:
-                    return new W.Type.Primitive(concrete.Name.Text);
-                case A.Type.Union:
-                    break;
+                    return new W.Type.Concrete(concrete.Name.Text);
+                case A.Type.Union union:
+                    Assert(union.Arguments.All(a => a is A.Type.Concrete));
+                    return new W.Type.Concrete(union.Name.Text, union.Arguments.Cast<A.Type.Concrete>().Select(a => new W.Type.Concrete(a.Name.Text)).ToArray());
             }
             throw new NotImplementedException($"type not implemented: '{type.GetType().FullName} - {type}'");
 

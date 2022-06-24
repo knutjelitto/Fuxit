@@ -1,4 +1,4 @@
-﻿namespace Fux.Building.Phases
+﻿namespace Fux.Building
 {
     internal class Collector
     {
@@ -16,6 +16,7 @@
         public List<A.VarDecl> DeclareVar { get; } = new();
         public List<A.TypeHint> DeclareHint { get; } = new();
         public List<A.NativeDecl> NativeDecl { get; } = new();
+        public List<A.Expression> Pattern { get; } = new();
 
         public Stopwatch ScanTime { get; } = new();
         public Stopwatch ParseTime { get; } = new();
@@ -27,14 +28,35 @@
 
         public void Write()
         {
+            //Assert(A.OpChain.OpChains == A.OpChain.ResolvedOpChains);
+
             Write("all-module.text", Module);
             Write("all-import.text", Import);
             WriteCompact("all-decl-type.text", DeclareType, writePP);
             Write("all-decl-alias.text", DeclareAlias);
             Write("all-decl-infix.text", DeclareInfix);
             WriteCompact("all-decl-var.text", DeclareVar, writeStr);
-            Write("all-decl-hint.text", DeclareHint);
+            WriteCompact("all-decl-hint.text", DeclareHint, writeStr);
             WriteCompact("all-native.text", NativeDecl, writePP);
+
+            WritePatterns("all-pattern.text");
+
+            void WritePatterns(string name)
+            {
+                var patterns = Pattern
+                    .Select(p => p.ToString())
+                    .OrderBy(s => s)
+                    .Distinct()
+                    .ToList();
+
+                using (var writer = name.Writer())
+                {
+                    foreach (var pattern in patterns)
+                    {
+                        writer.WriteLine($"{pattern}");
+                    }
+                }
+            }
 
             void Write<T>(string name, IEnumerable<T> expressions)
                 where T : A.Declaration
@@ -68,7 +90,6 @@
                     writer.WriteLine();
                 }
             }
-
 
             void writeStr(Writer writer, A.Expression expr)
             {

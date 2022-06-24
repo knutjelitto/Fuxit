@@ -346,73 +346,6 @@ namespace Fux.Input
             });
         }
 
-        private A.Type UnionInstantiation(TokensCursor cursor)
-        {
-            return cursor.Scope<A.Type>(cursor =>
-            {
-                Assert(cursor.Is(Lex.UpperId));
-
-                var name = Identifier(cursor).MultiUpper();
-
-                var arguments = new List<A.Type>();
-
-                do
-                {
-                    while (cursor.More() && !cursor.TerminatesSomething)
-                    {
-                        var argument = TypeArgument(cursor);
-
-                        arguments.Add(argument);
-                    }
-                }
-                while (cursor.More() && !cursor.TerminatesSomething);
-
-                if (arguments.Count == 0)
-                {
-                    switch (name.Text)
-                    {
-                        case Lex.Primitive.Int:
-                            return new A.Type.Primitive.Int();
-                        case Lex.Primitive.Float:
-                            return new A.Type.Primitive.Float();
-                        case Lex.Primitive.Bool:
-                            return new A.Type.Primitive.Bool();
-                        case Lex.Primitive.String:
-                            return new A.Type.Primitive.String();
-                    }
-
-                    return new A.Type.Concrete(name);
-                }
-
-                return new A.Type.Union(name, new A.TypeArguments(arguments));
-            });
-        }
-
-        private A.Type.Constructor Constructor(TokensCursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                Assert(cursor.Is(Lex.UpperId));
-
-                var name = Identifier(cursor).MultiUpper();
-
-                var arguments = new List<A.Type>();
-
-                do
-                {
-                    while (cursor.More() && !cursor.TerminatesSomething)
-                    {
-                        var argument = TypeArgument(cursor);
-
-                        arguments.Add(argument);
-                    }
-                }
-                while (cursor.More() && !cursor.TerminatesSomething);
-
-                return new A.Type.Constructor(name, new A.TypeArguments(arguments));
-            });
-        }
-
         private A.Type TypeArgument(TokensCursor cursor)
         {
             return cursor.Scope(cursor =>
@@ -440,6 +373,71 @@ namespace Fux.Input
 
                 Assert(false);
                 throw new NotImplementedException();
+            });
+        }
+
+        private A.Type Construction(TokensCursor cursor)
+        {
+            return cursor.Scope<A.Type>(cursor =>
+            {
+                var name = Identifier(cursor).MultiUpper();
+
+                var arguments = new A.TypeArguments();
+
+                do
+                {
+                    while (cursor.More() && !cursor.TerminatesSomething)
+                    {
+                        arguments.Add(TypeArgument(cursor));
+                    }
+                }
+                while (cursor.More() && !cursor.TerminatesSomething);
+
+                if (arguments.Count == 0)
+                {
+                    switch (name.Text)
+                    {
+                        case Lex.Primitive.Int:
+                            return new A.Type.Primitive.Int();
+                        case Lex.Primitive.Float:
+                            return new A.Type.Primitive.Float();
+                        case Lex.Primitive.Bool:
+                            return new A.Type.Primitive.Bool();
+                        case Lex.Primitive.String:
+                            return new A.Type.Primitive.String();
+                        case Lex.Primitive.Char:
+                            return new A.Type.Primitive.Char();
+                    }
+
+                    return new A.Type.Concrete(name);
+                }
+
+                return new A.Type.Union(name, arguments);
+            });
+        }
+
+        private A.Type.Constructor Constructor(TokensCursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                Assert(cursor.Is(Lex.UpperId));
+
+                var name = Identifier(cursor).MultiUpper();
+
+                var arguments = new List<A.Type>();
+
+                do
+                {
+                    while (cursor.More() && !cursor.TerminatesSomething)
+                    {
+                        var argument = TypeArgument(cursor);
+
+                        arguments.Add(argument);
+                    }
+                }
+                while (cursor.More() && !cursor.TerminatesSomething);
+
+                return new A.Type.Constructor(name, new A.TypeArguments(arguments));
             });
         }
 
@@ -559,7 +557,7 @@ namespace Fux.Input
                 }
                 else if (cursor.Is(Lex.UpperId))
                 {
-                    return UnionInstantiation(cursor);
+                    return Construction(cursor);
                 }
                 else if (cursor.Is(Lex.LowerId))
                 {
@@ -835,15 +833,16 @@ namespace Fux.Input
 
         private A.Expression Expression(TokensCursor cursor)
         {
-            return OperatorExpr(cursor);
+            return InfixExpr(cursor);
         }
 
-        private A.Expression OperatorExpr(TokensCursor cursor)
+        private A.Expression InfixExpr(TokensCursor cursor)
         {
             return cursor.Scope(cursor =>
             {
-                var expr = PrefixExpr(cursor);
-                if (cursor.Is(Lex.Operator))
+                var expr = Sequence(cursor, false);
+                
+                if (cursor.StartsInfix)
                 {
                     var opExprs = new List<A.OpExpr>();
 
@@ -851,13 +850,42 @@ namespace Fux.Input
                     {
                         var op = new A.OperatorSymbol(cursor.Swallow(Lex.Operator));
 
-                        opExprs.Add(new A.OpExpr(op, PrefixExpr(cursor)));
+                        opExprs.Add(new A.OpExpr(op, Sequence(cursor, false)));
                     }
 
                     return new A.OpChain(expr, opExprs);
                 }
 
                 return expr;
+            });
+        }
+
+        private A.Expression Sequence(TokensCursor cursor, bool always)
+        {
+            return cursor.Scope(cursor =>
+            {
+                var expressions = new List<A.Expression>();
+
+                do
+                {
+                    if (cursor.Current.Line == 261)
+                    {
+                        Assert(true);
+                    }
+                    var expression = PrefixExpr(cursor);
+
+                    expressions.Add(expression);
+                }
+                while (cursor.StartsAtomic || cursor.StartsPrefix);
+
+                Assert(expressions.Count >= 1);
+
+                if (!always && expressions.Count == 1)
+                {
+                    return expressions[0];
+                }
+
+                return new A.SequenceExpr(expressions);
             });
         }
 
@@ -868,10 +896,10 @@ namespace Fux.Input
             {
                 A.Expression app;
 
-                if (cursor.IsOperator())
+                if (cursor.StartsPrefix)
                 {
                     var op = new A.OperatorSymbol(cursor.Advance());
-                    var argument = Sequence(cursor, false);
+                    var argument = Compound(cursor);
 
                     switch (op.Text)
                     {
@@ -886,35 +914,10 @@ namespace Fux.Input
                 }
                 else
                 {
-                    app = Sequence(cursor, false);
+                    app = Compound(cursor);
                 }
 
                 return app;
-            });
-        }
-
-        private A.Expression Sequence(TokensCursor cursor, bool always)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var expressions = new List<A.Expression>();
-
-                do
-                {
-                    var expression = Compound(cursor);
-
-                    expressions.Add(expression);
-                }
-                while (cursor.StartsAtomic);
-
-                Assert(expressions.Count >= 1);
-
-                if (!always && expressions.Count == 1)
-                {
-                    return expressions[0];
-                }
-
-                return new A.SequenceExpr(expressions);
             });
         }
 

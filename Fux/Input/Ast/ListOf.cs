@@ -5,6 +5,7 @@ namespace Fux.Input.Ast
     internal class ListOf<T> : Expression, IReadOnlyList<T>
     {
         protected readonly List<T> items;
+        protected bool frozen = false;
 
         public ListOf(IEnumerable<T> items)
         {
@@ -14,6 +15,20 @@ namespace Fux.Input.Ast
         public override void PP(Writer writer)
         {
             writer.Write(ToString()!);
+        }
+
+        protected void Add(T item)
+        {
+            if (frozen)
+            {
+                throw new InvalidOperationException($"ListOf<{typeof(T).Name}> is frozen ({this.GetType().Name})");
+            }
+            items.Add(item);
+        }
+
+        public void Freeze()
+        {
+            frozen = true;
         }
 
         public T this[int index] => items[index];

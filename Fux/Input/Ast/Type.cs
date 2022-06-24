@@ -37,6 +37,7 @@
             public sealed class Float : Primitive { public Float() : base(Lex.Primitive.Float) { } }
             public sealed class Bool : Primitive { public Bool() : base(Lex.Primitive.Bool) { } }
             public sealed class String : Primitive { public String() : base(Lex.Primitive.String) { } }
+            public sealed class Char : Primitive { public Char() : base(Lex.Primitive.Char) { } }
 
             public override string ToString()
             {

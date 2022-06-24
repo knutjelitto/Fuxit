@@ -17,6 +17,28 @@ namespace Fux.Input
         public Tokens Tokens { get; }
         public bool StartsAtomic => More() && Current.Lex.StartsAtomic;
 
+        public bool StartsPrefix
+        {
+            get
+            {
+                return
+                    this.IsOperator() &&
+                    Current.Text == "-" &&
+                    Offset + 1 < Tokens.Count &&
+                    !Tokens[Offset + 1].WhitesBefore;
+            }
+        }
+
+        public bool StartsInfix
+        {
+            get
+            {
+                return
+                    this.IsOperator() &&
+                    !StartsPrefix;
+            }
+        }
+
         public int State => Offset;
 
         public void Reset(int state)
@@ -31,6 +53,16 @@ namespace Fux.Input
                 Assert(Offset < Tokens.Count);
 
                 return Tokens[Offset];
+            }
+        }
+
+        public Token Next
+        {
+            get
+            {
+                Assert(Offset + 1 < Tokens.Count);
+
+                return Tokens[Offset + 1];
             }
         }
 

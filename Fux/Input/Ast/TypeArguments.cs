@@ -12,6 +12,11 @@
         {
         }
 
+        public new void Add(Type type)
+        {
+            base.Add(type);
+        }
+
         public override string ToString()
         {
             return String.Join(' ', this);

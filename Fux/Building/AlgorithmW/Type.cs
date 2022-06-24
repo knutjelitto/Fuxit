@@ -30,7 +30,24 @@
             }
         }
 
-        internal record Primitive(string Name) : Type
+        internal record Concrete(string Name, IReadOnlyList<Concrete>? Arguments = null) : Type
+        {
+            public override string ToString() => $"{Name}{arguments}";
+
+            private string arguments
+            {
+                get
+                {
+                    if (Arguments != null && Arguments.Count > 0)
+                    {
+                        return $"<{string.Join(", ", Arguments)}>";
+                    }
+                    return "";
+                }
+            }
+        }
+
+        internal abstract record Primitive(string Name) : Type
         {
             public override string ToString() => Name;
         }
@@ -51,6 +68,11 @@
         }
 
         internal sealed record String() : Primitive(Lex.Primitive.String)
+        {
+            public override string ToString() => Name;
+        }
+
+        internal sealed record Char() : Primitive(Lex.Primitive.Char)
         {
             public override string ToString() => Name;
         }

@@ -1,4 +1,4 @@
-﻿namespace Fux.Building.Phases
+﻿namespace Fux.Building
 {
     internal class Config
     {

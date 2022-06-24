@@ -27,7 +27,7 @@ namespace Fux.Building.Typing
         {
             try
             {
-                Writer.Write($"{no,4} {var.Name}");
+                Writer.Write($"{no,4}. {var.Name}");
                 if (var.Parameters.Count > 0)
                 {
                     Writer.Write($" {var.Parameters}");
@@ -49,7 +49,8 @@ namespace Fux.Building.Typing
             }
             catch (Exception any)
             {
-                var line = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).First().TrimStart();
+                var lines = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var line = lines.First().TrimStart();
 
                 Writer.WriteLine($"!!!! {any.Message}");
                 Writer.WriteLine($"     {line}");
@@ -74,9 +75,9 @@ namespace Fux.Building.Typing
 
             var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
 
-            var variable = new W.Variable(name);
-            var def = new W.DefExpression(variable, wexpr);
-            var unify = new W.UnifyExpression(wtype, wexpr);
+            var variable = new W.Expr.Variable(name);
+            var def = new W.Expr.Def(variable, wexpr);
+            var unify = new W.Expr.Unify(wtype, wexpr);
 
             Writer.Indent(() =>
             {
