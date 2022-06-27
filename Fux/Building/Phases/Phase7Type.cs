@@ -11,10 +11,10 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
-        private const int underInvestigation = 1; //328;
+        private const int underInvestigation = 127; //328;
         private static int resolvedCount = 0;
         private const int resolvedCountMin = 1 + 0; //326;
-        private const int resolvedCountMax = resolvedCountMin - 1 + 100; //45;
+        private const int resolvedCountMax = resolvedCountMin - 1 + 250; //45;
 
         //private static Func<int, bool> Qualify = (no => no == huntingFor);
         private static readonly Func<int, bool> Qualify = no => true;

@@ -165,7 +165,7 @@
             public const string Wildcard = "_";
             public const string Unit = "()";
             public const string Empty = "[]";
-            public const string ListConstruct = "::";
+            public const string Cons = "::";
             public const string ListCons = "(::)";
         }
 

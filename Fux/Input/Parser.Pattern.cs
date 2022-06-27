@@ -40,7 +40,7 @@ namespace Fux.Input
         {
             var pattern = PatternX(cursor);
 
-            if (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.ListConstruct))
+            if (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.Cons))
             {
                 var patterns = new List<A.Pattern> { pattern };
 
@@ -52,7 +52,7 @@ namespace Fux.Input
 
                     patterns.Add(patternx);
                 }
-                while (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.ListConstruct));
+                while (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.Cons));
 
                 return new A.Pattern.Destruct(patterns);
             }
@@ -148,7 +148,7 @@ namespace Fux.Input
         {
             var patterns = new List<A.Pattern>();
 
-            while (!cursor.TerminatesSomething && cursor.IsNot(Lex.KwAs) && !cursor.IsWeak(Lex.Symbol.ListConstruct))
+            while (!cursor.TerminatesSomething && cursor.IsNot(Lex.KwAs) && !cursor.IsWeak(Lex.Symbol.Cons))
             {
                 var pattern = Atomic(cursor);
 
@@ -178,7 +178,7 @@ namespace Fux.Input
 
             var patterns = new List<A.Pattern>();
 
-            while (!cursor.TerminatesSomething && cursor.IsNot(Lex.KwAs) && !cursor.IsWeak(Lex.Symbol.ListConstruct))
+            while (!cursor.TerminatesSomething && cursor.IsNot(Lex.KwAs) && !cursor.IsWeak(Lex.Symbol.Cons))
             {
                 var pattern = Atomic(cursor);
 

@@ -10,6 +10,11 @@ namespace Fux.Building.AlgorithmW
 
         public Substitution(ImmutableDictionary<TypeVariable, Type> map) => this.map = map;
 
+        public Substitution(TypeVariable variable, Type type)
+            : this(ImmutableDictionary.Create<TypeVariable, Type>().Add(variable, type))
+        {
+        }
+
         public Type? TryGet(TypeVariable typeVar) => map.TryGetValue(typeVar, out var type) ? type : null;
 
         public Substitution Insert(TypeVariable typeVar, Type type) => new(map.Add(typeVar, type));
@@ -35,11 +40,12 @@ namespace Fux.Building.AlgorithmW
 
         public override string ToString()
         {
-            if (map.Count == 0)
+            return $"Substitution{{{string.Join(", ", Enumerate().Select(kv => str(kv)))}}}";
+
+            string str(KeyValuePair<TypeVariable, Type> kv)
             {
-                return $"Substitution.Empty";
+                return $"{kv.Key}->{kv.Value}";
             }
-            return $"Substitution[{map.Count}]";
         }
     }
 

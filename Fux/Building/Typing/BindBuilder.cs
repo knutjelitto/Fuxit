@@ -30,7 +30,7 @@ namespace Fux.Building.Typing
 
             var (types, result) = Flatten(type);
 
-            Assert(parameters.Count <= types.Count);
+            //Assert(parameters.Count <= types.Count);
 
             for (var p = parameters.Count - 1; p >= 0; --p)
             {
@@ -197,7 +197,7 @@ namespace Fux.Building.Typing
                     }
                     break;
                 default:
-                    Assert(false);
+                    //Assert(false);
                     throw new NotImplementedException();
             }
         }

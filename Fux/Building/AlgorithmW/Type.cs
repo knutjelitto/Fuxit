@@ -6,7 +6,7 @@ namespace Fux.Building.AlgorithmW
     {
         internal record Variable(TypeVariable TypeVar) : Type
         {
-            public override string ToString() => TypeVar.ToString();
+            public override string ToString() => $"var({TypeVar})";
         }
 
         internal sealed record Function(Type InType, Type OutType) : Type

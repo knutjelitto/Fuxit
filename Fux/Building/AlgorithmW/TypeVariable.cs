@@ -2,16 +2,14 @@
 {
     public sealed class TypeVariable
     {
-        public TypeVariable(int id, string? name = null)
+        public TypeVariable(int id)
         {
             ID = id;
-            Name = name;
         }
 
         public int ID { get; }
-        public string? Name { get; }
 
-        public override string ToString() => Name == null ? $"'t{ID}" : $"{Name}";
+        public override string ToString() => $"'t{ID}";
         public override bool Equals(object? obj) => obj is TypeVariable other && other.ID == ID;
         public override int GetHashCode() => ID.GetHashCode();
     }

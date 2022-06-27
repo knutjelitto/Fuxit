@@ -67,7 +67,7 @@ namespace Fux.Building.Typing
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
-                    typeVar = env.Generator.GetNext(text).TypeVar;
+                    typeVar = env.Generator.GetNext().TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
                 }

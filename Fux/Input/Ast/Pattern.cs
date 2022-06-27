@@ -208,7 +208,7 @@
 
             public IReadOnlyList<Pattern> Patterns { get; }
 
-            public override string ToString() => $"{string.Join($" {Lex.Symbol.ListConstruct} ", Patterns)}";
+            public override string ToString() => $"{string.Join($" {Lex.Symbol.Cons} ", Patterns)}";
         }
 
     }

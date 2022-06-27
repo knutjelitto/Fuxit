@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-#pragma warning disable IDE1006 // Naming Styles
+﻿#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0051 // Remove unused private members
 
 namespace Fux.Building.AlgorithmW
 {
@@ -29,16 +24,16 @@ namespace Fux.Building.AlgorithmW
                     writer.Indent(() =>
                     {
                         WriteLine($"{expr.Term} =");
-                        Indent(expr.Exp1);
+                        Indent(Sugar(expr.Exp1));
                     });
                     WriteLine($"{Lex.KwIn}");
                     writer.Indent(() =>
                     {
-                        WriteLine($"{expr.Exp2}");
+                        WriteLine(Sugar(expr.Exp2));
                     });
                     break;
                 case Expr.Application expr:
-                    WriteLine(Sugar(expr));
+                    WriteLine(SugarApp(expr));
                     break;
                 default:
                     WriteLine(top);
@@ -46,7 +41,18 @@ namespace Fux.Building.AlgorithmW
             }
         }
 
-        private Expr.MultiApplication Sugar(Expr.Application app)
+        private Expr Sugar(Expr expr)
+        {
+            switch (expr)
+            {
+                case Expr.Application app:
+                    return SugarApp(app);
+                default:
+                    return expr;
+            }
+        }
+
+        private Expr.MultiApplication SugarApp(Expr.Application app)
         {
             return new Expr.MultiApplication(multi(app).ToArray());
 
@@ -61,9 +67,10 @@ namespace Fux.Building.AlgorithmW
                 }
                 else
                 {
-                    yield return expr.Exp1;
+                    yield return Sugar(expr.Exp1);
                 }
-                yield return expr.Exp2;
+                
+                yield return Sugar(expr.Exp2);
             }
         }
 

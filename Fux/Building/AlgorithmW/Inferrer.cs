@@ -95,27 +95,23 @@ namespace Fux.Building.AlgorithmW
                                 Expr.Literal.Float(_) => new Type.Float(),
                                 Expr.Literal.Bool(_) => new Type.Bool(),
                                 Expr.Literal.String(_) => new Type.String(),
+                                Expr.Literal.Char(_) => new Type.Char(),
                                 _ => throw new WError($"can not infer - unknown literal type '{literal}'"),
                             });
-                    }
-
-                case Expr.Empty empty: // the empty list [] / alias list bottom
-                    {
-                        return (Substitution.Empty(), new Type.List(env.Generator.GetNext()));
                     }
 
                 case Expr.Iff({ } cond, { } expr1, { } expr2):
                     {
                         {
-                            var (_, t1) = InferType(cond, env, investigated);
-                            var t2 = new Type.Bool();
-                            _ = MostGeneralUnifier(t1, t2);
+                            var (_, type1) = InferType(cond, env, investigated);
+                            var type2 = new Type.Bool();
+                            _ = MostGeneralUnifier(type1, type2);
                         }
                         {
-                            var (s1, t1) = InferType(expr1, env, investigated);
-                            var (s2, t2) = InferType(expr2, env, investigated);
-                            var s3 = MostGeneralUnifier(t1, t2);
-                            return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3));
+                            var (s1, type1) = InferType(expr1, env, investigated);
+                            var (s2, type2) = InferType(expr2, env, investigated);
+                            var s3 = MostGeneralUnifier(type1, type2);
+                            return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(type1, s3));
                         }
                     }
 
@@ -126,9 +122,7 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case Expr.Abstraction({ } term, { } exp):
                     {
-                        var name = (env.TryGet(term)?.Type as Type.Variable)?.TypeVar.Name;
-
-                        var varType = env.Generator.GetNext(name);
+                        var varType = env.Generator.GetNext();
                         var nenv = env.Remove(term).Insert(term, new Polytype(varType));
                         var (substitution, type) = InferType(exp, nenv, investigated);
                         return (substitution, new Type.Function(ApplySubstitution(varType, substitution), type));
@@ -146,15 +140,26 @@ namespace Fux.Building.AlgorithmW
                         var (s1, t1) = InferType(callee, env, investigated);
                         var (s2, t2) = InferType(argument, ApplySubstitution(env, s1), investigated);
 
-                        string? name = null;
-                        if (t1 is Type.Function func && func.OutType is Type.Variable variable)
-                        {
-                            name = variable.TypeVar.Name;
-                        }
-
-                        var varType = env.Generator.GetNext(name);
-                        var s3 = MostGeneralUnifier(type1: ApplySubstitution(t1, s2), type2: new Type.Function(t2, varType));
+                        var varType = env.Generator.GetNext();
+                        var s3 = MostGeneralUnifier(ApplySubstitution(t1, s2), new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3));
+                    }
+
+                case Expr.Empty: // the empty list [] / alias list bottom
+                    {
+                        return (Substitution.Empty(), new Type.List(env.Generator.GetNext()));
+                    }
+
+                case Expr.Cons({ } first, { } rest):
+                    {
+                        var (s1, firstType) = InferType(first, env, investigated);
+                        var (s2, restType) = ((Substitution, Type.List))InferType(rest, ApplySubstitution(env, s1), investigated);
+
+                        var s3 = MostGeneralUnifier(restType.Type, firstType);
+
+                        return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(restType, s3));
+
+                        break;
                     }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
@@ -162,24 +167,33 @@ namespace Fux.Building.AlgorithmW
 
         private static Type ApplySubstitution(Type type, Substitution substitution)
         {
-            return type switch
+            switch (type)
             {
                 // If this type references a variable that is in the substitution, return it's
                 // replacement type. Otherwise, return the existing type.
-                Type.Variable({ } tv) => substitution.TryGet(tv) ?? type,
+                case Type.Variable({ } tv):
+                    return substitution.TryGet(tv) ?? type;
 
                 // To apply to a function, we simply apply to each of the input and output.
-                Type.Function({ } t1, { } t2) => new Type.Function(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
+                case Type.Function({ } t1, { } t2):
+                    return new Type.Function(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution));
 
-                Type.Tuple2({ } t1, { } t2) => new Type.Tuple2(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution)),
+                case Type.Tuple2({ } t1, { } t2):
+                    return new Type.Tuple2(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution));
+
+                case Type.List({ } tl):
+                    return new Type.List(ApplySubstitution(tl, substitution));
 
                 // A primitive type is not changed by a substitution.
-                Type.Primitive => type,
+                case Type.Primitive:
+                    return type;
 
                 // A concrete type is not changed by a substitution.
-                Type.Concrete => type,
+                case Type.Concrete:
+                    return type;
 
-                _ => throw new InvalidOperationException($"can not infer - unknown type '{type.GetType().FullName} - {type}'")
+                default:
+                    throw new InvalidOperationException($"can not infer - unknown type '{type.GetType().FullName} - {type}'");
             };
         }
 
@@ -277,6 +291,11 @@ namespace Fux.Building.AlgorithmW
                         return Substitution.Empty();
                     }
 
+                case (Type.List list1, Type.List list2):
+                    {
+                        return Substitution.Empty();
+                    }
+
                 // Otherwise, the types cannot be unified.
                 default:
                     break;
@@ -309,6 +328,39 @@ namespace Fux.Building.AlgorithmW
 
         private static HashSet<TypeVariable> GetFreeTypeVariables(Type type)
         {
+#if true
+            switch (type)
+            {
+                // For a type variable, there is one free variable: the variable itself.
+                case Type.Variable({ } typeVar):
+                    return new HashSet<TypeVariable>(new[] { typeVar });
+
+                // For functions, we take the union of the free type variables of the input and output.
+                case Type.Function({ } inType, { } outType):
+                    return union(GetFreeTypeVariables(inType), GetFreeTypeVariables(outType));
+
+                case Type.Tuple2({ } type1, { } type2):
+                    return union(GetFreeTypeVariables(type1), GetFreeTypeVariables(type2));
+
+                // Primitive types have no free variables
+                case Type.Primitive:
+                    return new HashSet<TypeVariable>();
+
+                // Concrete types have no free variables
+                case Type.Concrete:
+                    return new HashSet<TypeVariable>();
+
+                case Type.List list:
+                    {
+                        return new HashSet<TypeVariable>(GetFreeTypeVariables(list.Type));
+                    }
+
+                default:
+                    break;
+            };
+
+            throw new InvalidOperationException($"unexpected type '{type}'");
+#else
             return type switch
             {
                 // For a type variable, there is one free variable: the variable itself.
@@ -327,6 +379,7 @@ namespace Fux.Building.AlgorithmW
 
                 _ => throw new InvalidOperationException($"unexpected type '{type}'")
             };
+#endif
 
             static HashSet<TypeVariable> union(HashSet<TypeVariable> a, HashSet<TypeVariable> b)
             {
@@ -372,7 +425,7 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private static Type InstantiateType(Polytype polytype, Environment environment)
         {
-            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext(typeVar.Name))).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
+            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
         }
@@ -390,9 +443,9 @@ namespace Fux.Building.AlgorithmW
 
         public Environment GetDefaultEnvironment(TypeVarGenerator typeVarGenerator)
         {
-            var number1 = typeVarGenerator.GetNext("number");
-            var number2 = typeVarGenerator.GetNext("number");
-            var number3 = typeVarGenerator.GetNext("number");
+            var number1 = typeVarGenerator.GetNext();
+            var number2 = typeVarGenerator.GetNext();
+            var number3 = typeVarGenerator.GetNext();
 
             return Environment.Initial(typeVarGenerator,
 

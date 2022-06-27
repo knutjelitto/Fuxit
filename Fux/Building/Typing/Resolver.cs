@@ -1,6 +1,4 @@
-﻿using static Fux.Building.AlgorithmW.Expr;
-
-using W = Fux.Building.AlgorithmW;
+﻿using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Typing
 {
@@ -81,7 +79,7 @@ namespace Fux.Building.Typing
             var variable = new W.Expr.Variable(var.Name);
             env = env.Insert(variable.Term, varType);
 
-            var varExpr = exprBuilder.Build(var.Expression, ref env);
+            var varExpr = exprBuilder.Build(ref env, var.Expression, investigated);
 
             var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
 
@@ -94,26 +92,23 @@ namespace Fux.Building.Typing
             });
         }
 
-        private void More(bool investigated, W.Expr expr, W.Environment env)
+        private void PrintEnv(bool investigated, W.Environment env)
         {
             if (investigated)
             {
+                Writer.WriteLine();
                 foreach (var (var, polytype) in env.Enumerate())
                 {
                     Writer.WriteLine($"{var}: {polytype}");
                 }
-                Writer.WriteLine();
-
-                Pretty.Print(expr);
-                Writer.WriteLine();
             }
         }
 
         private void Resolve(W.Inferrer inferrer, W.Environment env, W.Expr expression, bool investigated)
-{
-            More(investigated, expression, env);
-
-            Writer.WriteLine($"INPUT: {expression}");
+        {
+            Pretty.Print(expression);
+            PrintEnv(investigated, env);
+            Writer.WriteLine();
             var type = inferrer.Run(expression, env, investigated);
             Writer.WriteLine($"OUTPUT: {type}");
         }

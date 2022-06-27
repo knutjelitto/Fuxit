@@ -15,7 +15,7 @@
 
         internal sealed record MultiApplication(IReadOnlyList<Expr> Exprs) : Expr
         {
-            public override string ToString() => $"(apply {string.Join(" ", Exprs)})";
+            public override string ToString() => $"({string.Join(" ", Exprs)})";
         }
 
         internal sealed record Abstraction(TermVariable Term, Expr Exp) : Expr
@@ -50,9 +50,16 @@
             public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
         }
 
-        internal sealed record Empty : Expr
+        internal abstract record List : Expr;
+
+        internal sealed record Empty : List
         {
             public override string ToString() => $"{Lex.Symbol.Empty}";
+        }
+
+        internal sealed record Cons(Expr First, List Rest) : List
+        {
+            public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
         }
 
         internal sealed record Native(A.NativeDecl Nat) : Expr
@@ -95,6 +102,11 @@
             internal sealed record String(string Value) : Literal
             {
                 public override string ToString() => $"\"{Value}\"";
+            }
+
+            internal sealed record Char(string Value) : Literal
+            {
+                public override string ToString() => $"\'{Value}\'";
             }
         }
     }
