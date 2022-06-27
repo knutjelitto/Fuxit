@@ -22,6 +22,7 @@ namespace Fux.Building
         public string Name { get; }
         public bool IsJs { get; }
         public bool IsElm => !IsJs;
+        public bool IsCore => Package.IsCore;
         public string NickName { get; }
         public string FileName { get; }
 
@@ -36,7 +37,7 @@ namespace Fux.Building
         {
             var fullFileName = Folder.Combine(Package.RootPath, FileName);
 
-            return new StringSource(NickName, fullFileName, File.ReadAllText(fullFileName, Encoding.UTF8));
+            return new StringSource(NickName, fullFileName, IO.File.ReadAllText(fullFileName, Encoding.UTF8));
         }
 
         public override string ToString() => Name;

@@ -41,7 +41,7 @@ namespace Fux.Building
 
                 var root = Folder.Combine(package.RootPath, "src");
 
-                foreach (var file in Directory.GetFiles(root, "*.elm", SearchOption.AllDirectories).Select(f => f.Replace('\\', '/')))
+                foreach (var file in IO.Directory.GetFiles(root, "*.elm", IO.SearchOption.AllDirectories).Select(f => f.Replace('\\', '/')))
                 {
                     if (file.Contains("/src/Examples/") || file.Contains("/src/DEPRECATED/"))
                     {
@@ -63,7 +63,7 @@ namespace Fux.Building
                     }
                 }
 
-                foreach (var file in Directory.GetFiles(root, "*.js", SearchOption.AllDirectories))
+                foreach (var file in IO.Directory.GetFiles(root, "*.js", IO.SearchOption.AllDirectories))
                 {
                     var name = file[(root.Name.Length + 1)..^3].Replace('\\', '.');
 

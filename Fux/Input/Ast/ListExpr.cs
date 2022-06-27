@@ -1,25 +1,16 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class ListExpr : ListOf<Expression>
+    internal class ListExpr : ListOf<Expr>
     {
-        public ListExpr(Token left, Token right, IReadOnlyList<Expression> expressions)
+        public ListExpr(IReadOnlyList<Expr> expressions)
             : base(expressions)
         {
-            Left = left;
-            Right = right;
         }
-
-        public Token Left { get; }
-        public Token Right { get; }
 
         public override string ToString()
         {
-            if (Count == 0)
-            {
-                return $"{Left} {Right}";
-            }
             var joined = string.Join(", ", this);
-            return $"{Left} {joined} {Right}";
+            return $"{Lex.LBracket}{joined}{Lex.RBracket}";
         }
 
         public override void PP(Writer writer)

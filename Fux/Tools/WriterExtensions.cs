@@ -7,8 +7,8 @@
         public static string File(string filename)
         {
             var path = Folder.Combine(Temp.TempPath(top), filename);
-            var dir = Path.GetDirectoryName(path)!;
-            Directory.CreateDirectory(dir);
+            var dir = IO.Path.GetDirectoryName(path)!;
+            IO.Directory.CreateDirectory(dir);
 
             return path;
         }

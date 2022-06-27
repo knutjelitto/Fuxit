@@ -1,4 +1,6 @@
-﻿using W = Fux.Building.AlgorithmW;
+﻿using static Fux.Building.AlgorithmW.Expr;
+
+using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Typing
 {
@@ -13,6 +15,7 @@ namespace Fux.Building.Typing
             Writer = writer;
             Package = package;
             Module = module;
+            Pretty = new W.Pretty(Writer);
 
             typeBuilder = new();
             exprBuilder = new(typeBuilder);
@@ -22,6 +25,7 @@ namespace Fux.Building.Typing
         public Writer Writer { get; }
         public Package Package { get; }
         public Module Module { get; }
+        public W.Pretty Pretty { get; }
 
         public void TypeVar(A.VarDecl var, int no, bool investigated)
         {
@@ -50,10 +54,16 @@ namespace Fux.Building.Typing
             catch (Exception any)
             {
                 var lines = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                var line = lines.First().TrimStart();
 
                 Writer.WriteLine($"!!!! {any.Message}");
-                Writer.WriteLine($"     {line}");
+                foreach (var line in lines)
+                {
+                    Writer.WriteLine($"     {line}");
+                    if (line.LastIndexOf(":line ") > 0)
+                    {
+                        break;
+                    }
+                }
                 Writer.WriteLine();
             }
         }
@@ -68,34 +78,41 @@ namespace Fux.Building.Typing
 
             var varType = typeBuilder.Build(env, var.Type);
 
-            var name = new W.TermVariable(var.Name.Text);
-            env = env.Insert(name, varType);
+            var variable = new W.Expr.Variable(var.Name);
+            env = env.Insert(variable.Term, varType);
 
             var varExpr = exprBuilder.Build(var.Expression, ref env);
 
             var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
 
-            var variable = new W.Expr.Variable(name);
             var def = new W.Expr.Def(variable, wexpr);
             var unify = new W.Expr.Unify(wtype, wexpr);
 
             Writer.Indent(() =>
             {
-                if (investigated)
-                {
-                    foreach (var (var, polytype) in env.Enumerate())
-                    {
-                        Writer.WriteLine($"{var}: {polytype}");
-                    }
-                    Writer.WriteLine();
-                }
                 Resolve(inferrer, env, unify, investigated);
             });
+        }
 
+        private void More(bool investigated, W.Expr expr, W.Environment env)
+        {
+            if (investigated)
+            {
+                foreach (var (var, polytype) in env.Enumerate())
+                {
+                    Writer.WriteLine($"{var}: {polytype}");
+                }
+                Writer.WriteLine();
+
+                Pretty.Print(expr);
+                Writer.WriteLine();
+            }
         }
 
         private void Resolve(W.Inferrer inferrer, W.Environment env, W.Expr expression, bool investigated)
-        {
+{
+            More(investigated, expression, env);
+
             Writer.WriteLine($"INPUT: {expression}");
             var type = inferrer.Run(expression, env, investigated);
             Writer.WriteLine($"OUTPUT: {type}");

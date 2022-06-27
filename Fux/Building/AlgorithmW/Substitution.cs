@@ -16,6 +16,8 @@ namespace Fux.Building.AlgorithmW
 
         public Substitution Remove(TypeVariable typeVar) => new(map.Remove(typeVar));
 
+        public Substitution RemoveRange(IEnumerable<TypeVariable> typeVars) => new(map.RemoveRange(typeVars));
+
         public IEnumerable<KeyValuePair<TypeVariable, Type>> Enumerate() => map;
 
         public Substitution UnionWith(Substitution other)

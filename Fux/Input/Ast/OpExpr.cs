@@ -2,14 +2,14 @@
 {
     internal class OpExpr
     {
-        public OpExpr(OperatorSymbol op, Expression expression)
+        public OpExpr(OperatorSymbol op, Expr expression)
         {
             Op = op;
             Expression = expression;
         }
 
         public OperatorSymbol Op { get; }
-        public Expression Expression { get; }
+        public Expr Expression { get; }
 
         public override string ToString()
         {

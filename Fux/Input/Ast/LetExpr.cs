@@ -2,16 +2,16 @@
 
 namespace Fux.Input.Ast
 {
-    internal class LetExpr : Expression
+    internal class LetExpr : Expr
     {
-        public LetExpr(IReadOnlyList<Expression> letExpressions, Expression inExpression)
+        public LetExpr(List<Expr> letExpressions, Expr inExpression)
         {
-            LetExpressions = letExpressions;
+            LetExpressions = letExpressions.ToArray();
             InExpression = inExpression;
         }
 
-        public IReadOnlyList<Expression> LetExpressions { get; }
-        public Expression InExpression { get; }
+        public IReadOnlyList<Expr> LetExpressions { get; }
+        public Expr InExpression { get; }
 
         public LetScope Scope { get; set; } = new();
 

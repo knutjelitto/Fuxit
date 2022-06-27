@@ -11,10 +11,10 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
-        private const int underInvestigation = 60;
+        private const int underInvestigation = 1; //328;
         private static int resolvedCount = 0;
-        private const int resolvedCountMin = 1 + 0;
-        private const int resolvedCountMax = resolvedCountMin - 1 + 101;
+        private const int resolvedCountMin = 1 + 0; //326;
+        private const int resolvedCountMax = resolvedCountMin - 1 + 100; //45;
 
         //private static Func<int, bool> Qualify = (no => no == huntingFor);
         private static readonly Func<int, bool> Qualify = no => true;
@@ -40,18 +40,18 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                Make(module);
+                MakeModule(module);
             }
         }
 
-        private void Make(Module module)
+        private void MakeModule(Module module)
         {
             Collector.TypeTime.Start();
-            Type(module);
+            Make(module);
             Collector.TypeTime.Stop();
         }
 
-        private void Type(Module module)
+        private void Make(Module module)
         {
             Assert(module.Ast != null);
 

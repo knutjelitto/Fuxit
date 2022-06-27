@@ -4,12 +4,18 @@
     {
         internal sealed record Variable(TermVariable Term) : Expr
         {
+            public Variable(A.Identifier name) : this(new TermVariable(name.Text)) { }
             public override string ToString() => Term;
         }
 
         internal sealed record Application(Expr Exp1, Expr Exp2) : Expr
         {
             public override string ToString() => $"(apply {Exp1} {Exp2})";
+        }
+
+        internal sealed record MultiApplication(IReadOnlyList<Expr> Exprs) : Expr
+        {
+            public override string ToString() => $"(apply {string.Join(" ", Exprs)})";
         }
 
         internal sealed record Abstraction(TermVariable Term, Expr Exp) : Expr
@@ -19,7 +25,7 @@
 
         internal sealed record Unify(Type Type, Expr Expr) : Expr
         {
-            public override string ToString() => $"(unify {Expr})";
+            public override string ToString() => $"{Expr}";
         }
 
         internal sealed record Def(Expr.Variable Var, Expr Expr) : Expr
@@ -42,6 +48,11 @@
         internal sealed record Tuple3(Expr Expr1, Expr Expr2, Expr Expr3) : Tuple(new Expr[] { Expr1, Expr2, Expr3 })
         {
             public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
+        }
+
+        internal sealed record Empty : Expr
+        {
+            public override string ToString() => $"{Lex.Symbol.Empty}";
         }
 
         internal sealed record Native(A.NativeDecl Nat) : Expr

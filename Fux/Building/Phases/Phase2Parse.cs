@@ -43,36 +43,17 @@ namespace Fux.Building.Phases
             Assert(module.Lines != null);
 
             var lexer = new ParseLexer(module.Source, module.Lines);
-            var parser = new Parser(Errors, lexer);
+            var parser = new Parser(module, Errors, lexer);
 
             try
             {
-                module.Ast = parser.Module();
+                module.Ast = parser.ParseModule();
 
                 Assert(module.Ast != null);
 
                 Collector.Module.Add(module.Ast.Header);
                 DumpAst(module);
 
-            }
-            catch (DiagnosticException diagnostic)
-            {
-                Errors.Add(diagnostic);
-
-                throw;
-            }
-        }
-
-        public A.ModuleAst? Parse(Source source)
-        {
-            var lexer = new Lexer(Errors, source);
-            var parser = new Parser(Errors, lexer);
-
-            try
-            {
-                var ast = parser.Module();
-
-                return ast;
             }
             catch (DiagnosticException diagnostic)
             {

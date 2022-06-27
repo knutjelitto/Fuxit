@@ -1,11 +1,11 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class OpChain : Expression
+    internal class OpChain : Expr
     {
         public static int OpChains = 0;
         public static int ResolvedOpChains = 0;
 
-        public OpChain(Expression first, IEnumerable<OpExpr> rest)
+        public OpChain(Expr first, IEnumerable<OpExpr> rest)
         {
             First = first;
             Rest = rest.ToArray();
@@ -13,10 +13,10 @@
             OpChains++;
         }
 
-        public Expression First { get; }
+        public Expr First { get; }
         public IReadOnlyList<OpExpr> Rest { get; }
 
-        public Expression Resolve()
+        public Expr Resolve()
         {
             Assert(Resolved == this);
 
@@ -27,7 +27,7 @@
             return resolved;
         }
 
-        private Expression Resolve(Expression lhs, int minPower, List<OpExpr> Rest)
+        private Expr Resolve(Expr lhs, int minPower, List<OpExpr> Rest)
         {
             var lhop = Rest[0].Op;
             var lh = (InfixDecl)lhop.Resolved!;

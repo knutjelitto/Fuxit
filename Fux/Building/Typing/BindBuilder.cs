@@ -132,7 +132,7 @@ namespace Fux.Building.Typing
             return BindIdentifiers(parameter.Expression).Where(id => id.IsSingleLower);
         }
 
-        private IEnumerable<A.Identifier> BindIdentifiers(A.Expression expression)
+        private IEnumerable<A.Identifier> BindIdentifiers(A.Expr expression)
         {
             switch (expression)
             {

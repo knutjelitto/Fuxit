@@ -19,12 +19,12 @@ namespace Fux.Building.Typing
 
             var wtype = Resolve(env, type);
 
-            return new W.Polytype(vars, wtype);
+            return new W.Polytype(wtype, vars);
         }
 
         private W.Type Resolve(W.Environment env, A.Type type)
         {
-            switch (type)
+            switch (type.Resolved)
             {
                 case A.Type.Function function:
                     return new W.Type.Function(Resolve(env, function.InType), Resolve(env, function.OutType));
@@ -51,8 +51,15 @@ namespace Fux.Building.Typing
                 case A.Type.Concrete concrete:
                     return new W.Type.Concrete(concrete.Name.Text);
                 case A.Type.Union union:
-                    //Assert(union.Arguments.All(a => a is A.Type.Concrete || a is A.Type.Primitive));
-                    return new W.Type.Concrete(union.Name.Text, union.Arguments.Cast<A.Type.Concrete>().Select(a => new W.Type.Concrete(a.Name.Text)).ToArray());
+                    if (union.Arguments.Count > 0)
+                    {
+                        var args = union.Arguments.Select(t => Resolve(env, t)).ToList();
+                        return new W.Type.Concrete(union.Name.Text, args.ToArray());
+                    }
+                    else
+                    {
+                        return new W.Type.Concrete(union.Name.Text);
+                    }
             }
             throw new NotImplementedException($"type not implemented: '{type.GetType().FullName} - {type}'");
 

@@ -11,7 +11,7 @@ namespace Fux.Input.Ast
             : base(tokens)
         {
             Assert(Count > 0);
-            Assert(this.All(token => token.Lex == Lex.LowerId || token.Lex == Lex.UpperId || token.Lex == Lex.OperatorId));
+            Assert(this.All(token => token.Lex.IsIdentifier));
 
             toString = $"{string.Join('.', this)}";
             hashCode = toString.GetHashCode();
@@ -24,7 +24,9 @@ namespace Fux.Input.Ast
 
         public static Identifier Artificial(Module module, string artifical)
         {
-            return Artificial(module.Ast!.Header.Name.items.First().Location.Source, artifical);
+            var identifier = Artificial(module.Ast!.Header.Name.items.First().Location.Source, artifical);
+            identifier.Module = module;
+            return identifier;
         }
 
         public static Identifier Artificial(ISource source, string artifical)

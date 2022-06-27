@@ -8,13 +8,11 @@ namespace Fux.Building
 {
     internal static class FakeList
     {
-        const string list = "List";
-
         public static A.UnionDecl MakeType(Module module)
         {
-            Assert(module.Name == list);
+            Assert(module.Name == Lex.Primitive.List);
 
-            var listId = A.Identifier.Artificial(module, list);
+            var listId = A.Identifier.Artificial(module, Lex.Primitive.List);
             var paraId = A.Identifier.Artificial(module, "a");
             var para = new A.Type.Parameter(paraId);
             var args = new A.TypeArguments(para);
@@ -22,15 +20,16 @@ namespace Fux.Building
             var ctors = new A.Constructors(ctor);
             var parameters = new A.TypeParameters(new A.Type.Parameter(paraId));
             var type = new A.UnionDecl(listId, parameters, ctors);
+            type.Module = module;
 
             return type;
         }
 
         public static A.Exposing MakeExposing(Module module)
         {
-            Assert(module.Name == list);
+            Assert(module.Name == Lex.Primitive.List);
 
-            var listId = A.Identifier.Artificial(module, list);
+            var listId = A.Identifier.Artificial(module, Lex.Primitive.List);
 
             return new A.ExposingSome(new A.ExposedType(listId, true));
         }

@@ -1,18 +1,12 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal abstract class Pattern : Expression
+    internal abstract class Pattern : Expr
     {
-        public class List : ListOf<Pattern>
-        {
-            public List(IEnumerable<Pattern> items) : base(items)
-            {
-            }
-        }
+        public override void PP(Writer writer) => writer.Write($"{this}");
 
         public class Unit : Pattern
         {
             public override string ToString() => Lex.Symbol.Unit;
-            public override void PP(Writer writer) => writer.Write(ToString());
         }
 
         public class LowerId : Pattern
@@ -27,19 +21,59 @@
             public Identifier Identifier { get; }
 
             public override string ToString() => Identifier.ToString();
-            public override void PP(Writer writer) => writer.Write(ToString());
+        }
+
+        public class UpperId : Pattern
+        {
+            public UpperId(Identifier identifier)
+            {
+                Assert(identifier.IsMultiUpper);
+
+                Identifier = identifier;
+            }
+
+            public Identifier Identifier { get; }
+
+            public override string ToString() => Identifier.ToString();
         }
 
         public class Wildcard : Pattern
         {
+            public override string ToString() => Lex.Symbol.Wildcard;
+        }
+
+        public class Sign : Pattern
+        {
+            public Sign(Identifier name, List<Pattern> parameters)
+            {
+                Assert(name.IsSingleLower);
+
+                Name = name;
+                Parameters = parameters.ToArray();
+            }
+
+            public Identifier Name { get; }
+            public IReadOnlyList<Pattern> Parameters { get; }
+
             public override string ToString()
             {
-                return Lex.Symbol.Wildcard;
+                var parameters = Parameters.Count == 0 ? "" : $" {string.Join(" ", Parameters)}";
+                return $"({Name}{parameters})";
             }
-            
-            public override void PP(Writer writer)
+        }
+
+        public class Lambda : Pattern
+        {
+            public Lambda(List<Pattern> parameters)
             {
-                writer.Write(ToString());
+                Parameters = parameters.ToArray();
+            }
+
+            public IReadOnlyList<Pattern> Parameters { get; }
+
+            public override string ToString()
+            {
+                return $"({string.Join(" ", Parameters)})";
             }
         }
 
@@ -61,11 +95,6 @@
                 var arguments = Arguments.Count == 0 ? "" : $" {string.Join(" ", Arguments)}";
                 return $"({Name}{arguments})";
             }
-
-            public override void PP(Writer writer)
-            {
-                writer.Write(ToString());
-            }
         }
 
         public class WithAlias : Pattern
@@ -80,7 +109,6 @@
             public new LowerId Alias { get; }
 
             public override string ToString() => $"({Pattern} {Lex.KwAs} {Alias})";
-            public override void PP(Writer writer) => writer.Write(ToString());
         }
 
         public class Record : Pattern
@@ -94,7 +122,6 @@
             public IReadOnlyList<Pattern> Patterns { get; }
 
             public override string ToString() => $"{{{string.Join(", ", Patterns)}}}";
-            public override void PP(Writer writer) => writer.Write(ToString());
         }
 
 
@@ -108,7 +135,6 @@
             public IReadOnlyList<Pattern> Patterns { get; }
 
             public override string ToString() => $"({string.Join(", ", Patterns)})";
-            public override void PP(Writer writer) => writer.Write(ToString());
         }
 
         public class Tuple2 : Tuple
@@ -133,5 +159,57 @@
             public Pattern Pattern2 => Patterns[1];
             public Pattern Pattern3 => Patterns[2];
         }
+
+        public class List : Pattern
+        {
+            public List(List<Pattern> patterns)
+            {
+                Patterns = patterns.ToArray();
+            }
+
+            public IReadOnlyList<Pattern> Patterns { get; }
+
+            public override string ToString() => $"[{string.Join(", ", Patterns)}]";
+        }
+
+        public abstract class Literal : Pattern
+        {
+            public Literal(A.Literal lit)
+            {
+                Lit = lit;
+            }
+
+            public A.Literal Lit { get; }
+
+            public override string ToString() => Lit.ToString();
+
+            public class Integer : Literal
+            {
+                public Integer(IntegerLiteral literal) : base(literal) { }
+            }
+
+            public class String : Literal
+            {
+                public String(StringLiteral literal) : base(literal) { }
+            }
+
+            public class Char : Literal
+            {
+                public Char(CharLiteral literal) : base(literal) { }
+            }
+        }
+
+        public class Destruct : Pattern
+        {
+            public Destruct(List<Pattern> patterns)
+            {
+                Patterns = patterns.ToArray();
+            }
+
+            public IReadOnlyList<Pattern> Patterns { get; }
+
+            public override string ToString() => $"{string.Join($" {Lex.Symbol.ListConstruct} ", Patterns)}";
+        }
+
     }
 }

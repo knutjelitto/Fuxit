@@ -1,13 +1,13 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class DotExpr : Expression
+    internal class DotExpr : Expr
     {
-        public DotExpr(Expression rhs)
+        public DotExpr(Expr rhs)
         {
             Rhs = rhs;
         }
 
-        public Expression Rhs { get; }
+        public Expr Rhs { get; }
 
         public override string ToString()
         {

@@ -4,7 +4,7 @@
     {
         public Folder(params string[] parts)
         {
-            Name = Path.Combine(parts).Replace('\\', '/');
+            Name = IO.Path.Combine(parts).Replace('\\', '/');
         }
 
         public string Name { get; }

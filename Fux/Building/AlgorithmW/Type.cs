@@ -1,4 +1,6 @@
-﻿namespace Fux.Building.AlgorithmW
+﻿using System.Xml.Linq;
+
+namespace Fux.Building.AlgorithmW
 {
     internal abstract record Type
     {
@@ -30,7 +32,12 @@
             }
         }
 
-        internal record Concrete(string Name, IReadOnlyList<Concrete>? Arguments = null) : Type
+        internal record List(Type Type) : Type
+{
+            public override string ToString() => $"{Lex.Primitive.List}<{Type}>";
+        }
+
+        internal record Concrete(string Name, IReadOnlyList<Type>? Arguments = null) : Type
         {
             public override string ToString() => $"{Name}{arguments}";
 

@@ -39,8 +39,6 @@ namespace Fux
 
             try
             {
-                Test();
-
                 //Terminal.Write("\u001B[32m"); // green
                 Terminal.Write("\u001B[1m"); // bold
 
@@ -52,6 +50,7 @@ namespace Fux
                 }
                 else
                 {
+                    builder.Load(new ElmPackage("fux/tests/typing", "1.0.0"));
                     builder.Load(ElmPackage.Latest("elm/core"));
                     builder.Load(ElmPackage.Latest("elm/bytes"));
                     builder.Load(ElmPackage.Latest("elm/file"));
@@ -74,14 +73,15 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-explorations/test"));
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
 
+#if false
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
-
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-iso8601-date-strings"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-hex"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-validate"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-sorter-experiment"));
                     builder.Load(ElmPackage.Latest("rtfeldman/count"));
                     builder.Load(ElmPackage.Latest("rtfeldman/console-print"));
+#endif
 
                     builder.Load(ElmPackage.Latest("elm-community/list-extra"));
                     builder.Load(ElmPackage.Latest("elm-community/maybe-extra"));
@@ -100,6 +100,8 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm-community/intdict"));
                     builder.Load(ElmPackage.Latest("elm-community/undo-redo"));
                     builder.Load(ElmPackage.Latest("elm-community/list-split"));
+                    
+                    builder.Load(ElmPackage.Latest("elm-in-elm/compiler"));
                 }
 
                 var whole = new Stopwatch();
@@ -128,18 +130,6 @@ namespace Fux
             }
 
             WaitForKey();
-        }
-
-        private static void Test()
-        {
-            var builder = new Builder();
-
-            var parse = new Phase2Parse(builder.Ambience, new Package(new ElmPackage("test", new SemVersion(0))));
-
-            foreach (var source in Tester.All())
-            {
-                parse.Parse(source);
-            }
         }
     }
 }

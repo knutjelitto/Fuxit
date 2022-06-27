@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal sealed class Parameter : Expression
+    internal sealed class Parameter : Expr
     {
-        public Parameter(Expression expression)
+        public Parameter(Expr expression)
         {
             Expression = expression;
         }
 
-        public Expression Expression { get; }
+        public Expr Expression { get; }
 
         public override string ToString()
         {

@@ -23,7 +23,8 @@ namespace Fux.ElmPackages
         public SemVersion Version { get; }
         public string FullName => $"{Name.ToLower()}/{Version}";
         public Elm Elm => elm ??= GetElm();
-        public string RootPath => Temp.ElmPath(FullName);
+        public string RootPath => IsFux ? Temp.FuxPath(FullName) : Temp.ElmPath(FullName);
+        public bool IsFux => FullName.StartsWith("fux/");
 
         public static ElmPackage Latest(string packageName)
         {
@@ -37,14 +38,14 @@ namespace Fux.ElmPackages
 
         private Elm GetElm()
         {
-            var elmFile = Path.Combine(RootPath, "elm.json").Replace('\\', '/');
+            var elmFile = IO.Path.Combine(RootPath, "elm.json").Replace('\\', '/');
 
-            if (!File.Exists(elmFile))
+            if (!IO.File.Exists(elmFile))
             {
                 Provide();
             }
 
-            return Elm.From(this, File.ReadAllBytes(elmFile));
+            return Elm.From(this, IO.File.ReadAllBytes(elmFile));
         }
 
         private void Provide()
@@ -63,24 +64,24 @@ namespace Fux.ElmPackages
                 var destinationTop = Temp.ElmPath(reference.Name);
                 var destination = Temp.ElmPath(reference.Name) + "/" + reference.Version;
 
-                foreach (var folder in Directory.GetDirectories(tempDestination))
+                foreach (var folder in IO.Directory.GetDirectories(tempDestination))
                 {
-                    Directory.Delete(folder, true);
+                    IO.Directory.Delete(folder, true);
                 }
 
                 Terminal.Write($"extracting {destination} ...");
 
                 ZipFile.ExtractToDirectory(archive, tempDestination, true);
 
-                var source = Directory.GetDirectories(tempDestination).FirstOrDefault();
+                var source = IO.Directory.GetDirectories(tempDestination).FirstOrDefault();
 
                 if (source != null)
                 {
-                    Directory.Delete(destination, true);
+                    IO.Directory.Delete(destination, true);
 
-                    Directory.CreateDirectory(destinationTop);
+                    IO.Directory.CreateDirectory(destinationTop);
 
-                    Directory.Move(source, destination);
+                    IO.Directory.Move(source, destination);
                 }
 
                 Terminal.WriteLine();

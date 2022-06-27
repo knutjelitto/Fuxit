@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal class Unit : Expression
+    internal class Unit : Expr
     {
         public override string ToString()
         {

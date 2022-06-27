@@ -2,20 +2,20 @@
 
 namespace Fux.Input.Ast
 {
-    internal class LetAssign : Expression
+    internal class LetAssign : Expr
     {
-        public LetAssign(Pattern pattern, Expression expression)
+        public LetAssign(Pattern pattern, Expr expression)
         {
             Assert(pattern is not Pattern.LowerId);
 
             Pattern = pattern;
             Expression = expression;
 
-            Collector.Instance.VarPattern.Add(pattern);
+            Collector.Instance.LetPattern.Add(pattern);
         }
 
         public Pattern Pattern { get; }
-        public Expression Expression { get; }
+        public Expr Expression { get; }
         public LetScope Scope { get; } = new();
 
         public override string ToString()

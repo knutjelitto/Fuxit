@@ -1,4 +1,6 @@
-﻿namespace Fux.ElmPackages
+﻿using System.Net.Http;
+
+namespace Fux.ElmPackages
 {
     internal class Archive
     {
@@ -15,13 +17,13 @@
         {
             byte[] bytes;
 
-            var filePath = Path.Combine(ElmCache.FilePath(endpoint.Reference.ToString(), Filename));
+            var filePath = IO.Path.Combine(ElmCache.FilePath(endpoint.Reference.ToString(), Filename));
 
-            if (!File.Exists(filePath))
+            if (!IO.File.Exists(filePath))
             {
                 bytes = Download(endpoint);
 
-                File.WriteAllBytes(filePath, bytes);
+                IO.File.WriteAllBytes(filePath, bytes);
             }
 
             return filePath;

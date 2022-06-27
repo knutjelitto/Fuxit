@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal class ApplyConstructor : Expression
+    internal class ApplyConstructor : Expr
     {
         public override void PP(Writer writer)
         {

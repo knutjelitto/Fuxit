@@ -1,18 +1,19 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class ModuleAst : Expression
+    internal class ModuleAst : Expr
     {
-        public ModuleAst(ModuleDecl header, IEnumerable<Expression> expressions)
+        public ModuleAst(ModuleDecl header, IEnumerable<Expr> expressions)
         {
             Header = header;
             Expressions = expressions.ToArray();
         }
 
         public ModuleDecl Header { get; }
-        public IReadOnlyList<Expression> Expressions { get; }
+        public IReadOnlyList<Expr> Expressions { get; }
 
         public IEnumerable<ImportDecl> Imports => Expressions.OfType<ImportDecl>();
         public IEnumerable<Declaration> Declarations => Expressions.OfType<Declaration>();
+        public IEnumerable<Expr> Rest => Expressions.Where(e => e is not Declaration);
 
         public override string ToString()
         {

@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class Eof : Expression
+    internal class Eof : Expr
     {
         public Eof(Token token)
         {

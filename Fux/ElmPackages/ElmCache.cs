@@ -11,8 +11,8 @@
 
         public static string FilePath(params string[] paths)
         {
-            var path = Path.Combine(Root, Path.Combine(paths)).Replace('\\', '/');
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var path = IO.Path.Combine(Root, IO.Path.Combine(paths)).Replace('\\', '/');
+            IO.Directory.CreateDirectory(IO.Path.GetDirectoryName(path)!);
             return path;
         }
     }

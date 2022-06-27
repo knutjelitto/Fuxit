@@ -1,14 +1,14 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class MatchExpr : Expression
+    internal class MatchExpr : Expr
     {
-        public MatchExpr(Expression expression, IEnumerable<MatchCase> cases)
+        public MatchExpr(Expr expression, IEnumerable<MatchCase> cases)
         {
             Expression = expression;
             Cases = cases.ToArray(); ;
         }
 
-        public Expression Expression { get; }
+        public Expr Expression { get; }
         public IReadOnlyList<MatchCase> Cases { get; }
 
         public override string ToString()

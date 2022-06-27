@@ -1,17 +1,17 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class IfExpr : Expression
+    internal class IfExpr : Expr
     {
-        public IfExpr(Expression condition, Expression ifTrue, Expression ifFalse)
+        public IfExpr(Expr condition, Expr ifTrue, Expr ifFalse)
         {
             Condition = condition;
             IfTrue = ifTrue;
             IfFalse = ifFalse;
         }
 
-        public Expression Condition { get; }
-        public Expression IfTrue { get; }
-        public Expression IfFalse { get; }
+        public Expr Condition { get; }
+        public Expr IfTrue { get; }
+        public Expr IfFalse { get; }
 
         public override string ToString()
         {

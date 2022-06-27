@@ -20,7 +20,7 @@ namespace Fux.Building
             return parameters.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expression expr)
+        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expr expr)
         {
             if (identifier.IsSingleLower)
             {

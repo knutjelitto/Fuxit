@@ -8,14 +8,14 @@ namespace Fux.Input.Ast
 {
     internal class FieldAssign : Field
     {
-        public FieldAssign(Identifier name, Expression expression)
+        public FieldAssign(Identifier name, Expr expression)
         {
             Name = name;
             Expression = expression;
         }
 
         public Identifier Name { get; }
-        public Expression Expression { get; }
+        public Expr Expression { get; }
 
         public override string ToString()
         {

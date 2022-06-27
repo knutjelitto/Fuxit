@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Net.Http;
 using System.Text.Json;
 
 using Semver;
@@ -42,15 +43,15 @@ namespace Fux.ElmPackages
 
             var filePath = ElmCache.FilePath(Filename);
 
-            if (!File.Exists(filePath))
+            if (!IO.File.Exists(filePath))
             {
                 bytes = Download();
 
-                File.WriteAllBytes(filePath, bytes);
+                IO.File.WriteAllBytes(filePath, bytes);
             }
             else
             {
-                bytes = File.ReadAllBytes(filePath);
+                bytes = IO.File.ReadAllBytes(filePath);
             }
 
             return Decode(bytes);

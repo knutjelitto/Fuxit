@@ -1,8 +1,8 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class InfixExpr : Expression
+    internal class InfixExpr : Expr
     {
-        public InfixExpr(OperatorSymbol op, Expression lhs, Expression rhs)
+        public InfixExpr(OperatorSymbol op, Expr lhs, Expr rhs)
         {
             Op = op;
             Lhs = lhs;
@@ -10,8 +10,8 @@
         }
 
         public OperatorSymbol Op { get; }
-        public Expression Lhs { get; }
-        public Expression Rhs { get; }
+        public Expr Lhs { get; }
+        public Expr Rhs { get; }
 
         public override string ToString()
         {

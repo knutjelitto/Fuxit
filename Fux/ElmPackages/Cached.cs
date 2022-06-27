@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System.Net.Http;
 using System.Text.Json;
 
 namespace Fux.ElmPackages
@@ -14,20 +14,20 @@ namespace Fux.ElmPackages
         public ElmPackage Reference { get; }
         public string Name { get; }
 
-        protected static bool IsCached(ElmPackage reference, string file) => File.Exists(CachePath(reference, file));
+        protected static bool IsCached(ElmPackage reference, string file) => IO.File.Exists(CachePath(reference, file));
 
         protected static string CachePath(ElmPackage reference, string file)
         {
             var path = ElmCache.FilePath(reference.ToString(), file);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            IO.Directory.CreateDirectory(IO.Path.GetDirectoryName(path)!);
 
             return path;
         }
 
         protected static JsonDocument Load(ElmPackage reference, string file)
         {
-            var bytes = File.ReadAllBytes(CachePath(reference, file));
+            var bytes = IO.File.ReadAllBytes(CachePath(reference, file));
 
             var json = Encoding.UTF8.GetString(bytes);
 

@@ -8,12 +8,12 @@ namespace Fux.Input.Ast
 {
     internal class FieldPattern : Field
     {
-        public FieldPattern(Expression pattern)
+        public FieldPattern(Expr pattern)
         {
             Pattern = pattern;
         }
 
-        public Expression Pattern { get; }
+        public Expr Pattern { get; }
 
         public override string ToString()
         {

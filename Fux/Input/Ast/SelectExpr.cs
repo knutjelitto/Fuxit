@@ -1,15 +1,15 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class SelectExpr : Expression
+    internal class SelectExpr : Expr
     {
-        public SelectExpr(Expression lhs, Expression rhs)
+        public SelectExpr(Expr lhs, Expr rhs)
         {
             Lhs = lhs;
             Rhs = rhs;
         }
 
-        public Expression Lhs { get; }
-        public Expression Rhs { get; }
+        public Expr Lhs { get; }
+        public Expr Rhs { get; }
 
         public override string ToString()
         {

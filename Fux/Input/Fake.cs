@@ -1,20 +1,19 @@
-﻿namespace Fux.Input
+﻿using Fux.Building;
+
+namespace Fux.Input
 {
     internal static class Fake
     {
-        public static A.VarDecl Negate(ISource source)
+        public static A.NativeDecl NativeNegate(Module module, ISource source)
         {
             var basics = A.Identifier.Artificial(source, "Elm.Kernel.Basics");
+            basics.Module = module;
             var name = A.Identifier.Artificial(source, "negate");
+            name.Module = module;
             var native = new A.NativeDecl(basics, name);
-            return new A.VarDecl(name, new A.Parameters(), native);
-        }
+            native.Module = module;
 
-        public static A.NativeDecl NativeNegate(ISource source)
-        {
-            var basics = A.Identifier.Artificial(source, "Elm.Kernel.Basics");
-            var name = A.Identifier.Artificial(source, "negate");
-            return new A.NativeDecl(basics, name);
+            return native;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Fux.Building
 
         public string Name => elm.Name;
         public string FullName => elm.FullName;
-        public string RootPath => Temp.ElmPath(FullName);
+        public string RootPath => elm.IsFux ? Temp.FuxPath(FullName) : Temp.ElmPath(FullName);
 
         public IReadOnlyList<Package> Dependencies => dependencies;
         public IReadOnlyList<Module> Exposed => exposed;

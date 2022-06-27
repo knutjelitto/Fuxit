@@ -1,16 +1,18 @@
-﻿namespace Fux.Tools
+﻿using System.Reflection;
+
+namespace Fux.Tools
 {
     public static class Temp
     {
         private static string GetPath(string which, params string[] paths)
         {
-            var path = Path.Combine(Environment.CurrentDirectory, $"../../../../{which}");
-            Assert(Path.GetFileName(Path.GetDirectoryName(new DirectoryInfo(path).FullName)) == "Fux");
-            Directory.CreateDirectory(path);
-            var outPath = Path.GetFullPath(Path.Combine(path, Path.Combine(paths)));
-            if (!Directory.Exists(outPath))
+            var path = IO.Path.Combine(Environment.CurrentDirectory, $"../../../../{which}");
+            Assert(IO.Path.GetFileName(IO.Path.GetDirectoryName(new IO.DirectoryInfo(path).FullName)) == "Fux");
+            IO.Directory.CreateDirectory(path);
+            var outPath = IO.Path.GetFullPath(IO.Path.Combine(path, IO.Path.Combine(paths)));
+            if (!IO.Directory.Exists(outPath))
             {
-                _ = Directory.CreateDirectory(outPath);
+                _ = IO.Directory.CreateDirectory(outPath);
             }
             return outPath.Replace('\\', '/');
         }
@@ -23,6 +25,13 @@
         public static string ElmPath(params string[] paths)
         {
             return GetPath("Elm", paths);
+        }
+
+        public static string FuxPath(string paths)
+        {
+            var path = IO.Path.Combine(IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, paths).Replace('\\', '/');
+
+            return path;
         }
     }
 }

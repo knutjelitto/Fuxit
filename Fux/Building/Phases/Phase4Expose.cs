@@ -41,7 +41,7 @@ namespace Fux.Building.Phases
 
             var header = ast.Header;
 
-            if (Package.IsCore && module.Name == "List")
+            if (Package.IsCore && module.Name == Lex.Primitive.List)
             {
                 var exposing = FakeList.MakeExposing(module);
 

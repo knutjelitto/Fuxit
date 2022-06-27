@@ -1,23 +1,27 @@
 ﻿using System.Runtime.CompilerServices;
 
+using Fux.Building;
+
 namespace Fux.Input
 {
-    internal class TokensCursor
+    internal class Cursor
     {
-        public TokensCursor(ParserErrors error, Tokens tokens)
+        public Cursor(Module module, ParserErrors error, Tokens tokens)
         {
             Assert(tokens.Count > 0);
             Offset = 0;
+            Module = module;
             Error = error;
             Tokens = tokens;
         }
 
         public int Offset { get; private set; }
+        public Module Module { get; }
         public ParserErrors Error { get; }
         public Tokens Tokens { get; }
         public bool StartsAtomic => More() && Current.Lex.StartsAtomic;
 
-        public bool StartsTypeHint
+        public bool StartsTypeAnnotation
         {
             get
             {
@@ -77,19 +81,20 @@ namespace Fux.Input
             }
         }
 
-        public T Scope<T>(Func<TokensCursor, T> parser)
-            where T : A.Expression
+        public T Scope<T>(Func<Cursor, T> parser)
+            where T : A.Expr
         {
             var start = Tokens.Start + Offset;
             var expression = parser(this);
             var next = Tokens.Start + Offset;
 
+            expression.Module = Module;
             expression.Span = new Tokens(Tokens.Toks, start, next);
 
             return expression;
         }
 
-        public TokensCursor Sub()
+        public Cursor Subcursor()
         {
             Assert(Current.First);
 
@@ -119,7 +124,7 @@ namespace Fux.Input
                 Advance();
             }
 
-            return new TokensCursor(Error, subs);
+            return new Cursor(Module, Error, subs);
         }
 
         public Token Advance()

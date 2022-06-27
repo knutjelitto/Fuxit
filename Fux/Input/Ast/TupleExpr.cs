@@ -1,8 +1,8 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class TupleExpr : ListOf<Expression>
+    internal class TupleExpr : ListOf<Expr>
     {
-        public TupleExpr(IEnumerable<Expression> expressions)
+        public TupleExpr(IEnumerable<Expr> expressions)
             : base(expressions)
         {
             Assert(this.Count >= 1 && this.Count <= 3);

@@ -1,14 +1,14 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class SequenceExpr : ListOf<Expression>
+    internal class SequenceExpr : ListOf<Expr>
     {
-        public SequenceExpr(IEnumerable<Expression> expressions)
+        public SequenceExpr(IEnumerable<Expr> expressions)
             : base(expressions)
         {
             Assert(Count >= 1);
         }
 
-        public SequenceExpr(params Expression[] expressions)
+        public SequenceExpr(params Expr[] expressions)
             : this(expressions.AsEnumerable())
         {
         }
@@ -16,7 +16,7 @@
         public bool IsApplication => Count >= 2;
         public bool IsSingle => Count == 1;
 
-        public Expression Single
+        public Expr Single
         {
             get
             {

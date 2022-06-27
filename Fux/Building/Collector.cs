@@ -14,10 +14,11 @@
         public List<A.AliasDecl> DeclareAlias { get; } = new();
         public List<A.InfixDecl> DeclareInfix { get; } = new();
         public List<A.VarDecl> DeclareVar { get; } = new();
-        public List<A.TypeHint> DeclareHint { get; } = new();
+        public List<A.TypeAnnotation> DeclareAnnotation { get; } = new();
         public List<A.NativeDecl> NativeDecl { get; } = new();
-        public List<A.Expression> VarPattern { get; } = new();
-        public List<A.Expression> MatchPattern { get; } = new();
+        public List<A.Expr> VarPattern { get; } = new();
+        public List<A.Expr> LetPattern { get; } = new();
+        public List<A.Expr> MatchPattern { get; } = new();
 
         public Stopwatch ScanTime { get; } = new();
         public Stopwatch ParseTime { get; } = new();
@@ -37,34 +38,36 @@
             Write("all-decl-alias.text", DeclareAlias);
             Write("all-decl-infix.text", DeclareInfix);
             WriteCompact("all-decl-var.text", DeclareVar, writeStr);
-            WriteCompact("all-decl-hint.text", DeclareHint, writeStr);
+            WriteCompact("all-decl-hint.text", DeclareAnnotation, writeStr);
             WriteCompact("all-native.text", NativeDecl, writePP);
 
             WriteVarPatterns("all-pattern-var.text");
             WriteMatchPatterns("all-pattern-match.text");
+            WriteLetPatterns("all-pattern-let.text");
 
             void WriteVarPatterns(string name)
             {
-                var patterns = VarPattern
-                    .Select(p => p.ToString())
-                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                    .OrderBy(s => s)
-                    .Distinct()
-                    .ToList();
-
-                WriteAll(name, patterns);
+                WriteAll(name, StringsFrom(VarPattern));
             }
 
             void WriteMatchPatterns(string name)
             {
-                var patterns = MatchPattern
-                    .Select(p => p.ToString())
+                WriteAll(name, StringsFrom(MatchPattern));
+            }
+
+            void WriteLetPatterns(string name)
+            {
+                WriteAll(name, StringsFrom(LetPattern));
+            }
+
+            IEnumerable<string> StringsFrom(IEnumerable<A.Expr> exprs)
+            {
+                return exprs
+                    .Select(p => p.ToString()!)
                     .Where(s => !string.IsNullOrWhiteSpace(s))
                     .OrderBy(s => s)
                     .Distinct()
                     .ToList();
-
-                WriteAll(name, patterns);
             }
 
             void WriteAll(string name, IEnumerable<string?> items)
@@ -102,7 +105,7 @@
                 }
             }
 
-            void writePP(Writer writer, A.Expression expr)
+            void writePP(Writer writer, A.Expr expr)
             {
                 expr.PP(writer);
                 if (writer.LinePending)
@@ -111,12 +114,12 @@
                 }
             }
 
-            void writeStr(Writer writer, A.Expression expr)
+            void writeStr(Writer writer, A.Expr expr)
             {
                 writer.WriteLine($"{expr}");
             }
 
-            void WriteCompact(string name, IEnumerable<A.Declaration> expressions, Action<Writer, A.Expression> write)
+            void WriteCompact(string name, IEnumerable<A.Declaration> expressions, Action<Writer, A.Expr> write)
             {
                 using (var writer = name.Writer())
                 {

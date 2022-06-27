@@ -93,7 +93,7 @@ namespace Fux.ElmPackages
         public string License { get; } = string.Empty;
         public SemVersion Version { get; } = new(0);
         public List<ElmModuleGroup> Exposed { get; } = new();
-        public IEnumerable<ElmModule> ExposedModules => Exposed.SelectMany(e => e);
+        public IEnumerable<ElmModule> ExposedModules => Exposed.SelectMany(e => e).ToList();
         public List<Dependency> Dependencies { get; } = new();
         public List<Dependency> TestDependencies { get; } = new();
     }

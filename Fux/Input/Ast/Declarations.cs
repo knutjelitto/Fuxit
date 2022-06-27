@@ -1,8 +1,8 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class Declarations : ListOf<Expression>
+    internal class Declarations : ListOf<Expr>
     {
-        public Declarations(IEnumerable<Expression> items)
+        public Declarations(IEnumerable<Expr> items)
             : base(items)
         {
         }

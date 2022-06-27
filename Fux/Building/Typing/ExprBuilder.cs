@@ -11,7 +11,7 @@ namespace Fux.Building.Typing
             this.typeBuilder = typeBuilder;
         }
 
-        public W.Expr Build(A.Expression expr, ref W.Environment env)
+        public W.Expr Build(A.Expr expr, ref W.Environment env)
         {
             switch (expr)
             {
@@ -24,17 +24,32 @@ namespace Fux.Building.Typing
                             {
                                 case A.NativeDecl native:
                                     return new W.Expr.Native(native);
+                                case A.InfixDecl infix:
+                                    {
+                                        Assert(identifier.IsSingleOp);
+                                        Assert(infix.Expression.Resolved != infix);
+                                        Assert(infix.Expression.Resolved is A.VarDecl);
+
+                                        return Build(infix.Expression.Resolved, ref env);
+                                    }
                                 case A.VarDecl var:
                                     {
                                         Assert(identifier.IsSingleLower || identifier.IsQualified);
-                                        Assert(var.Type != null);
-                                        var variable = new W.Expr.Variable(new W.TermVariable(identifier.Text));
+                                        W.Polytype wtype;
+                                        if (var.Type == null)
+                                        {
+                                            wtype = new W.Polytype(env.Generator.GetNext());
+                                        }
+                                        else
+                                        {
+                                            wtype = typeBuilder.Build(env, var.Type);
+                                        }
+                                        var variable = new W.Expr.Variable(identifier.Text);
                                         var already = env.TryGet(variable.Term);
-                                        var wtype = typeBuilder.Build(env, var.Type);
                                         if (already != null)
                                         {
                                             Assert(true);
-                                            Assert(already.ToString() == wtype.ToString());
+                                            //Assert(already.ToString() == wtype.ToString());
                                         }
                                         else
                                         {
@@ -46,14 +61,12 @@ namespace Fux.Building.Typing
                                     {
                                         Assert(parameter.Expression is A.Identifier);
                                         var name = (A.Identifier)parameter.Expression;
-                                        var termVar = new W.TermVariable(name.Text);
-                                        var variable = new W.Expr.Variable(termVar);
+                                        var variable = new W.Expr.Variable(name);
                                         return variable;
                                     }
                                 case A.Identifier name:
                                     {
-                                        var termVar = new W.TermVariable(name.Text);
-                                        var variable = new W.Expr.Variable(termVar);
+                                        var variable = new W.Expr.Variable(name);
                                         return variable;
                                     }
                                 default:
@@ -121,7 +134,7 @@ namespace Fux.Building.Typing
 
                 case A.VarDecl var:
                     {
-                        var variable = new W.Expr.Variable(new W.TermVariable(var.Name.Text));
+                        var variable = new W.Expr.Variable(var.Name);
                         var polytype = typeBuilder.Build(env, var.Type);
 
                         env = env.Insert(variable.Term, polytype);
@@ -129,11 +142,21 @@ namespace Fux.Building.Typing
                         return variable;
                     }
 
+                case A.LetExpr letExpr:
+                    return BuildLetExpr(letExpr, ref env);
+
+                case A.ListExpr listExpr:
+                    if (listExpr.Count == 0)
+                    {
+                        return new W.Expr.Empty();
+                    }
+                    break;
+
                 default:
                     break;
             }
 
-            throw new NotImplementedException($"expression not implemented: '{expr.GetType().FullName} - {expr}'");
+            throw NotImplemented(expr);
 
             W.Expr Apply(A.SequenceExpr seq, int index, ref W.Environment env)
             {
@@ -147,6 +170,44 @@ namespace Fux.Building.Typing
                     return new W.Expr.Application(Apply(seq, index - 1, ref env), Build(seq[index], ref env));
                 }
             }
+        }
+
+        private W.Expr BuildLetExpr(A.LetExpr letExpr, ref W.Environment env)
+        {
+            W.Expr inExpr = Build(letExpr.InExpression, ref env);
+
+            foreach (var let in letExpr.LetExpressions.Reverse())
+            {
+                var (name, expr) = BuildLet(let, ref env);
+
+                inExpr = new W.Expr.Let(name, expr, inExpr);
+            }
+
+            return inExpr;
+        }
+
+        private (W.TermVariable name, W.Expr expr) BuildLet(A.Expr let, ref W.Environment env)
+        {
+            switch (let)
+            {
+                case A.VarDecl var when var.Parameters.Count == 0:
+                    {
+                        var name = new W.TermVariable(var.Name.Text);
+                        var expr = Build(var.Expression, ref env);
+
+                        return (name, expr);
+                    }
+                default:
+                    break;
+            }
+
+            Assert(true);
+            throw NotImplemented(let);
+        }
+
+        private Exception NotImplemented(A.Expr expr)
+        {
+            return new NotImplementedException($"missing implementation: '{expr.GetType().FullName} - {expr}'");
         }
     }
 }

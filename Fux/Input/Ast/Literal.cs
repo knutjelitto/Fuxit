@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Literal : Expression
+    internal abstract class Literal : Expr
     {
         public Literal(Token token)
         {

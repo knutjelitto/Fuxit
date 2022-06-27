@@ -2,19 +2,19 @@
 {
     internal class Polytype
     {
-        public Polytype(IReadOnlyList<TypeVariable> typeVariables, Type type)
+        public Polytype(Type type, IReadOnlyList<TypeVariable> typeVariables)
         {
             TypeVariables = typeVariables;
             Type = type;
         }
 
         public Polytype(Type type)
-            : this(Array.Empty<TypeVariable>(), type)
+            : this(type, Array.Empty<TypeVariable>())
         {
         }
 
-        public IReadOnlyList<TypeVariable> TypeVariables { get; }
         public Type Type { get; }
+        public IReadOnlyList<TypeVariable> TypeVariables { get; }
 
         public override string ToString()
         {

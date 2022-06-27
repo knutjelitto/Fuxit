@@ -2,14 +2,14 @@
 {
     public class Writer : IDisposable
     {
-        private readonly TextWriter sink;
+        private readonly IO.TextWriter sink;
         private readonly bool owns;
         private int level;
         private bool indentPending = true;
         private bool lineRunning = false;
         private readonly string prefix;
 
-        public Writer(TextWriter sink, int? indent = null, bool owns = false)
+        public Writer(IO.TextWriter sink, int? indent = null, bool owns = false)
         {
             this.sink = sink;
             this.owns = owns;
@@ -19,12 +19,12 @@
         }
 
         public Writer(int? indent = null)
-            : this(new StringWriter(), indent, true)
+            : this(new IO.StringWriter(), indent, true)
         {
         }
 
         public Writer(string filename, int? indent = null)
-            : this(new StreamWriter(filename), indent, true)
+            : this(new IO.StreamWriter(filename), indent, true)
         {
             Filename = filename;
         }
@@ -44,7 +44,7 @@
 
         public static Writer Null(int? indent = 4)
         {
-            return new Writer(TextWriter.Null, indent);
+            return new Writer(IO.TextWriter.Null, indent);
         }
 
         public void WriteLine()
@@ -109,7 +109,7 @@
 
         public override string ToString()
         {
-            if (sink is StringWriter stringWriter)
+            if (sink is IO.StringWriter stringWriter)
             {
                 return stringWriter.ToString();
             }
@@ -118,7 +118,7 @@
 
         public void Clear()
         {
-            if (sink is StringWriter stringWriter)
+            if (sink is IO.StringWriter stringWriter)
             {
                 stringWriter.GetStringBuilder().Clear();
             }
@@ -130,6 +130,8 @@
             {
                 sink.Dispose();
             }
+
+            GC.SuppressFinalize(this);
         }
 
         private class Undenter : IDisposable

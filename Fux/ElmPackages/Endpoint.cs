@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http;
+using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
@@ -21,17 +22,17 @@ namespace Fux.ElmPackages
         {
             byte[] bytes;
 
-            var filePath = Path.Combine(ElmCache.FilePath(reference.ToString(), Filename));
+            var filePath = IO.Path.Combine(ElmCache.FilePath(reference.ToString(), Filename));
 
-            if (!File.Exists(filePath))
+            if (!IO.File.Exists(filePath))
             {
                 bytes = Download(reference);
 
-                File.WriteAllBytes(filePath, bytes);
+                IO.File.WriteAllBytes(filePath, bytes);
             }
             else
             {
-                bytes = File.ReadAllBytes(filePath);
+                bytes = IO.File.ReadAllBytes(filePath);
             }
 
             return Decode(reference, bytes);

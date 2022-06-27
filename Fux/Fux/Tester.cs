@@ -11,7 +11,7 @@ namespace Fux.Tests
             foreach (var name in assembly.GetManifestResourceNames())
             {
                 using (var stream = assembly.GetManifestResourceStream(name)!)
-                using (var reader = new StreamReader(stream))
+                using (var reader = new IO.StreamReader(stream))
                 {
                     var content = reader.ReadToEnd();
                     yield return new StringSource(name, name, content);

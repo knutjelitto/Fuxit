@@ -170,7 +170,7 @@ namespace Fux.Building
             return modules.TryGetValue(identifier.MultiUpper(), out module);
         }
 
-        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expression expr)
+        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expr expr)
         {
             Assert(Parent == null);
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Exposing : Expression
+    internal abstract class Exposing : Expr
     {
     }
 

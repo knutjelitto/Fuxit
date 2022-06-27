@@ -8,9 +8,9 @@ using Fux.Building;
 
 namespace Fux.Input.Ast
 {
-    internal class MatchCase : Expression
+    internal class MatchCase : Expr
     {
-        public MatchCase(Expression pattern, Expression expression)
+        public MatchCase(Expr pattern, Expr expression)
         {
             Pattern = pattern;
             Expression = expression;
@@ -18,8 +18,8 @@ namespace Fux.Input.Ast
             Collector.Instance.MatchPattern.Add(Pattern);
         }
 
-        public Expression Pattern { get; }
-        public Expression Expression { get; }
+        public Expr Pattern { get; }
+        public Expr Expression { get; }
 
         public LetScope Scope { get; } = new();
 

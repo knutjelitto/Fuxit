@@ -1,7 +1,16 @@
-﻿namespace Fux.Input.Ast
+﻿using System.Xml.Linq;
+
+namespace Fux.Input.Ast
 {
-    internal abstract class Type : Expression
+    internal abstract class Type : Expr
     {
+        public new Type Resolved { get; set; }
+
+        protected Type()
+        {
+            Resolved = this;
+        }
+
         public override void PP(Writer writer)
         {
             writer.Write($"{this}");
@@ -26,18 +35,20 @@
 
         public abstract class Primitive : Type
         {
-            public Primitive(string text)
+            public Primitive(Identifier name, string text)
             {
+                Name = name;
                 Text = text;
             }
 
+            public Identifier Name { get; }
             public string Text { get; }
 
-            public sealed class Int : Primitive { public Int() : base(Lex.Primitive.Int) { } }
-            public sealed class Float : Primitive { public Float() : base(Lex.Primitive.Float) { } }
-            public sealed class Bool : Primitive { public Bool() : base(Lex.Primitive.Bool) { } }
-            public sealed class String : Primitive { public String() : base(Lex.Primitive.String) { } }
-            public sealed class Char : Primitive { public Char() : base(Lex.Primitive.Char) { } }
+            public sealed class Int : Primitive { public Int(Identifier name) : base(name, Lex.Primitive.Int) { } }
+            public sealed class Float : Primitive { public Float(Identifier name) : base(name, Lex.Primitive.Float) { } }
+            public sealed class Bool : Primitive { public Bool(Identifier name) : base(name, Lex.Primitive.Bool) { } }
+            public sealed class String : Primitive { public String(Identifier name) : base(name, Lex.Primitive.String) { } }
+            public sealed class Char : Primitive { public Char(Identifier name) : base(name, Lex.Primitive.Char) { } }
 
             public override string ToString()
             {
@@ -180,7 +191,7 @@
             }
         }
 
-        public class Constructor : Expression
+        public class Constructor : Expr
         {
             public Constructor(Identifier name, TypeArguments arguments)
             {

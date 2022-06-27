@@ -43,7 +43,7 @@ namespace Fux.Building.Phases
             }
             else
             {
-                if (module.Name != "List")
+                if (module.Name != Lex.Primitive.List)
                 {
                     ListPrelude(module);
                 }
@@ -173,10 +173,10 @@ namespace Fux.Building.Phases
         {
             Import(module,
                 new ImportDecl(
-                    Identifier.Artificial(module, "List"), null,
+                    Identifier.Artificial(module, Lex.Primitive.List), null,
                     new ExposingSome(
-                        new ExposedType(Identifier.Artificial(module, "List"), false),
-                        new ExposedVar(Identifier.Artificial(module, "(::)")))));
+                        new ExposedType(Identifier.Artificial(module, Lex.Primitive.List), false),
+                        new ExposedVar(Identifier.Artificial(module, Lex.Symbol.ListCons)))));
         }
 
         private void Prelude(Module module)

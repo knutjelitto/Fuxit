@@ -99,6 +99,11 @@ namespace Fux.Building.AlgorithmW
                             });
                     }
 
+                case Expr.Empty empty: // the empty list [] / alias list bottom
+                    {
+                        return (Substitution.Empty(), new Type.List(env.Generator.GetNext()));
+                    }
+
                 case Expr.Iff({ } cond, { } expr1, { } expr2):
                     {
                         {
@@ -188,17 +193,13 @@ namespace Fux.Building.AlgorithmW
 
         private static Polytype ApplySubstitution(Polytype polytype, Substitution substitution)
         {
-            var sub = substitution;
-            foreach (var tv in polytype.TypeVariables)
-            {
-                sub = sub.Remove(tv);
-            }
-            return new Polytype(polytype.TypeVariables, ApplySubstitution(polytype.Type, sub));
+            var sub = substitution.RemoveRange(polytype.TypeVariables);
+            return new Polytype(ApplySubstitution(polytype.Type, sub), polytype.TypeVariables);
         }
 
         private static Polytype GeneralizePolytype(Environment typeEnv, Type type)
         {
-            return new Polytype(GetFreeTypeVariables(type).Except(GetFreeTypeVariables(typeEnv)).ToList(), type);
+            return new Polytype(type, GetFreeTypeVariables(type).Except(GetFreeTypeVariables(typeEnv)).ToList());
         }
 
         /// <summary>
@@ -249,6 +250,11 @@ namespace Fux.Building.AlgorithmW
                         return BindVariable(v, t);
                     }
 
+                case (Type.List({ } t1), Type.List({ } t2)):
+                    {
+                        break;
+                    }
+
                 // If they are both primitives, no substitution needs to be done.
                 case
                     (Type.Integer, Type.Integer) or
@@ -272,11 +278,12 @@ namespace Fux.Building.AlgorithmW
                     }
 
                 // Otherwise, the types cannot be unified.
-                case (var t1, var t2):
-                    {
-                        throw new WError($"types do not unify: {t1} vs {t2}");
-                    }
+                default:
+                    break;
             }
+
+            Assert(true);
+            throw new WError($"types do not unify: {type1} vs {type2}");
         }
 
         /// <summary>

@@ -16,7 +16,7 @@
             return $"({Token})";
         }
 
-        public virtual Expression Combine(Expression lhs, Expression rhs)
+        public virtual Expr Combine(Expr lhs, Expr rhs)
         {
             return new InfixExpr(this, lhs, rhs);
         }

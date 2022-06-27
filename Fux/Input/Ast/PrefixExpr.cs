@@ -1,15 +1,15 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class PrefixExpr : Expression
+    internal class PrefixExpr : Expr
     {
-        public PrefixExpr(OperatorSymbol op, Expression rhs)
+        public PrefixExpr(OperatorSymbol op, Expr rhs)
         {
             Op = op;
             Rhs = rhs;
         }
 
         public OperatorSymbol Op { get; }
-        public Expression Rhs { get; }
+        public Expr Rhs { get; }
 
         public override string ToString()
         {

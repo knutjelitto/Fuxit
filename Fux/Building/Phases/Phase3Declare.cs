@@ -4,6 +4,8 @@
 #pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable IDE0063 // Use simple 'using' statement
 
+using Fux.Input.Ast;
+
 namespace Fux.Building.Phases
 {
     internal class Phase3Declare : Phase
@@ -62,7 +64,9 @@ namespace Fux.Building.Phases
                 var ast = module.Ast;
                 var header = ast.Header;
 
-                Assert(ast.Declarations.Count() == ast.Expressions.Count);
+                var declarations = ast.Declarations.ToList();
+                var nondeclarations = ast.Rest.ToList();
+                Assert(declarations.Count == ast.Expressions.Count);
 
                 collector.Add(header);
 
@@ -71,9 +75,9 @@ namespace Fux.Building.Phases
                     module.Scope.AddVar(where);
                 }
 
-                if (module.Name == "List")
+                if (module.IsCore && module.Name == Lex.Primitive.List)
                 {
-                    if (!module.Scope.LookupType(A.Identifier.Artificial(module, "List"), out _))
+                    if (!module.Scope.LookupType(A.Identifier.Artificial(module, Lex.Primitive.List), out _))
                     {
                         Declare(FakeList.MakeType(module));
                     }
@@ -105,8 +109,8 @@ namespace Fux.Building.Phases
                     case A.VarDecl varDecl:
                         VarDecl(module.Scope, varDecl);
                         break;
-                    case A.TypeHint hint:
-                        TypeHint(module.Scope, hint);
+                    case A.TypeAnnotation annotation:
+                        TypeAnnotation(module.Scope, annotation);
                         break;
                     default:
                         Assert(false);
@@ -116,17 +120,22 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void TypeHint(Scope scope, A.TypeHint hint)
+        private void TypeAnnotation(Scope scope, A.TypeAnnotation annotation)
         {
-            Collector.DeclareHint.Add(hint);
+            Collector.DeclareAnnotation.Add(annotation);
 
-            collector.Add(hint);
+            collector.Add(annotation);
 
-            scope.AddHint(hint);
+            scope.AddHint(annotation);
         }
 
         private void VarDecl(Scope scope, A.VarDecl var)
         {
+            if (var.Name.Text == "fromPolar")
+            {
+                Assert(true);
+            }
+
             Collector.DeclareVar.Add(var);
 
             collector.Add(var);
@@ -208,8 +217,10 @@ namespace Fux.Building.Phases
             scope.AddAlias(alias);
         }
 
-        private void ScopeExpr(Scope scope, A.Expression expression)
+        private void ScopeExpr(Scope scope, A.Expr expression)
         {
+            Assert(expression.Module != null);
+
             switch (expression)
             {
                 case A.Identifier:
@@ -235,9 +246,19 @@ namespace Fux.Building.Phases
                 case A.MatchCase matchCase:
                     Assert(matchCase.Scope.Parent == null);
                     matchCase.Scope.Parent = scope;
-                    foreach (var identifier in ExplodePattern(matchCase.Pattern))
+                    if (matchCase.Pattern is A.Pattern pattern)
                     {
-                        matchCase.Scope.Add(identifier);
+                        foreach (var parameter in pattern.ExractMatchNames())
+{
+                            matchCase.Scope.Add(parameter);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var identifier in ExplodePattern(matchCase.Pattern))
+                        {
+                            matchCase.Scope.Add(identifier);
+                        }
                     }
                     ScopeExpr(matchCase.Scope, matchCase.Expression);
                     break;
@@ -273,9 +294,9 @@ namespace Fux.Building.Phases
                         ScopeExpr(scope, rest.Expression);
                     }
                     break;
-                case A.LetExpr let:
-                    let.Scope.Parent = scope;
-                    ScopeLet(let);
+                case A.LetExpr letExpr:
+                    letExpr.Scope.Parent = scope;
+                    ScopeLet(letExpr);
                     break;
                 case A.LambdaExpr lambda:
                     lambda.Scope.Parent = scope;
@@ -297,49 +318,61 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void ScopeLet(A.LetExpr let)
+        private void ScopeLet(A.LetExpr letExr)
         {
-            var hints = new Dictionary<A.Identifier, A.TypeHint>();
-            Assert(let.Scope.HintsAreEmpty);
+            var hints = new Dictionary<A.Identifier, A.TypeAnnotation>();
+            Assert(letExr.Scope.HintsAreEmpty);
 
-            foreach (var expr in let.LetExpressions)
+            foreach (var expr in letExr.LetExpressions)
             {
                 switch (expr)
                 {
                     case A.VarDecl var:
                         {
-                            var.Scope.Parent = let.Scope;
+                            var.Scope.Parent = letExr.Scope;
 
                             foreach (var parameter in var.Parameters)
                             {
-                                foreach (var identifier in ExplodePattern(parameter))
+                                Assert(parameter.Expression is A.Pattern);
+
+                                if (parameter.Expression is A.Pattern pattern)
                                 {
-                                    var.Scope.Add(identifier);
+                                    foreach (var identifier in pattern.ExtractNamedParameters())
+                                    {
+                                        var.Scope.Add(identifier);
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var identifier in ExplodePattern(parameter))
+                                    {
+                                        var.Scope.Add(identifier);
+                                    }
                                 }
                             }
 
-                            let.Scope.AddVar(var);
+                            letExr.Scope.AddVar(var);
 
                             ScopeExpr(var.Scope, var.Expression);
                         }
                         break;
                     case A.LetAssign assign:
                         {
-                            assign.Scope.Parent = let.Scope;
+                            assign.Scope.Parent = letExr.Scope;
 
-                            Assert(let.Scope.HintsAreEmpty);
+                            Assert(letExr.Scope.HintsAreEmpty);
 
-                            foreach (var identifier in ExplodePattern(assign.Pattern))
+                            foreach (var identifier in assign.Pattern.ExtractNamedParameters())
                             {
-                                let.Scope.Add(identifier);
+                                letExr.Scope.Add(identifier);
                             }
 
                             ScopeExpr(assign.Scope, assign.Expression);
                         }
                         break;
-                    case A.TypeHint hint:
+                    case A.TypeAnnotation annotation:
                         {
-                            let.Scope.AddHint(hint);
+                            letExr.Scope.AddHint(annotation);
                         }
                         break;
                     default:
@@ -349,9 +382,9 @@ namespace Fux.Building.Phases
             }
 
             Assert(hints.Count == 0);
-            Assert(let.Scope.HintsAreEmpty);
+            Assert(letExr.Scope.HintsAreEmpty);
 
-            ScopeExpr(let.Scope, let.InExpression);
+            ScopeExpr(letExr.Scope, letExr.InExpression);
         }
 
         private void ScopeLambda(A.LambdaExpr lambda)
@@ -364,7 +397,7 @@ namespace Fux.Building.Phases
             ScopeExpr(lambda.Scope, lambda.Expression);
         }
 
-        private IEnumerable<A.Parameter> ExplodePattern(A.Expression pattern)
+        private IEnumerable<A.Parameter> ExplodePattern(A.Expr pattern)
         {
             switch (pattern)
             {
@@ -384,6 +417,19 @@ namespace Fux.Building.Phases
                         }
                         break;
                     }
+
+                case A.Pattern.Sign sign:
+                    {
+                        foreach (var argument in sign.Parameters)
+                        {
+                            foreach (var pim in ExplodePattern(argument))
+                            {
+                                yield return pim;
+                            }
+                        }
+                        break;
+                    }
+
                 case A.Pattern.Ctor ctor:
                     {
                         foreach (var argument in ctor.Arguments)
@@ -395,17 +441,7 @@ namespace Fux.Building.Phases
                         }
                         break;
                     }
-                case A.Pattern.List list:
-                    {
-                        foreach (var item in list)
-                        {
-                            foreach (var pim in ExplodePattern(item))
-                            {
-                                yield return pim;
-                            }
-                        }
-                        break;
-                    }
+
                 case A.Pattern.WithAlias with:
                     {
                         foreach (var pim in ExplodePattern(with.Pattern))

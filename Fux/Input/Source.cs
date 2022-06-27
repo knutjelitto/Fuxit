@@ -40,7 +40,7 @@ namespace Fux.Input
 
         public static Source FromFile(string filename)
         {
-            var text = File.ReadAllText(filename, Encoding.UTF8);
+            var text = IO.File.ReadAllText(filename, Encoding.UTF8);
 
             return new StringSource(System.IO.Path.GetFileName(filename), filename, text);
         }

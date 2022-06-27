@@ -4,18 +4,24 @@
     {
         public static readonly List<Lex> allLex = new();
 
-        private Lex(string name, bool isKeyword = false, bool startsAtomic = false, bool terminatesSomething = false)
+        private Lex(string name,
+            bool isKeyword = false, 
+            bool startsAtomic = false, 
+            bool terminatesSomething = false,
+            bool isIdentifier = false)
         {
             Name = string.Intern(name);
             IsKeyword = isKeyword;
             StartsAtomic = startsAtomic;
             TerminatesSomething = terminatesSomething;
+            IsIdentifier = isIdentifier;
         }
 
         public string Name { get; }
         public bool IsKeyword { get; }
         public bool StartsAtomic { get; }
         public bool TerminatesSomething { get; }
+        public bool IsIdentifier { get; }
 
         public static IReadOnlyList<Lex> AllLex => allLex;
 
@@ -44,15 +50,19 @@
         {
             BOF = Add(new("<BOF>"));
             EOF = Add(new("<EOF>", terminatesSomething: true));
+
             Newline = Add(new("_nl_"));
             Space = Add(new("_sp_"));
             LineComment = Add(new("_line-comment_"));
             BlockComment = Add(new("_block-comment_"));
+
             GroupOpen = Add(new("⟦", startsAtomic: true));
             GroupClose = Add(new("⟧"));
-            LowerId = Add(new("LowerId", startsAtomic: true));
-            UpperId = Add(new("UpperId", startsAtomic: true));
-            OperatorId = Add(new("OperatorId", startsAtomic: true));
+
+            LowerId = Add(new("LowerId", startsAtomic: true, isIdentifier: true));
+            UpperId = Add(new("UpperId", startsAtomic: true, isIdentifier: true));
+            OperatorId = Add(new("OperatorId", startsAtomic: true, isIdentifier: true));
+
             Wildcard = Add(new("_wildcard_", startsAtomic: true));
             Operator = Add(new("_operator_"));
             Integer = Add(new("Int", startsAtomic: true));
@@ -147,12 +157,16 @@
             public const string Bool = "Bool";
             public const string String = "String";
             public const string Char = "Char";
+            public const string List = "List";
         }
 
         public static class Symbol
         {
             public const string Wildcard = "_";
             public const string Unit = "()";
+            public const string Empty = "[]";
+            public const string ListConstruct = "::";
+            public const string ListCons = "(::)";
         }
 
         public static class Term

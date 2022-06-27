@@ -5,7 +5,7 @@ namespace Fux.Building
     internal class Scope
     {
         private readonly Dictionary<A.Identifier, A.VarDecl> vars = new();
-        private readonly Dictionary<A.Identifier, A.TypeHint> hints = new();
+        private readonly Dictionary<A.Identifier, A.TypeAnnotation> annotations = new();
         private Scope? parent;
 
         public Scope? Parent
@@ -17,15 +17,15 @@ namespace Fux.Building
                 parent = value;
             }
         }
-        public bool HintsAreEmpty => hints.Count == 0;
+        public bool HintsAreEmpty => annotations.Count == 0;
 
-        public void AddHint(A.TypeHint hint)
+        public void AddHint(A.TypeAnnotation annotation)
         {
-            var name = hint.Name.SingleLower();
+            var name = annotation.Name.SingleLower();
 
-            Assert(!hints.ContainsKey(name));
+            Assert(!annotations.ContainsKey(name));
 
-            hints.Add(name, hint);
+            annotations.Add(name, annotation);
         }
 
         public void AddVar(A.VarDecl decl)
@@ -36,10 +36,10 @@ namespace Fux.Building
 
             vars.Add(name, decl);
 
-            if (hints.TryGetValue(name, out var hint))
+            if (annotations.TryGetValue(name, out var hint))
             {
                 decl.Type = hint.Type ;
-                hints.Remove(name);
+                annotations.Remove(name);
             }
         }
 
@@ -53,7 +53,7 @@ namespace Fux.Building
             return vars.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expression expr)
+        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expr expr)
         {
             if (identifier.IsSingleLower && LookupVar(identifier, out var var))
             {
