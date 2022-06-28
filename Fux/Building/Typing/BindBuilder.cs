@@ -81,8 +81,16 @@ namespace Fux.Building.Typing
                                 env = env.Insert(term, new W.Polytype(parameterType));
                                 break;
                             }
+                        case W.Type.Primitive.List:
+                            {
+                                var term = new W.TermVariable(parameterName.Text);
+                                env = env.Insert(term, new W.Polytype(parameterType));
+                                break;
+                            }
                         case W.Type.Tuple2:
-                            break;
+                            {
+                                break;
+                            }
                         default:
                             Assert(false);
                             throw new NotImplementedException();

@@ -1,16 +1,14 @@
 ﻿namespace Fux.Building.AlgorithmW
 {
-    public sealed class TypeVariable
+    public abstract record TypeVariable;
+
+    public sealed record GenTypeVariable(int ID) : TypeVariable
     {
-        public TypeVariable(int id)
-        {
-            ID = id;
-        }
-
-        public int ID { get; }
-
         public override string ToString() => $"'t{ID}";
-        public override bool Equals(object? obj) => obj is TypeVariable other && other.ID == ID;
-        public override int GetHashCode() => ID.GetHashCode();
+    }
+
+    public sealed record FixTypeVariable(string ID) : TypeVariable
+    {
+        public override string ToString() => ID;
     }
 }

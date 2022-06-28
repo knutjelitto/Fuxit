@@ -19,6 +19,14 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Unify expr:
                     Print(expr.Expr);
                     break;
+                case Expr.Iff expr:
+                    WriteLine($"{Lex.KwIf}");
+                    Indent(Sugar(expr.Cond));
+                    WriteLine($"{Lex.KwThen}");
+                    Indent(Sugar(expr.Then));
+                    WriteLine($"{Lex.KwElse}");
+                    Indent(Sugar(expr.Else));
+                    break;
                 case Expr.Let expr:
                     WriteLine($"{Lex.KwLet}");
                     writer.Indent(() =>

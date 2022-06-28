@@ -39,12 +39,21 @@
             return MakeWriter(module, PhaseName);
         }
 
+        protected Writer MakeWriter(Package package)
+        {
+            return MakeWriter(package.FullName + "/PACKAGE", PhaseName);
+        }
 
         protected Writer MakeWriter(Module module, string phase)
         {
-            var writer = (module.NickName + $"-{phase}.txt").Writer();
+            return MakeWriter(module.NickName, phase);
+        }
 
-            writer.WriteLine($"-- {phase} {DateTime.Now} - {module}");
+        protected Writer MakeWriter(string prefix, string phase)
+        {
+            var writer = ($"{prefix}-{phase}.txt").Writer();
+
+            writer.WriteLine($"-- {phase} {DateTime.Now}");
             writer.WriteLine();
 
             return writer;

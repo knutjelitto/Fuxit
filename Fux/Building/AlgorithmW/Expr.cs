@@ -15,7 +15,7 @@
 
         internal sealed record MultiApplication(IReadOnlyList<Expr> Exprs) : Expr
         {
-            public override string ToString() => $"({string.Join(" ", Exprs)})";
+            public override string ToString() => $"($ {string.Join(" ", Exprs)})";
         }
 
         internal sealed record Abstraction(TermVariable Term, Expr Exp) : Expr

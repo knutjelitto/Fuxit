@@ -49,6 +49,21 @@ namespace Fux.Input.Ast
             public sealed class Bool : Primitive { public Bool(Identifier name) : base(name, Lex.Primitive.Bool) { } }
             public sealed class String : Primitive { public String(Identifier name) : base(name, Lex.Primitive.String) { } }
             public sealed class Char : Primitive { public Char(Identifier name) : base(name, Lex.Primitive.Char) { } }
+            public sealed class List : Primitive
+            {
+                public List(Identifier name, Type argument)
+                    : base(name, Lex.Primitive.List)
+                {
+                    Argument = argument;
+                }
+
+                public Type Argument { get; }
+
+                public override string ToString()
+                {
+                    return $"{Name}<{Argument}>";
+                }
+            }
 
             public override string ToString()
             {

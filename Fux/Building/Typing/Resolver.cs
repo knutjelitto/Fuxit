@@ -25,24 +25,31 @@ namespace Fux.Building.Typing
         public Module Module { get; }
         public W.Pretty Pretty { get; }
 
-        public void TypeVar(A.VarDecl var, int no, bool investigated)
+        public void TypeVar(A.VarDecl var, int numero, bool investigated)
         {
             try
             {
-                Writer.Write($"{no,4}. {var.Name}");
-                if (var.Parameters.Count > 0)
-                {
-                    Writer.Write($" {var.Parameters}");
-                }
-                if (var.Type != null)
-                {
-                    Writer.Write($" : {var.Type}");
-                }
+                Writer.WriteLine($"{numero,4}. {Module.NickName}({var.Name.Location.Line})");
                 Writer.WriteLine();
-
                 Writer.Indent(() =>
                 {
-                    Writer.WriteLine($"{var.Expression}");
+                    Writer.Write($"{var.Name}");
+                    if (var.Parameters.Count > 0)
+                    {
+                        Writer.WriteLine($" {var.Parameters}");
+                    }
+                    else
+                    {
+                        Writer.WriteLine();
+                    }
+                    if (var.Type != null)
+                    {
+                        Writer.Indent(() => Writer.WriteLine($": {var.Type}"));
+                    }
+                    Writer.Indent(() =>
+                    {
+                        Writer.WriteLine($"= {var.Expression}");
+                    });
                 });
 
                 Writer.WriteLine();
@@ -51,17 +58,21 @@ namespace Fux.Building.Typing
             }
             catch (Exception any)
             {
-                var lines = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-                Writer.WriteLine($"!!!! {any.Message}");
-                foreach (var line in lines)
+                Writer.WriteLine("====================================================================================================");
+                Writer.Indent(() =>
                 {
-                    Writer.WriteLine($"     {line}");
-                    if (line.LastIndexOf(":line ") > 0)
+                    var lines = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                    Writer.WriteLine($"{any.Message}");
+                    foreach (var line in lines)
                     {
-                        break;
+                        Writer.WriteLine($"{line}");
+                        if (line.LastIndexOf(":line ") > 0)
+                        {
+                            break;
+                        }
                     }
-                }
+                });
                 Writer.WriteLine();
             }
         }
@@ -92,22 +103,19 @@ namespace Fux.Building.Typing
             });
         }
 
-        private void PrintEnv(bool investigated, W.Environment env)
+        private void PrintEnv(W.Environment env)
         {
-            if (investigated)
+            Writer.WriteLine();
+            foreach (var (var, polytype) in env.Enumerate())
             {
-                Writer.WriteLine();
-                foreach (var (var, polytype) in env.Enumerate())
-                {
-                    Writer.WriteLine($"{var}: {polytype}");
-                }
+                Writer.WriteLine($"{var}: {polytype}");
             }
         }
 
         private void Resolve(W.Inferrer inferrer, W.Environment env, W.Expr expression, bool investigated)
         {
             Pretty.Print(expression);
-            PrintEnv(investigated, env);
+            PrintEnv(env);
             Writer.WriteLine();
             var type = inferrer.Run(expression, env, investigated);
             Writer.WriteLine($"OUTPUT: {type}");

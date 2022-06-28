@@ -11,10 +11,10 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
-        private const int underInvestigation = 127; //328;
-        private static int resolvedCount = 0;
-        private const int resolvedCountMin = 1 + 0; //326;
-        private const int resolvedCountMax = resolvedCountMin - 1 + 250; //45;
+        private const int underInvestigation = 50;
+        private static int numero = 0;
+        private const int numeroFrom = 1;
+        private const int numeroTo = 200;
 
         //private static Func<int, bool> Qualify = (no => no == huntingFor);
         private static readonly Func<int, bool> Qualify = no => true;
@@ -26,36 +26,39 @@ namespace Fux.Building.Phases
 
         public override void Make()
         {
-            foreach (var module in Package.Modules)
+            using (var writer = MakeWriter(Package))
             {
-                Terminal.Write(".");
-
-                if (module.IsJs)
+                foreach (var module in Package.Modules)
                 {
-                    continue;
-                }
+                    Terminal.Write(".");
 
-                if (resolvedCount >= resolvedCountMax)
-                {
-                    continue;
-                }
+                    if (module.IsJs)
+                    {
+                        continue;
+                    }
 
-                MakeModule(module);
+                    if (numero >= numeroTo)
+                    {
+                        continue;
+                    }
+
+                    MakeModule(module, writer);
+                }
             }
         }
 
-        private void MakeModule(Module module)
+        private void MakeModule(Module module, Writer writer)
         {
             Collector.TypeTime.Start();
-            Make(module);
+            Make(module, writer);
             Collector.TypeTime.Stop();
         }
 
-        private void Make(Module module)
+        private void Make(Module module, Writer writer)
         {
             Assert(module.Ast != null);
 
-            if (resolvedCount >= resolvedCountMax)
+            if (numero >= numeroTo)
             {
                 return;
             }
@@ -63,34 +66,31 @@ namespace Fux.Building.Phases
             var declarations = module.Ast.Declarations.OfType<A.VarDecl>().ToList();
 
 
-            if (resolvedCount + declarations.Count < resolvedCountMin)
+            if (numero + declarations.Count < numeroFrom)
             {
-                resolvedCount += declarations.Count;
+                numero += declarations.Count;
                 return;
             }
 
-            using (var writer = Ambience.Config.WriteTheTyping ? MakeWriter(module) : MakeWriter())
+            var resolver = new T.Resolver(writer, Package, module);
+
+            foreach (var declaration in declarations)
             {
-                var resolver = new T.Resolver(writer, Package, module);
+                numero += 1;
 
-                foreach (var declaration in declarations)
+                if (numero < numeroFrom)
                 {
-                    resolvedCount += 1;
+                    continue;
+                }
 
-                    if (resolvedCount < resolvedCountMin)
-                    {
-                        continue;
-                    }
+                if (Qualify(numero))
+                {
+                    resolver.TypeVar(declaration, numero, numero == underInvestigation);
+                }
 
-                    if (Qualify(resolvedCount))
-                    {
-                        resolver.TypeVar(declaration, resolvedCount, resolvedCount == underInvestigation);
-                    }
-
-                    if (resolvedCount >= resolvedCountMax)
-                    {
-                        break;
-                    }
+                if (numero >= numeroTo)
+                {
+                    break;
                 }
             }
         }

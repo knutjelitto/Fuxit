@@ -26,7 +26,10 @@ namespace Fux.Building.Typing
                                     return new W.Expr.Native(native);
                                 case A.InfixDecl infix:
                                     {
-                                        if (investigated) Assert(true);
+                                        if (investigated)
+                                        {
+                                            Assert(true);
+                                        }
 
                                         Assert(identifier.IsSingleOp);
                                         Assert(infix.Expression.Resolved != infix);
@@ -38,14 +41,7 @@ namespace Fux.Building.Typing
                                     {
                                         Assert(identifier.IsSingleLower || identifier.IsQualified);
                                         W.Polytype wtype;
-                                        if (var.Type == null)
-                                        {
-                                            wtype = new W.Polytype(env.Generator.GetNext());
-                                        }
-                                        else
-                                        {
-                                            wtype = typeBuilder.Build(env, var.Type);
-                                        }
+                                        wtype = typeBuilder.Build(env, var.Type);
                                         var variable = new W.Expr.Variable(identifier.Text);
                                         var already = env.TryGet(variable.Term);
                                         if (already != null)

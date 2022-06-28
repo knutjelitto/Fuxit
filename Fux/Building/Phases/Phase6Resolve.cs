@@ -154,28 +154,40 @@ namespace Fux.Building.Phases
                         {
                             Assert(resolved.Module != null);
 
-                            if (union.Arguments.Count == 0 && resolved.Module.IsCore && resolved is A.UnionDecl decl)
+                            if (resolved.Module.IsCore && resolved is A.UnionDecl decl)
                             {
-                                Assert(union.Arguments.Count == 0);
-                                //Assert(union.Name.Text == decl.Name.Text);
-
-                                switch (union.Name.Text)
+                                if (union.Arguments.Count == 0)
                                 {
-                                    case Lex.Primitive.Int:
-                                        union.Resolved = new A.Type.Primitive.Int(union.Name);
-                                        break;
-                                    case Lex.Primitive.Float:
-                                        union.Resolved = new A.Type.Primitive.Float(union.Name);
-                                        break;
-                                    case Lex.Primitive.Bool:
-                                        union.Resolved = new A.Type.Primitive.Bool(union.Name);
-                                        break;
-                                    case Lex.Primitive.String:
-                                        union.Resolved = new A.Type.Primitive.String(union.Name);
-                                        break;
-                                    case Lex.Primitive.Char:
-                                        union.Resolved = new A.Type.Primitive.Char(union.Name);
-                                        break;
+                                    Assert(union.Arguments.Count == 0);
+                                    //Assert(union.Name.Text == decl.Name.Text);
+
+                                    switch (union.Name.Text)
+                                    {
+                                        case Lex.Primitive.Int:
+                                            union.Resolved = new A.Type.Primitive.Int(union.Name);
+                                            break;
+                                        case Lex.Primitive.Float:
+                                            union.Resolved = new A.Type.Primitive.Float(union.Name);
+                                            break;
+                                        case Lex.Primitive.Bool:
+                                            union.Resolved = new A.Type.Primitive.Bool(union.Name);
+                                            break;
+                                        case Lex.Primitive.String:
+                                            union.Resolved = new A.Type.Primitive.String(union.Name);
+                                            break;
+                                        case Lex.Primitive.Char:
+                                            union.Resolved = new A.Type.Primitive.Char(union.Name);
+                                            break;
+                                    }
+                                }
+                                else if (union.Arguments.Count == 1)
+                                {
+                                    switch (union.Name.Text)
+                                    {
+                                        case Lex.Primitive.List:
+                                            union.Resolved = new A.Type.Primitive.List(union.Name, union.Arguments[0]);
+                                            break;
+                                    }
                                 }
                             }
                         }

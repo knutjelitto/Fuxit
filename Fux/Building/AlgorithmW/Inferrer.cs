@@ -6,6 +6,43 @@ namespace Fux.Building.AlgorithmW
 {
     internal class Inferrer
     {
+        public Type Run(Expr expression, Environment typeEnvironment, bool investigated)
+        {
+            if (investigated)
+            {
+                Assert(true);
+            }
+            var (substitution, type) = InferType(expression, typeEnvironment, investigated);
+            return ApplySubstitution(type, substitution);
+        }
+
+        public Environment GetEmptyEnvironment()
+        {
+            return Environment.Initial(new TypeVarGenerator());
+        }
+
+        public Environment GetDefaultEnvironment(TypeVarGenerator typeVarGenerator)
+        {
+            var number1 = typeVarGenerator.GetNext();
+            var number2 = typeVarGenerator.GetNext();
+            var number3 = typeVarGenerator.GetNext();
+
+            return Environment.Initial(typeVarGenerator,
+
+                // + :: number -> number -> number -- binary addition
+                ("+", new Polytype(new Type.Function(number1, new Type.Function(number1, number1)))),
+
+                // - :: number -> number -- unary negation
+                ("-", new Polytype(new Type.Function(number2, number2))),
+
+                // less-than :: number -> number -> bool
+                ("<", new Polytype(new Type.Function(number3, new Type.Function(number3, new Type.Bool())))),
+
+                // - :: integer -> float -- conversion
+                ("toFloat", new Polytype(new Type.Function(new Type.Integer(), new Type.Float())))
+            );
+        }
+
         /// <summary>
         /// The meat of the type inference algorithm.
         /// </summary>
@@ -140,8 +177,14 @@ namespace Fux.Building.AlgorithmW
                         var (s1, t1) = InferType(callee, env, investigated);
                         var (s2, t2) = InferType(argument, ApplySubstitution(env, s1), investigated);
 
+                        if (investigated)
+                        {
+                            Assert(true);
+                        }
+
                         var varType = env.Generator.GetNext();
-                        var s3 = MostGeneralUnifier(ApplySubstitution(t1, s2), new Type.Function(t2, varType));
+                        var t3 = ApplySubstitution(t1, s2);
+                        var s3 = MostGeneralUnifier(t3, new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3));
                     }
 
@@ -158,8 +201,6 @@ namespace Fux.Building.AlgorithmW
                         var s3 = MostGeneralUnifier(restType.Type, firstType);
 
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(restType, s3));
-
-                        break;
                     }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
@@ -185,7 +226,11 @@ namespace Fux.Building.AlgorithmW
                     return new Type.List(ApplySubstitution(tl, substitution));
 
                 // A primitive type is not changed by a substitution.
-                case Type.Primitive:
+                case Type.Integer:
+                case Type.Float:
+                case Type.Bool:
+                case Type.String:
+                case Type.Char:
                     return type;
 
                 // A concrete type is not changed by a substitution.
@@ -230,6 +275,10 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private static Substitution MostGeneralUnifier(Type type1, Type type2)
         {
+            if (type1 is Type.List && type2 is Type.List)
+            {
+                Assert(true);
+            }
             switch (type1, type2)
             {
                 // For functions, we find the most general unifier for the inputs, apply the resulting
@@ -252,6 +301,18 @@ namespace Fux.Building.AlgorithmW
                         return ComposeSubstitutions(sub1, sub2);
                     }
 
+
+                // If one of the types is variable, we can bind the variable to the type.
+                // This also handles the case where they are both variables.
+                case (Type.Variable({ } v1) t1, Type.Variable({ } v2) t2):
+                    {
+                        if (v1 is FixTypeVariable)
+                        {
+                            return BindVariable(v2, t1);
+                        }
+                        return BindVariable(v1, t2);
+                    }
+
                 // If one of the types is variable, we can bind the variable to the type.
                 // This also handles the case where they are both variables.
                 case (Type.Variable({ } v), { } t):
@@ -262,11 +323,6 @@ namespace Fux.Building.AlgorithmW
                 case ({ } t, Type.Variable({ } v)):
                     {
                         return BindVariable(v, t);
-                    }
-
-                case (Type.List({ } t1), Type.List({ } t2)):
-                    {
-                        break;
                     }
 
                 // If they are both primitives, no substitution needs to be done.
@@ -291,8 +347,17 @@ namespace Fux.Building.AlgorithmW
                         return Substitution.Empty();
                     }
 
-                case (Type.List list1, Type.List list2):
+
+                case (Type.List({ } t1) list1, Type.List({ } t2) list2):
                     {
+                        if (t1 == t2)
+                        {
+                            Assert(true);
+                        }
+                        else
+                        {
+                            Assert(true);
+                        }
                         return Substitution.Empty();
                     }
 
@@ -302,7 +367,7 @@ namespace Fux.Building.AlgorithmW
             }
 
             Assert(true);
-            throw new WError($"types do not unify: {type1} vs {type2}");
+            throw new WError($"types do not unify: {type1.GetType().FullName}({type1}) vs {type2.GetType().FullName}({type2})");
         }
 
         /// <summary>
@@ -428,39 +493,6 @@ namespace Fux.Building.AlgorithmW
             var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
-        }
-
-        public Type Run(Expr expression, Environment typeEnvironment, bool investigated)
-        {
-            var (substitution, type) = InferType(expression, typeEnvironment, investigated);
-            return ApplySubstitution(type, substitution);
-        }
-
-        public Environment GetEmptyEnvironment()
-        {
-            return Environment.Initial(new TypeVarGenerator());
-        }
-
-        public Environment GetDefaultEnvironment(TypeVarGenerator typeVarGenerator)
-        {
-            var number1 = typeVarGenerator.GetNext();
-            var number2 = typeVarGenerator.GetNext();
-            var number3 = typeVarGenerator.GetNext();
-
-            return Environment.Initial(typeVarGenerator,
-
-                // + :: number -> number -> number -- binary addition
-                ("+", new Polytype(new Type.Function(number1, new Type.Function(number1, number1)))),
-
-                // - :: number -> number -- unary negation
-                ("-", new Polytype(new Type.Function(number2, number2))),
-
-                // less-than :: number -> number -> bool
-                ("<", new Polytype(new Type.Function(number3, new Type.Function(number3, new Type.Bool())))),
-
-                // - :: integer -> float -- conversion
-                ("toFloat", new Polytype(new Type.Function(new Type.Integer(), new Type.Float())))
-            );
         }
     }
 }

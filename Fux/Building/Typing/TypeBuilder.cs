@@ -50,6 +50,8 @@ namespace Fux.Building.Typing
                     return new W.Type.Char();
                 case A.Type.Concrete concrete:
                     return new W.Type.Concrete(concrete.Name.Text);
+                case A.Type.Primitive.List list:
+                    return new W.Type.List(Resolve(env, list.Argument));
                 case A.Type.Union union:
                     if (union.Arguments.Count > 0)
                     {
@@ -61,15 +63,21 @@ namespace Fux.Building.Typing
                         return new W.Type.Concrete(union.Name.Text);
                     }
             }
-            throw new NotImplementedException($"type not implemented: '{type.GetType().FullName} - {type}'");
+            throw new NotImplementedException($"type not implemented: '{type.Resolved.GetType().FullName}({type})'");
 
             W.Type.Variable VarType(string text)
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
+#if true
+                    typeVar = new W.FixTypeVariable(text);
+                    index.Add(text, typeVar);
+                    vars.Add(typeVar);
+#else
                     typeVar = env.Generator.GetNext().TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
+#endif
                 }
                 return new W.Type.Variable(typeVar);
             }
