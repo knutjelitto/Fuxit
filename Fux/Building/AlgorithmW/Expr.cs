@@ -13,11 +13,6 @@
             public override string ToString() => $"(apply {Exp1} {Exp2})";
         }
 
-        internal sealed record MultiApplication(IReadOnlyList<Expr> Exprs) : Expr
-        {
-            public override string ToString() => $"($ {string.Join(" ", Exprs)})";
-        }
-
         internal sealed record Abstraction(TermVariable Term, Expr Exp) : Expr
         {
             public override string ToString() => $"({Term} => {Exp})";
@@ -107,6 +102,14 @@
             internal sealed record Char(string Value) : Literal
             {
                 public override string ToString() => $"\'{Value}\'";
+            }
+        }
+
+        internal abstract record Sugar : Expr
+        {
+            internal sealed new record Application(IReadOnlyList<Expr> Exprs) : Sugar
+            {
+                public override string ToString() => $"($ {string.Join(" ", Exprs)})";
             }
         }
     }

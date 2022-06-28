@@ -5,6 +5,8 @@ namespace Fux.Building.AlgorithmW
 {
     internal class Pretty
     {
+        const int maxWidth = 40;
+
         public Pretty(Writer writer)
         {
             this.writer = writer;
@@ -21,27 +23,46 @@ namespace Fux.Building.AlgorithmW
                     break;
                 case Expr.Iff expr:
                     WriteLine($"{Lex.KwIf}");
-                    Indent(Sugar(expr.Cond));
+                    Indent(expr.Cond);
                     WriteLine($"{Lex.KwThen}");
-                    Indent(Sugar(expr.Then));
+                    Indent(expr.Then);
                     WriteLine($"{Lex.KwElse}");
-                    Indent(Sugar(expr.Else));
+                    Indent(expr.Else);
                     break;
                 case Expr.Let expr:
                     WriteLine($"{Lex.KwLet}");
-                    writer.Indent(() =>
+                    Indent(() =>
                     {
                         WriteLine($"{expr.Term} =");
                         Indent(Sugar(expr.Exp1));
                     });
                     WriteLine($"{Lex.KwIn}");
-                    writer.Indent(() =>
+                    Indent(() =>
                     {
                         WriteLine(Sugar(expr.Exp2));
                     });
                     break;
                 case Expr.Application expr:
-                    WriteLine(SugarApp(expr));
+                    Print(SugarApp(expr));
+                    break;
+                case Expr.Sugar.Application expr:
+                    if (expr.ToString().Length <= maxWidth)
+                    {
+                        WriteLine(expr);
+                    }
+                    else
+                    {
+                        Write($"($ ");
+                        Print(expr.Exprs[0]);
+                        Indent(() =>
+                        {
+                            foreach (var arg in expr.Exprs.Skip(1))
+                            {
+                                Print(arg);
+                            }
+                        });
+                        WriteLine($")");
+                    }
                     break;
                 default:
                     WriteLine(top);
@@ -60,9 +81,9 @@ namespace Fux.Building.AlgorithmW
             }
         }
 
-        private Expr.MultiApplication SugarApp(Expr.Application app)
+        private Expr.Sugar.Application SugarApp(Expr.Application app)
         {
-            return new Expr.MultiApplication(multi(app).ToArray());
+            return new Expr.Sugar.Application(multi(app).ToArray());
 
             IEnumerable<Expr> multi(Expr.Application expr)
             {
