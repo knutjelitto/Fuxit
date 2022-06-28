@@ -19,6 +19,7 @@ namespace Fux.Input
         public Module Module { get; }
         public ParserErrors Error { get; }
         public Tokens Tokens { get; }
+
         public bool StartsAtomic => More() && Current.Lex.StartsAtomic;
 
         public bool StartsTypeAnnotation
@@ -36,11 +37,15 @@ namespace Fux.Input
         {
             get
             {
+                var hasPrev = Offset > 0;
+                var hasNext = Offset + 1 < Tokens.Count;
+
                 return
-                    this.IsOperator() &&
+                    hasNext &&
                     Current.Text == "-" &&
-                    Offset + 1 < Tokens.Count &&
-                    !Tokens[Offset + 1].WhitesBefore;
+                    !Next.WhitesBefore &&
+                    this.IsOperator() &&
+                    (Current.WhitesBefore || (hasPrev && Prev.Lex.IsParent));
             }
         }
 
@@ -61,6 +66,9 @@ namespace Fux.Input
             Offset = state;
         }
 
+        public int Line => Current.Location.Line;
+        public int Column => Current.Location.Column;
+
         public Token Current
         {
             get
@@ -78,6 +86,17 @@ namespace Fux.Input
                 Assert(Offset + 1 < Tokens.Count);
 
                 return Tokens[Offset + 1];
+            }
+        }
+
+
+        public Token Prev
+        {
+            get
+            {
+                Assert(Offset > 0);
+
+                return Tokens[Offset - 1];
             }
         }
 
@@ -172,6 +191,5 @@ namespace Fux.Input
             }
             return "<EOF>";
         }
-
     }
 }

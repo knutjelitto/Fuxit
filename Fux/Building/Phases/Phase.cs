@@ -41,7 +41,7 @@
 
         protected Writer MakeWriter(Package package)
         {
-            return MakeWriter(package.FullName + "/PACKAGE", PhaseName);
+            return MakeWriter(package.FullName + "/Typing.text");
         }
 
         protected Writer MakeWriter(Module module, string phase)
@@ -51,12 +51,7 @@
 
         protected Writer MakeWriter(string prefix, string phase)
         {
-            var writer = ($"{prefix}-{phase}.txt").Writer();
-
-            writer.WriteLine($"-- {phase} {DateTime.Now}");
-            writer.WriteLine();
-
-            return writer;
+            return MakeWriter($"{prefix}-{phase}.text");
         }
     }
 }

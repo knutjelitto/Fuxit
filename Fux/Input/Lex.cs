@@ -8,13 +8,15 @@
             bool isKeyword = false, 
             bool startsAtomic = false, 
             bool terminatesSomething = false,
-            bool isIdentifier = false)
+            bool isIdentifier = false,
+            bool isParent = false)
         {
             Name = string.Intern(name);
             IsKeyword = isKeyword;
             StartsAtomic = startsAtomic;
             TerminatesSomething = terminatesSomething;
             IsIdentifier = isIdentifier;
+            IsParent = isParent;
         }
 
         public string Name { get; }
@@ -22,6 +24,7 @@
         public bool StartsAtomic { get; }
         public bool TerminatesSomething { get; }
         public bool IsIdentifier { get; }
+        public bool IsParent { get; }
 
         public static IReadOnlyList<Lex> AllLex => allLex;
 
@@ -77,12 +80,12 @@
             Arrow = Add(new("->", terminatesSomething: true));
             Bar = Add(new("|", terminatesSomething: true));
             Lambda = Add(new("\\", startsAtomic: true));
-            LParent = Add(new("(", startsAtomic: true));
-            RParent = Add(new(")", terminatesSomething: true));
-            LBrace = Add(new("{", startsAtomic: true));
-            RBrace = Add(new("}", terminatesSomething: true));
-            LBracket = Add(new("[", startsAtomic: true));
-            RBracket = Add(new("]", terminatesSomething: true));
+            LParent = Add(new("(", startsAtomic: true, isParent: true));
+            RParent = Add(new(")", terminatesSomething: true, isParent: true));
+            LBrace = Add(new("{", startsAtomic: true, isParent: true));
+            RBrace = Add(new("}", terminatesSomething: true, isParent: true));
+            LBracket = Add(new("[", startsAtomic: true, isParent: true));
+            RBracket = Add(new("]", terminatesSomething: true, isParent: true));
             KwIf = Add(new("if", isKeyword: true, startsAtomic: true));
             KwThen = Add(new("then", isKeyword: true));
             KwElse = Add(new("else", isKeyword: true));

@@ -893,7 +893,7 @@ namespace Fux.Input
 
                 do
                 {
-                    if (cursor.Current.Line == 261)
+                    if (cursor.Current.Line == 74)
                     {
                         Assert(true);
                     }
@@ -919,6 +919,11 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
+                if (cursor.Line == 72 && cursor.Column == 28)
+                {
+                    Assert(true);
+                }
+
                 A.Expr app;
 
                 if (cursor.StartsPrefix)

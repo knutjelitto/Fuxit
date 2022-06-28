@@ -90,8 +90,10 @@ namespace Fux.Input
                     return Build(Lex.Lambda, 1);
                 case '-' when Next == '-':
                     return LineComment();
+#if false
                 case '-' when Next.IsDigit():
                     return Build(Number());
+#endif
                 case '-' when Next == '>' && !NextNext.IsSymbol():
                     return Build(Lex.Arrow, 2);
                 case '"' when Next == '"' && NextNext == '"':
