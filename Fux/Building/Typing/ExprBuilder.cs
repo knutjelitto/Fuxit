@@ -149,6 +149,9 @@ namespace Fux.Building.Typing
                 case A.LetExpr letExpr:
                     return BuildLetExpr(letExpr, ref env, investigated);
 
+                case A.LambdaExpr lambdaExpr:
+                    return BuildLambdaExpr(lambdaExpr, ref env, investigated);
+
                 case A.ListExpr listExpr:
                     return Cons(ref env, listExpr, 0);
 
@@ -188,6 +191,22 @@ namespace Fux.Building.Typing
             }
         }
 
+        private W.Expr BuildLambdaExpr(A.LambdaExpr lambdaExpr, ref W.Environment env, bool investigated)
+        {
+            var expr = Build(ref env, lambdaExpr.Expression, investigated);
+
+            foreach (var x in lambdaExpr.Parameters.Flatten().Reverse())
+            {
+                var var = new W.TermVariable(x.Text);
+                var type = env.Generator.GetNext();
+                env = env.Insert(var, new W.Polytype(type));
+
+                expr = new W.Expr.Abstraction(var, expr);
+            }
+
+            return expr;
+        }
+
         private W.Expr BuildLetExpr(A.LetExpr letExpr, ref W.Environment env, bool investigated)
         {
             if (investigated)
@@ -222,7 +241,7 @@ namespace Fux.Building.Typing
                     break;
             }
 
-            Assert(true);
+            Assert(false);
             throw NotImplemented(let);
         }
 

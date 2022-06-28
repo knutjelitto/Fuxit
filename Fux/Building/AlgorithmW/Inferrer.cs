@@ -348,17 +348,13 @@ namespace Fux.Building.AlgorithmW
                     }
 
 
-                case (Type.List({ } t1) list1, Type.List({ } t2) list2):
+                case (Type.List({ } typ1) list1, Type.List({ } typ2) list2):
                     {
-                        if (t1 == t2)
+                        if (typ1 == typ2)
                         {
-                            Assert(true);
+                            return Substitution.Empty();
                         }
-                        else
-                        {
-                            Assert(true);
-                        }
-                        return Substitution.Empty();
+                        break;
                     }
 
                 // Otherwise, the types cannot be unified.

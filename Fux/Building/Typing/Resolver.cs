@@ -90,7 +90,7 @@ namespace Fux.Building.Typing
             var variable = new W.Expr.Variable(var.Name);
             env = env.Insert(variable.Term, varType);
 
-            var varExpr = exprBuilder.Build(ref env, var.Expression, investigated);
+            var varExpr = exprBuilder.Build(ref env, var.Expression.Resolved, investigated);
 
             var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
 

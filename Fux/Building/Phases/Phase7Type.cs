@@ -11,7 +11,7 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
-        private const int underInvestigation = 50;
+        private const int underInvestigation = 133;
         private static int numero = 0;
         private const int numeroFrom = 1;
         private const int numeroTo = 200;
@@ -58,7 +58,7 @@ namespace Fux.Building.Phases
         {
             Assert(module.Ast != null);
 
-            if (numero >= numeroTo)
+            if (numero > numeroTo)
             {
                 return;
             }
