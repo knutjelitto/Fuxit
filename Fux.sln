@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AC804E2C-8
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fux.TypeSystem", "Fux.TypeSystem\Fux.TypeSystem.csproj", "{16B10032-ABEA-48DB-871E-A4FCE605A19C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,6 +24,10 @@ Global
 		{82832688-6C42-4881-A8BA-0AE1018BA529}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82832688-6C42-4881-A8BA-0AE1018BA529}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82832688-6C42-4881-A8BA-0AE1018BA529}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B10032-ABEA-48DB-871E-A4FCE605A19C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16B10032-ABEA-48DB-871E-A4FCE605A19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16B10032-ABEA-48DB-871E-A4FCE605A19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16B10032-ABEA-48DB-871E-A4FCE605A19C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
