@@ -1,6 +1,6 @@
 ﻿namespace Fux
 {
-    internal class ErrorBag
+    public sealed class ErrorBag
     {
         private readonly List<DiagnosticException> exceptions = new();
         private readonly int few = 10;

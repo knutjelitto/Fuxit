@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class Docs
+    public sealed class Docs
     {
         public static Docs Get(ElmPackage reference)
         {

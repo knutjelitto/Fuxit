@@ -4,7 +4,7 @@ using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Tools
 {
-    internal class Environment
+    public sealed class Environment
     {
         private readonly Dictionary<W.TermVariable, W.Polytype> builder = new();
     }

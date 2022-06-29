@@ -2,7 +2,7 @@
 
 namespace Fux.Building.Typing
 {
-    internal class ExprBuilder
+    public sealed class ExprBuilder
     {
         private readonly TypeBuilder typeBuilder;
 
@@ -11,7 +11,7 @@ namespace Fux.Building.Typing
             this.typeBuilder = typeBuilder;
         }
 
-        public W.Expr Build(ref W.Environment env, A.Expr expr, bool investigated)
+        public W.Expr Build(ref W.Environment env, A.Node expr, bool investigated)
         {
             switch (expr)
             {
@@ -216,7 +216,7 @@ namespace Fux.Building.Typing
 
             W.Expr inExpr = Build(ref env, letExpr.InExpression, investigated);
 
-            foreach (var let in letExpr.LetExpressions.Reverse())
+            foreach (var let in letExpr.LetDecls.Reverse())
             {
                 var (name, expr) = BuildLet(let, ref env, investigated);
 
@@ -226,7 +226,7 @@ namespace Fux.Building.Typing
             return inExpr;
         }
 
-        private (W.TermVariable name, W.Expr expr) BuildLet(A.Expr let, ref W.Environment env, bool investigated)
+        private (W.TermVariable name, W.Expr expr) BuildLet(A.Declaration let, ref W.Environment env, bool investigated)
         {
             switch (let)
             {
@@ -245,9 +245,9 @@ namespace Fux.Building.Typing
             throw NotImplemented(let);
         }
 
-        private static Exception NotImplemented(A.Expr expr)
+        private static Exception NotImplemented(A.Node node)
         {
-            return new NotImplementedException($"missing implementation: '{expr.GetType().FullName} - {expr}'");
+            return new NotImplementedException($"missing implementation: '{node.GetType().FullName} - {node}'");
         }
     }
 }

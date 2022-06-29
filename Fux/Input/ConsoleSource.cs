@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class ConsoleSource : Source
+    public sealed class ConsoleSource : Source
     {
         private string line = string.Empty;
         private int lineOffset = 1;

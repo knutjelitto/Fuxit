@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal static class PatternExtensions
+    public static class PatternExtensions
     {
         public static IEnumerable<A.Parameter> ExtractNamedParameters(this A.Pattern pattern)
         {

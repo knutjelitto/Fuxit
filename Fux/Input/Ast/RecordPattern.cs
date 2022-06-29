@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class RecordPattern : Expr
+    public sealed class RecordPattern : Expr.ExprImpl
     {
         public RecordPattern(IEnumerable<FieldPattern> fields)
         {

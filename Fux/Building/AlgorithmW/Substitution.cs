@@ -2,7 +2,7 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    internal sealed class Substitution
+    public sealed class Substitution
     {
         private readonly ImmutableDictionary<TypeVariable, Type> map;
 

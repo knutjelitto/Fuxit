@@ -2,7 +2,7 @@
 
 namespace Fux.Input
 {
-    internal class Lexer : ILexer
+    public sealed class Lexer : ILexer
     {
         private static readonly Dictionary<string, (string name, Lex kwLex)> keywords = new();
 

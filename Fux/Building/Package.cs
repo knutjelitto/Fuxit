@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal class Package
+    public class Package
     {
         private readonly ElmPackage elm;
         private readonly List<Package> dependencies = new();

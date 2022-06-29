@@ -1,6 +1,6 @@
 ﻿namespace Fux.ElmPackages
 {
-    internal class ElmCache
+    public sealed class ElmCache
     {
         static ElmCache()
         {

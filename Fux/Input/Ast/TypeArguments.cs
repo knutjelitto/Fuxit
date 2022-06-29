@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class TypeArguments : ListOf<Type>
+    public sealed class TypeArguments : ListOf<Type>
     {
         public TypeArguments(IEnumerable<Type> items)
             : base(items)

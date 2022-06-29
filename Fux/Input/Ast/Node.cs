@@ -2,37 +2,40 @@
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Node
+    public interface Node
     {
-        public Tokens? Span { get; set; } = null;
+        Tokens? Span { get; set; }
 
-        public Module? Module { get; set; } = null;
+        Module? Module { get; set; }
 
-        public T With<T>(Module module)
-            where T : Node
+        ILocation Location { get; }
+
+        void PP(Writer writer);
+
+        string Protected(string text);
+
+        public abstract class NodeImpl : Node
         {
-            Module = module;
+            public Tokens? Span { get; set; } = null;
 
-            return (T)this;
-        }
+            public Module? Module { get; set; } = null;
 
-        public ILocation Location
-        {
-            get
+            public ILocation Location
             {
-                Assert(Span != null);
+                get
+                {
+                    Assert(Span != null);
 
-                return Span[0].Location;
+                    return Span[0].Location;
+                }
             }
-        }
 
-        public abstract void PP(Writer writer);
+            public abstract void PP(Writer writer);
 
-        public bool Protect { get; set; } = false;
-
-        protected string Protected(string text)
-        {
-            return Protect ? $"({text})" : text;
+            public string Protected(string text)
+            {
+                return $"({text})";
+            }
         }
     }
 }

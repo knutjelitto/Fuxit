@@ -3,7 +3,7 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    internal class Pretty
+    public sealed class Pretty
     {
         const int maxWidth = 40;
 

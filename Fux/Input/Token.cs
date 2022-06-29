@@ -1,7 +1,7 @@
 ﻿namespace Fux.Input
 {
     [DebuggerDisplay("{Dbg()}")]
-    internal class Token
+    public class Token
     {
         private readonly string? artifical = null;
 

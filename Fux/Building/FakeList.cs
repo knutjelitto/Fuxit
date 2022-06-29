@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Building
 {
-    internal static class FakeList
+    public static class FakeList
     {
         public static A.UnionDecl MakeType(Module module)
         {

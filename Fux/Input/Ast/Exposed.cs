@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal abstract class Exposed
+    public abstract class Exposed
     {
         protected Exposed(Identifier name)
         {
@@ -10,7 +10,7 @@
         public Identifier Name { get; }
     }
 
-    internal class ExposedType : Exposed
+    public sealed class ExposedType : Exposed
     {
         public ExposedType(Identifier name, bool inclusive)
             : base(name)
@@ -38,7 +38,7 @@
         }
     }
 
-    internal class ExposedVar : Exposed
+    public sealed class ExposedVar : Exposed
     {
         public ExposedVar(Identifier name)
             : base(name)

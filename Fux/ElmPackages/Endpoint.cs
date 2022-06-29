@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
-    internal class Endpoint
+    public sealed class Endpoint
     {
         public static readonly string Filename = "endpoint.json";
 

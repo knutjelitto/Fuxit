@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class Dependency
+    public sealed class Dependency
     {
         public Dependency(string name, Constraint constraint)
         {

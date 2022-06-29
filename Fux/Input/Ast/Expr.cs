@@ -1,16 +1,24 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal abstract class Expr : Node
+    public interface Expr : Node
     {
-        protected const int WhatIsLong = 60;
+        Identifier? Alias { get; set; }
+        Node Resolved { get; set; }
 
-        protected Expr()
+        public abstract class ExprImpl : NodeImpl, Expr
         {
-            Resolved = this;
+            protected const int WhatIsLong = 60;
+
+            public ExprImpl()
+            {
+                Alias = null;
+                Resolved = this;
+            }
+
+            public Identifier? Alias { get; set; }
+
+            public Node Resolved { get; set; }
         }
 
-        public Identifier? Alias { get; set; }
-
-        public Expr Resolved { get; set; }
     }
 }

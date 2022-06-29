@@ -2,7 +2,7 @@
 
 namespace Fux.Input
 {
-    internal class TokenList : IReadOnlyList<Token>
+    public sealed class TokenList : IReadOnlyList<Token>
     {
         private readonly List<Token> items = new();
 

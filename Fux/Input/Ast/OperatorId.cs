@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class OperatorId : Symbol
+    public sealed class OperatorId : Symbol
     {
         public OperatorId(Token token)
             : base(token)

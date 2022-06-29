@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class ElmModuleGroup : IReadOnlyList<ElmModule>
+    public sealed class ElmModuleGroup : IReadOnlyList<ElmModule>
     {
         private readonly List<ElmModule> modules = new();
 

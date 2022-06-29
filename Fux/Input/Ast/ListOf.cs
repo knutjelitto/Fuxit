@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal class ListOf<T> : Expr, IReadOnlyList<T>
+    public class ListOf<T> : Expr.ExprImpl, IReadOnlyList<T>
     {
         protected readonly List<T> items;
         protected bool frozen = false;

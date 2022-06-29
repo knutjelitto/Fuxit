@@ -6,7 +6,7 @@ using Semver;
 
 namespace Fux.Building
 {
-    internal class Loaded : IEnumerable<Package>
+    public sealed class Loaded : IEnumerable<Package>
     {
         public readonly SemVersion CurrentElmVersion = new(0, 19, 0);
         private readonly Dictionary<string, Package> index = new();

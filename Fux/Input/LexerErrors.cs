@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class LexerErrors : InputErrors
+    public sealed class LexerErrors : InputErrors
     {
         public LexerErrors(ErrorBag errors, Lexer lexer)
             : base(errors)

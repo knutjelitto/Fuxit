@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Literal : Expr
+    public abstract class Literal : Expr.ExprImpl
     {
         public Literal(Token token)
         {
@@ -22,7 +22,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal sealed class IntegerLiteral : Literal
+    public sealed class IntegerLiteral : Literal
     {
         public IntegerLiteral(Token token)
             : base(token)
@@ -44,7 +44,7 @@ namespace Fux.Input.Ast
         public long Value { get; }
     }
 
-    internal sealed class FloatLiteral : Literal
+    public sealed class FloatLiteral : Literal
     {
         public FloatLiteral(Token token)
             : base(token)
@@ -52,7 +52,8 @@ namespace Fux.Input.Ast
             Assert(token.Lex == Lex.Float);
         }
     }
-    internal class CharLiteral : Literal
+
+    public sealed class CharLiteral : Literal
     {
         public CharLiteral(Token token)
             : base(token)
@@ -61,7 +62,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal class StringLiteral : Literal
+    public sealed class StringLiteral : Literal
     {
         public StringLiteral(Token token)
             : base(token)
@@ -79,7 +80,7 @@ namespace Fux.Input.Ast
         public string Value { get; }
     }
 
-    internal class LongStringLiteral : Literal
+    public sealed class LongStringLiteral : Literal
     {
         public LongStringLiteral(Token token)
             : base(token)

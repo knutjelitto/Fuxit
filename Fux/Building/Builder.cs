@@ -9,7 +9,7 @@ using Semver;
 
 namespace Fux.Building
 {
-    internal class Builder
+    public sealed class Builder
     {
         public readonly SemVersion CurrentElmVersion = new(0, 19, 0);
 

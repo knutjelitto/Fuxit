@@ -1,6 +1,6 @@
 ﻿namespace Fux
 {
-    internal class Runner
+    public class Runner
     {
         protected static void WaitForKey()
         {

@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal sealed class Identifier : ListOf<Token>, IEquatable<Identifier>
+    public sealed class Identifier : ListOf<Token>, IEquatable<Identifier>
     {
         private string toString;
         private int hashCode;

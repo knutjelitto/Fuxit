@@ -1,6 +1,6 @@
 ﻿namespace Fux.Building.AlgorithmW
 {
-    internal class Polytype
+    public sealed class Polytype
     {
         public Polytype(Type type, IReadOnlyList<TypeVariable> typeVariables)
         {

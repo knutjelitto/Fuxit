@@ -2,7 +2,7 @@
 
 namespace Fux.Input
 {
-    internal class ParserErrors : InputErrors
+    public sealed class ParserErrors : InputErrors
     {
         public ParserErrors(ErrorBag errors)
             : base(errors)

@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal class LambdaExpr : Expr
+    public sealed class LambdaExpr : Expr.ExprImpl
     {
         public LambdaExpr(Pattern parameters, Expr expr)
         {

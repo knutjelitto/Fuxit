@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal class FieldPattern : Field
+    public sealed class FieldPattern : Field
     {
         public FieldPattern(Expr pattern)
         {

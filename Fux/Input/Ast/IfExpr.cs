@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class IfExpr : Expr
+    public sealed class IfExpr : Expr.ExprImpl
     {
         public IfExpr(Expr condition, Expr ifTrue, Expr ifFalse)
         {

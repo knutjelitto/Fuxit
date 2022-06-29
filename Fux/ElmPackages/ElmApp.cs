@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class ElmApp : Elm
+    public sealed class ElmApp : Elm
     {
         public static ElmApp Decode(JsonElement element)
         {

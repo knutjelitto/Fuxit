@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class InputErrors
+    public class InputErrors
     {
         public InputErrors(ErrorBag errors)
         {

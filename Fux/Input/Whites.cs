@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class Whites : List<Token>
+    public sealed class Whites : List<Token>
     {
         public override string ToString()
         {

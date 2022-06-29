@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class Dependencies : IReadOnlyList<Dependency>
+    public sealed class Dependencies : IReadOnlyList<Dependency>
     {
         private readonly List<Dependency> dependencies = new();
 

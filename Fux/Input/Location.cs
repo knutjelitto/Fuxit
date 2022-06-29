@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class Location : ILocation
+    public sealed class Location : ILocation
     {
         private (int line, int column)? lineColumn = null;
 

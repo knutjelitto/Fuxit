@@ -4,7 +4,7 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    internal class Inferrer
+    public sealed class Inferrer
     {
         public Type Run(Expr expression, Environment typeEnvironment, bool investigated)
         {

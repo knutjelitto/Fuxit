@@ -4,7 +4,7 @@ using Semver;
 
 namespace Fux.ElmPackages
 {
-    internal class ElmPak : Elm
+    public sealed class ElmPak : Elm
     {
         public ElmPak(ElmPackage package, JsonElement element)
         {

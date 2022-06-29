@@ -1,8 +1,6 @@
-﻿using System.Xml.Linq;
-
-namespace Fux.Input.Ast
+﻿namespace Fux.Input.Ast
 {
-    internal abstract class Type : Expr
+    public abstract class Type : Expr.ExprImpl
     {
         public new Type Resolved { get; set; }
 
@@ -23,7 +21,6 @@ namespace Fux.Input.Ast
                 Name = name;
 
                 Assert(Name.IsMultiUpper);
-                //Assert(Name.Text != Lex.Primitive.Char);
             }
 
             public Identifier Name { get; }
@@ -207,7 +204,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public class Constructor : Expr
+        public sealed class Constructor : Expr.ExprImpl
         {
             public Constructor(Identifier name, TypeArguments arguments)
             {
@@ -279,7 +276,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        internal sealed class Record : Type
+        public sealed class Record : Type
         {
             public Record(Type? baseRecord, IEnumerable<FieldDefine> fields)
             {

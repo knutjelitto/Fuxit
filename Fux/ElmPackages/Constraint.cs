@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class Constraint
+    public sealed class Constraint
     {
         public Constraint(SemVersion min, bool inclMin, SemVersion max, bool inclMax)
         {

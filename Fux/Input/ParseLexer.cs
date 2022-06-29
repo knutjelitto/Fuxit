@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input
 {
-    internal class ParseLexer : ILexer
+    public sealed class ParseLexer : ILexer
     {
         private int index;
         public ParseLexer(ISource source, List<Tokens> lines)

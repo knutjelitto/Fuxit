@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class Infix
+    public sealed class Infix
     {
         public static readonly Infix Instance = new Infix();
 

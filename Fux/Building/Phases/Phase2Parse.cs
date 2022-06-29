@@ -3,7 +3,7 @@
 
 namespace Fux.Building.Phases
 {
-    internal class Phase2Parse : Phase
+    public sealed class Phase2Parse : Phase
     {
         public Phase2Parse(Ambience ambience, Package package)
             : base("parse", ambience, package)

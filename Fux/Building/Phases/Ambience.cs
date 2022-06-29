@@ -1,6 +1,6 @@
 ﻿namespace Fux.Building.Phases
 {
-    internal class Ambience
+    public sealed class Ambience
     {
         public Ambience(ErrorBag errors)
         {

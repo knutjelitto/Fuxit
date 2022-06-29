@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class DotExpr : Expr
+    public sealed class DotExpr : Expr.ExprImpl
     {
         public DotExpr(Expr rhs)
         {

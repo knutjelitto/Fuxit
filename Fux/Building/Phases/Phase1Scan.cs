@@ -2,7 +2,7 @@
 
 namespace Fux.Building.Phases
 {
-    internal class Phase1Scan : Phase
+    public sealed class Phase1Scan : Phase
     {
         public Phase1Scan(Ambience ambience, Package package)
             : base("scan", ambience, package)

@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Exposing : Expr
+    public abstract class Exposing : Expr.ExprImpl
     {
     }
 
-    internal class ExposingAll : Exposing
+    public sealed class ExposingAll : Exposing
     {
         public override void PP(Writer writer)
         {
@@ -22,8 +22,8 @@ namespace Fux.Input.Ast
             return $"{Lex.Weak.Exposing} {Lex.Weak.ExposeAll}";
         }
     }
-    
-    internal class ExposingSome : Exposing
+
+    public sealed class ExposingSome : Exposing
     {
         public ExposingSome(IEnumerable<Exposed> exposed)
         {

@@ -1,6 +1,6 @@
 ﻿namespace Fux.ElmPackages
 {
-    internal class ElmModule
+    public sealed class ElmModule
     {
         public ElmModule(ElmPackage package, string name)
         {

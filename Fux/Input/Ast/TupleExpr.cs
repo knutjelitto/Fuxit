@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class TupleExpr : ListOf<Expr>
+    public sealed class TupleExpr : ListOf<Expr>
     {
         public TupleExpr(IEnumerable<Expr> expressions)
             : base(expressions)

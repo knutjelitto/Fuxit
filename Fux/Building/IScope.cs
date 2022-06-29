@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Building
 {
-    internal interface IScope
+    public interface IScope
     {
     }
 }

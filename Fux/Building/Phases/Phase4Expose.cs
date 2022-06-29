@@ -6,7 +6,7 @@ using static Fux.Input.Ast.Type;
 
 namespace Fux.Building.Phases
 {
-    internal class Phase4Expose : Phase
+    public sealed class Phase4Expose : Phase
     {
         public Phase4Expose(Ambience ambience, Package package)
             : base("expose", ambience, package)
@@ -143,7 +143,11 @@ namespace Fux.Building.Phases
 
                         return exposed;
                     }
-                    break;
+                    else
+                    {
+                        Assert(false);
+                        throw new NotImplementedException();
+                    }
                 case ExposedVar exposedVar:
                     if (module.Scope.LookupVar(exposedVar.Name, out _))
                     {
@@ -162,9 +166,6 @@ namespace Fux.Building.Phases
                     Assert(false);
                     throw new NotImplementedException();
             }
-
-            Assert(false);
-            throw new InvalidOperationException();
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal sealed class Parameter : Expr
+    public sealed class Parameter : Expr.ExprImpl
     {
         public Parameter(Expr expression)
         {

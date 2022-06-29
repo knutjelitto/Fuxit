@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class TypeParameters : ListOf<Type.Parameter>
+    public sealed class TypeParameters : ListOf<Type.Parameter>
     {
         public TypeParameters(IEnumerable<Type.Parameter> items)
             : base(items)

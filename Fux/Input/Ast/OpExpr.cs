@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class OpExpr
+    public sealed class OpExpr
     {
         public OpExpr(OperatorSymbol op, Expr expression)
         {

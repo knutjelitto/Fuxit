@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input
 {
-    internal class PatternParser
+    public sealed class PatternParser
     {
         public PatternParser(Parser parser)
         {

@@ -2,7 +2,7 @@
 
 namespace Fux.Tests
 {
-    internal static class Tester
+    public static class Tester
     {
         public static IEnumerable<Source> All()
         {

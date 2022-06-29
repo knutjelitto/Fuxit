@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal class TypeArgument : Type
+    public sealed class TypeArgument : Type
     {
         public override void PP(Writer writer)
         {

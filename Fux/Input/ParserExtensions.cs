@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal static class ParserExtensions
+    public static class ParserExtensions
     {
         public static bool Is(this Cursor cursor, params Lex[] lexes)
         {

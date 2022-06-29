@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class ArrowExpression : Expr
+    public sealed class ArrowExpression : Expr.ExprImpl
     {
         public ArrowExpression(Expr lhs, Expr rhs)
         {

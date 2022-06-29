@@ -4,7 +4,7 @@ using Fux.Building;
 
 namespace Fux.Input
 {
-    internal class Cursor
+    public sealed class Cursor
     {
         public Cursor(Module module, ParserErrors error, Tokens tokens)
         {
@@ -101,7 +101,7 @@ namespace Fux.Input
         }
 
         public T Scope<T>(Func<Cursor, T> parser)
-            where T : A.Expr
+            where T : A.Node
         {
             var start = Tokens.Start + Offset;
             var expression = parser(this);

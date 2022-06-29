@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input
 {
-    internal class Tokener
+    public sealed class Tokener
     {
         private readonly List<Token> tokens = new();
 

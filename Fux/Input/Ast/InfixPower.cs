@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class InfixPower
+    public sealed class InfixPower
     {
         public InfixPower(Token number)
         {

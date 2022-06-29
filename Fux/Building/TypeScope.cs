@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal class TypeScope : Scope
+    public sealed class TypeScope : Scope
     {
         private readonly Dictionary<A.Identifier, A.Type.Parameter> parameters = new();
 
@@ -20,7 +20,7 @@ namespace Fux.Building
             return parameters.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expr expr)
+        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Node expr)
         {
             if (identifier.IsSingleLower)
             {

@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal class ModuleScope : Scope
+    public sealed class ModuleScope : Scope
     {
         private readonly Dictionary<A.Identifier, A.ImportDecl> imports = new();
         private readonly List<A.InfixDecl> infixes = new();
@@ -170,7 +170,7 @@ namespace Fux.Building
             return modules.TryGetValue(identifier.MultiUpper(), out module);
         }
 
-        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expr expr)
+        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Node expr)
         {
             Assert(Parent == null);
 

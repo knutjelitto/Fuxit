@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class ListExpr : ListOf<Expr>
+    public sealed class ListExpr : ListOf<Expr>
     {
         public ListExpr(IReadOnlyList<Expr> expressions)
             : base(expressions)

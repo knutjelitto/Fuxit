@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class RecordExpr : Expr
+    public sealed class RecordExpr : Expr.ExprImpl
     {
         public RecordExpr(Identifier? baseRecord, IEnumerable<FieldAssign> fields)
         {

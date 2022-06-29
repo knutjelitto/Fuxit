@@ -2,7 +2,7 @@
 
 namespace Fux.ElmPackages
 {
-    internal class Archive
+    public sealed class Archive
     {
         public static readonly string Filename = "archive.zip";
 

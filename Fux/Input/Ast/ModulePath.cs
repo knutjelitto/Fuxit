@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class ModulePath : Expr
+    public sealed class ModulePath : Expr.ExprImpl
     {
         public ModulePath(IReadOnlyList<Identifier> names)
         {

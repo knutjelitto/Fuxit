@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal class FieldAssign : Field
+    public sealed class FieldAssign : Field
     {
         public FieldAssign(Identifier name, Expr expression)
         {

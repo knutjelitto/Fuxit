@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Field : Expr
+    public abstract class Field : Expr.ExprImpl
     {
     }
 }

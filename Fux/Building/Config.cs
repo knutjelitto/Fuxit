@@ -1,6 +1,6 @@
 ﻿namespace Fux.Building
 {
-    internal class Config
+    public sealed class Config
     {
         public Config()
         {

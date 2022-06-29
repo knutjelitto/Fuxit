@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class MatchExpr : Expr
+    public sealed class MatchExpr : Expr.ExprImpl
     {
         public MatchExpr(Expr expression, IEnumerable<MatchCase> cases)
         {

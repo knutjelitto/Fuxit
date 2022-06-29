@@ -2,7 +2,7 @@
 
 namespace Fux.Input
 {
-    internal static class Fake
+    public static class Fake
     {
         public static A.NativeDecl NativeNegate(Module module, ISource source)
         {

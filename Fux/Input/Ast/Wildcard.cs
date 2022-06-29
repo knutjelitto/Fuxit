@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class Wildcard : Symbol
+    public sealed class Wildcard : Symbol
     {
         public Wildcard(Token token) : base(token)
         {

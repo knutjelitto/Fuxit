@@ -9,7 +9,7 @@ using Fux.Building;
 
 namespace Fux.Input
 {
-    internal partial class Parser
+    public partial class Parser
     {
         public Parser(Module module, ErrorBag errors, ILexer lexer)
         {
@@ -29,13 +29,13 @@ namespace Fux.Input
         {
             var header = (A.ModuleDecl)Outer();
 
-            var expressions = new List<A.Expr>();
+            var declarations = new List<A.Declaration>();
 
             var current = Outer();
 
-            while (current is A.Expr declaration)
+            while (current is A.Declaration declaration)
             {
-                expressions.Add(declaration);
+                declarations.Add(declaration);
 
                 current = Outer();
 
@@ -45,14 +45,14 @@ namespace Fux.Input
                 }
             }
 
-            var ast = new A.ModuleAst(header, expressions);
+            var ast = new A.ModuleAst(header, declarations);
 
             Module.Ast = ast;
 
             return ast;
         }
 
-        public A.Expr Outer()
+        public A.Declaration Outer()
         {
             var tokens = Lexer.GetLine();
             var cursor = new Cursor(Module, Errors.Parser, tokens);
@@ -60,11 +60,11 @@ namespace Fux.Input
             return Outer(cursor);
         }
 
-        public A.Expr Outer(Cursor cursor)
+        public A.Declaration Outer(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
-                A.Expr? outer = null;
+                A.Declaration? outer = null;
 
                 if (cursor.Is(Lex.KwModule) || cursor.IsWeak(Lex.Weak.Effect) || cursor.IsWeak(Lex.Weak.Port))
                 {
@@ -261,9 +261,9 @@ namespace Fux.Input
             });
         }
 
-        public A.Expr TopType(Cursor cursor)
+        public A.NamedDeclaration TopType(Cursor cursor)
         {
-            return cursor.Scope<A.Expr>(cursor =>
+            return cursor.Scope<A.NamedDeclaration>(cursor =>
             {
                 var kwType = cursor.Swallow(Lex.KwType);
 
@@ -325,9 +325,9 @@ namespace Fux.Input
             });
         }
 
-        public A.Expr DeclarationOrTypeAnnotation(Cursor cursor)
+        public A.Declaration DeclarationOrTypeAnnotation(Cursor cursor)
         {
-            return cursor.Scope<A.Expr>(cursor =>
+            return cursor.Scope<A.Declaration>(cursor =>
             {
                 if (cursor.StartsTypeAnnotation)
                 {
@@ -558,9 +558,7 @@ namespace Fux.Input
                     }
                     else if (types.Count == 1)
                     {
-                        var type = types[0];
-                        type.Protect = true;
-                        return type;
+                        return types[0];
                     }
                     else if (types.Count == 2)
                     {
@@ -637,9 +635,7 @@ namespace Fux.Input
                 }
                 else if (expressions.Count == 1)
                 {
-                    var expression = expressions[0];
-                    expression.Protect = true;
-                    return expression;
+                    return expressions[0];
                 }
                 else
                 {
@@ -811,7 +807,7 @@ namespace Fux.Input
             {
                 var kwLet = cursor.Swallow(Lex.KwLet);
 
-                var lets = new List<A.Expr>();
+                var lets = new List<A.Declaration>();
                 while (cursor.IsNot(Lex.KwIn))
                 {
                     var decl = DeclarationOrTypeAnnotation(cursor.Subcursor());
@@ -846,8 +842,10 @@ namespace Fux.Input
 
                     var expr = Expression(subCursor);
 
-                    var matchCase = new A.MatchCase(pattern, expr);
-                    matchCase.Module = Module;
+                    var matchCase = new A.MatchCase(pattern, expr)
+                    {
+                        Module = Module
+                    };
 
                     cases.Add(matchCase);
                 }

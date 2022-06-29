@@ -1,68 +1,68 @@
 ﻿namespace Fux.Building.AlgorithmW
 {
-    internal abstract record Expr
+    public abstract record Expr
     {
-        internal sealed record Variable(TermVariable Term) : Expr
+        public sealed record Variable(TermVariable Term) : Expr
         {
             public Variable(A.Identifier name) : this(new TermVariable(name.Text)) { }
             public override string ToString() => Term;
         }
 
-        internal sealed record Application(Expr Exp1, Expr Exp2) : Expr
+        public sealed record Application(Expr Exp1, Expr Exp2) : Expr
         {
             public override string ToString() => $"(apply {Exp1} {Exp2})";
         }
 
-        internal sealed record Abstraction(TermVariable Term, Expr Exp) : Expr
+        public sealed record Abstraction(TermVariable Term, Expr Exp) : Expr
         {
             public override string ToString() => $"({Term} => {Exp})";
         }
 
-        internal sealed record Unify(Type Type, Expr Expr) : Expr
+        public sealed record Unify(Type Type, Expr Expr) : Expr
         {
             public override string ToString() => $"{Expr}";
         }
 
-        internal sealed record Def(Expr.Variable Var, Expr Expr) : Expr
+        public sealed record Def(Expr.Variable Var, Expr Expr) : Expr
         {
             public override string ToString() => $"(def {Var} = {Expr})";
         }
 
-        internal sealed record Let(TermVariable Term, Expr Exp1, Expr Exp2) : Expr
+        public sealed record Let(TermVariable Term, Expr Exp1, Expr Exp2) : Expr
         {
             public override string ToString() => $"(let {Term} = {Exp1} in {Exp2})";
         }
 
-        internal abstract record Tuple(IReadOnlyList<Expr> Exprs) : Expr;
+        public abstract record Tuple(IReadOnlyList<Expr> Exprs) : Expr;
 
-        internal sealed record Tuple2(Expr Expr1, Expr Expr2) : Tuple(new Expr[] { Expr1, Expr2 })
+        public sealed record Tuple2(Expr Expr1, Expr Expr2) : Tuple(new Expr[] { Expr1, Expr2 })
         {
             public override string ToString() => $"(tuple {Expr1}, {Expr2})";
         }
 
-        internal sealed record Tuple3(Expr Expr1, Expr Expr2, Expr Expr3) : Tuple(new Expr[] { Expr1, Expr2, Expr3 })
+        public sealed record Tuple3(Expr Expr1, Expr Expr2, Expr Expr3) : Tuple(new Expr[] { Expr1, Expr2, Expr3 })
         {
             public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
         }
 
-        internal abstract record List : Expr;
+        public abstract record List : Expr;
 
-        internal sealed record Empty : List
+        public sealed record Empty : List
         {
             public override string ToString() => $"{Lex.Symbol.Empty}";
         }
 
-        internal sealed record Cons(Expr First, List Rest) : List
+        public sealed record Cons(Expr First, List Rest) : List
         {
             public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
         }
 
-        internal sealed record Native(A.NativeDecl Nat) : Expr
+        public sealed record Native(A.NativeDecl Nat) : Expr
         {
             public override string ToString() => $"(native {Nat})";
         }
 
-        internal sealed record Iff(Expr Cond, Expr Then, Expr Else) : Expr
+        public sealed record Iff(Expr Cond, Expr Then, Expr Else) : Expr
         {
             public override string ToString() => $"(if {Cond} then {Then} else {Else})";
         }
@@ -70,14 +70,14 @@
         /// <summary>
         /// A literal value of some primitive
         /// </summary>
-        internal abstract record Literal : Expr
+        public abstract record Literal : Expr
         {
-            internal sealed record Integer(long Value) : Literal
+            public sealed record Integer(long Value) : Literal
             {
                 public override string ToString() => Value.ToString();
             }
 
-            internal sealed record Float(double Value) : Literal
+            public sealed record Float(double Value) : Literal
             {
                 public override string ToString()
                 {
@@ -89,25 +89,25 @@
                 }
             }
 
-            internal sealed record Bool(bool Value) : Literal
+            public sealed record Bool(bool Value) : Literal
             {
                 public override string ToString() => Value.ToString();
             }
 
-            internal sealed record String(string Value) : Literal
+            public sealed record String(string Value) : Literal
             {
                 public override string ToString() => $"\"{Value}\"";
             }
 
-            internal sealed record Char(string Value) : Literal
+            public sealed record Char(string Value) : Literal
             {
                 public override string ToString() => $"\'{Value}\'";
             }
         }
 
-        internal abstract record Sugar : Expr
+        public abstract record Sugar : Expr
         {
-            internal sealed new record Application(IReadOnlyList<Expr> Exprs) : Sugar
+            public sealed new record Application(IReadOnlyList<Expr> Exprs) : Sugar
             {
                 public override string ToString() => $"($ {string.Join(" ", Exprs)})";
             }

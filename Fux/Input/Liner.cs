@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class Liner
+    public sealed class Liner
     {
         private int current = 0;
 

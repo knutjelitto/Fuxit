@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class SelectExpr : Expr
+    public sealed class SelectExpr : Expr.ExprImpl
     {
         public SelectExpr(Expr lhs, Expr rhs)
         {

@@ -9,7 +9,7 @@ using T = Fux.Building.Typing;
 
 namespace Fux.Building.Phases
 {
-    internal class Phase7Typing : Phase
+    public sealed class Phase7Typing : Phase
     {
         private const int underInvestigation = 90;
         private static int numero = 0;

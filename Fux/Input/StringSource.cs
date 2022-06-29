@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class StringSource : Source
+    public sealed class StringSource : Source
     {
         public StringSource(string display, string fullPath, string content)
             : base(display, fullPath)

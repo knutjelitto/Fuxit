@@ -2,7 +2,7 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    internal class Environment
+    public sealed class Environment
     {
         public readonly TypeVarGenerator Generator;
         private readonly ImmutableDictionary<TermVariable, Polytype> Map;

@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class SequenceExpr : ListOf<Expr>
+    public sealed class SequenceExpr : ListOf<Expr>
     {
         public SequenceExpr(IEnumerable<Expr> expressions)
             : base(expressions)

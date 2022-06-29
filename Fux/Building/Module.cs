@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal class Module
+    public class Module
     {
         public Module(Package package, string name, bool js = false)
         {

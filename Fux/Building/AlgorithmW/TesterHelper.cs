@@ -2,7 +2,7 @@
 
 namespace Fux.Building.AlgorithmW
 {
-    internal static class TesterHelper
+    public static class TesterHelper
     {
         public static Expr.Let let(string name, Expr e1, Expr e2)
         {

@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal class Constructors : ListOf<Type.Constructor>
+    public sealed class Constructors : ListOf<Type.Constructor>
     {
         public Constructors(IEnumerable<Type.Constructor> items)
             : base(items)

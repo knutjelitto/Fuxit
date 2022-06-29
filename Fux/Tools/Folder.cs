@@ -1,6 +1,6 @@
 ﻿namespace Fux.Tools
 {
-    internal class Folder
+    public sealed class Folder
     {
         public Folder(params string[] parts)
         {

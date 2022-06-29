@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal static class LexerPredicates
+    public static class LexerPredicates
     {
         private static readonly HashSet<int> symbols = new()
         {

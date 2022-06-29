@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
-    internal abstract class Cached
+    public abstract class Cached
     {
         protected Cached(ElmPackage reference, string name)
         {

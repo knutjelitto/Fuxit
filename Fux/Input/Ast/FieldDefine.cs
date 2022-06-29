@@ -8,7 +8,7 @@ using Fux.Tools;
 
 namespace Fux.Input.Ast
 {
-    internal class FieldDefine : Field
+    public sealed class FieldDefine : Field
     {
         public FieldDefine(Identifier name, Type type)
         {

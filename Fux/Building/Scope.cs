@@ -2,7 +2,7 @@
 
 namespace Fux.Building
 {
-    internal class Scope
+    public class Scope
     {
         private readonly Dictionary<A.Identifier, A.VarDecl> vars = new();
         private readonly Dictionary<A.Identifier, A.TypeAnnotation> annotations = new();
@@ -53,7 +53,7 @@ namespace Fux.Building
             return vars.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Expr expr)
+        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Node expr)
         {
             if (identifier.IsSingleLower && LookupVar(identifier, out var var))
             {

@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal abstract class Pattern : Expr
+    public abstract class Pattern : Expr.ExprImpl
     {
         public override void PP(Writer writer) => writer.Write($"{this}");
 

@@ -6,7 +6,7 @@ using Semver;
 
 namespace Fux.ElmPackages
 {
-    internal class Catalog : IReadOnlyList<ElmPackage>
+    public sealed class Catalog : IReadOnlyList<ElmPackage>
     {
         private readonly List<ElmPackage> references;
 

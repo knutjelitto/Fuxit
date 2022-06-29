@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
-    internal static class JsonExtensions
+    public static class JsonExtensions
     {
         public static JsonElement GetRootElement(this byte[] bytes)
         {

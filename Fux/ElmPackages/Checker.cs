@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
-    internal class Checker
+    public sealed class Checker
     {
         public void DownloadDocsJson(ElmPackage reference)
         {

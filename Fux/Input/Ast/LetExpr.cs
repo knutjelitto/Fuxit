@@ -2,22 +2,22 @@
 
 namespace Fux.Input.Ast
 {
-    internal class LetExpr : Expr
+    public sealed class LetExpr : Expr.ExprImpl
     {
-        public LetExpr(List<Expr> letExpressions, Expr inExpression)
+        public LetExpr(List<Declaration> letExpressions, Expr inExpression)
         {
-            LetExpressions = letExpressions.ToArray();
+            LetDecls = letExpressions.ToArray();
             InExpression = inExpression;
         }
 
-        public IReadOnlyList<Expr> LetExpressions { get; }
+        public IReadOnlyList<Declaration> LetDecls { get; }
         public Expr InExpression { get; }
 
         public LetScope Scope { get; set; } = new();
 
         public override string ToString()
         {
-            string joined = string.Join(" ", LetExpressions.Select(x => $"{Lex.GroupOpen} {x} {Lex.GroupClose}"));
+            string joined = string.Join(" ", LetDecls.Select(x => $"{Lex.GroupOpen} {x} {Lex.GroupClose}"));
 
             return $"let {joined} in {InExpression}";
         }
@@ -39,7 +39,7 @@ namespace Fux.Input.Ast
                 writer.WriteLine(Lex.KwLet);
                 writer.Indent(() =>
                 {
-                    foreach (var expr in LetExpressions)
+                    foreach (var expr in LetDecls)
                     {
                         expr.PP(writer);
                         if (writer.LinePending)

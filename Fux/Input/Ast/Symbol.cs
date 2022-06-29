@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal abstract class Symbol : Expr
+    public abstract class Symbol : Expr.ExprImpl
     {
         public Symbol(Token token)
         {

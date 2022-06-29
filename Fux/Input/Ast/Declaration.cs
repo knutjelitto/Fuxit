@@ -2,17 +2,32 @@
 
 namespace Fux.Input.Ast
 {
-    internal abstract class Declaration : Expr
+    public interface NamedDeclaration : Declaration
     {
-        protected Declaration(Identifier name)
-        {
-            Name = name;
-        }
+        Identifier Name { get; }
+        Identifier? Alias { get; set; }
 
-        public Identifier Name { get; }
     }
 
-    internal class ModuleDecl : Declaration
+    public interface Declaration : Node
+    {
+        public abstract class DeclImpl : NodeImpl, Declaration
+        {
+        }
+
+        public abstract class NamedDeclImpl : NodeImpl, NamedDeclaration
+        {
+            protected NamedDeclImpl(Identifier name)
+            {
+                Name = name;
+            }
+
+            public Identifier Name { get; }
+            public Identifier? Alias { get; set; }
+        }
+    }
+
+    public sealed class ModuleDecl : Declaration.NamedDeclImpl
     {
         public ModuleDecl(Identifier name, bool isEffect, IEnumerable<VarDecl> where, Exposing? exposing)
             : base(name)
@@ -57,7 +72,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal class VarDecl : Declaration
+    public sealed class VarDecl : Declaration.NamedDeclImpl
     {
         public VarDecl(Identifier name, Parameters parameters, Expr expression)
             : base(name)
@@ -99,7 +114,8 @@ namespace Fux.Input.Ast
             }
         }
     }
-    internal sealed class UnionDecl : Declaration
+
+    public sealed class UnionDecl : Declaration.NamedDeclImpl
     {
         public UnionDecl(Identifier name, TypeParameters parameters, Constructors constructors)
             : base(name)
@@ -146,7 +162,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal class AliasDecl : Declaration
+    public sealed class AliasDecl : Declaration.NamedDeclImpl
     {
         public AliasDecl(Identifier name, TypeParameters parameters, Type declaration)
             : base(name)
@@ -169,7 +185,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal class ImportDecl : Declaration
+    public sealed class ImportDecl : Declaration.NamedDeclImpl
     {
         public ImportDecl(Identifier name, Identifier? alias, Exposing? exposing)
             : base(name)
@@ -203,7 +219,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal class InfixDecl : Declaration
+    public sealed class InfixDecl : Declaration.NamedDeclImpl
     {
         public InfixDecl(InfixAssoc assoc, InfixPower power, Identifier op, Identifier expression)
             : base(op)
@@ -229,16 +245,17 @@ namespace Fux.Input.Ast
         }
     }
 
-    internal class NativeDecl : Declaration
+    public sealed class NativeDecl : Expr.ExprImpl
     {
         public NativeDecl(Identifier moduleName, Identifier name)
-            : base(name)
         {
             ModuleName = moduleName;
+            Name = name;
         }
 
-        public Type? Type { get; set; } = null;
         public Identifier ModuleName { get; }
+        public Identifier Name { get; }
+        public Type? Type { get; set; } = null;
 
         public override string ToString()
         {
@@ -251,7 +268,7 @@ namespace Fux.Input.Ast
             writer.Write($"{ModuleName}.{Name} : {type}");
         }
     }
-    internal class TypeAnnotation : Declaration
+    public sealed class TypeAnnotation : Declaration.NamedDeclImpl
     {
         public TypeAnnotation(Identifier name, Type type)
             : base(name.SingleLower())

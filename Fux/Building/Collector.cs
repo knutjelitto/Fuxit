@@ -1,6 +1,6 @@
 ﻿namespace Fux.Building
 {
-    internal class Collector
+    public sealed class Collector
     {
         public static readonly Collector Instance = new();
 
@@ -39,11 +39,16 @@
             Write("all-decl-infix.text", DeclareInfix);
             WriteCompact("all-decl-var.text", DeclareVar, writeStr);
             WriteCompact("all-decl-hint.text", DeclareAnnotation, writeStr);
-            WriteCompact("all-native.text", NativeDecl, writePP);
+            WriteNatives("all-native.text");
 
             WriteVarPatterns("all-pattern-var.text");
             WriteMatchPatterns("all-pattern-match.text");
             WriteLetPatterns("all-pattern-let.text");
+
+            void WriteNatives(string name)
+            {
+                WriteAll(name, StringsFrom(NativeDecl));
+            }
 
             void WriteVarPatterns(string name)
             {
@@ -60,7 +65,7 @@
                 WriteAll(name, StringsFrom(LetPattern));
             }
 
-            IEnumerable<string> StringsFrom(IEnumerable<A.Expr> exprs)
+            IEnumerable<string> StringsFrom(IEnumerable<A.Node> exprs)
             {
                 return exprs
                     .Select(p => p.ToString()!)
@@ -88,7 +93,7 @@
                 {
                     foreach (var type in expressions)
                     {
-                        var location = type.Name[0].Location;
+                        var location = type.Location;
                         writer.WriteLine($"{{- {location.Name}({location.Line},{location.Column}) -}}");
 
                         writer.Indent(() =>
@@ -105,7 +110,7 @@
                 }
             }
 
-            void writePP(Writer writer, A.Expr expr)
+            void writePP(Writer writer, A.Declaration expr)
             {
                 expr.PP(writer);
                 if (writer.LinePending)
@@ -114,19 +119,19 @@
                 }
             }
 
-            void writeStr(Writer writer, A.Expr expr)
+            void writeStr(Writer writer, A.Declaration expr)
             {
                 writer.WriteLine($"{expr}");
             }
 
-            void WriteCompact(string name, IEnumerable<A.Declaration> expressions, Action<Writer, A.Expr> write)
+            void WriteCompact(string name, IEnumerable<A.Declaration> expressions, Action<Writer, A.Declaration> write)
             {
                 using (var writer = name.Writer())
                 {
                     var loc = string.Empty;
                     foreach (var type in expressions)
                     {
-                        var newLoc = type.Name[0].Location.Name;
+                        var newLoc = type.Location.Name;
                         if (newLoc != loc)
                         {
                             if (loc != string.Empty)

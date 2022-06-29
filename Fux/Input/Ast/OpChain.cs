@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class OpChain : Expr
+    public sealed class OpChain : Expr.ExprImpl
     {
         public static int OpChains = 0;
         public static int ResolvedOpChains = 0;
@@ -30,7 +30,7 @@
         private Expr Resolve(Expr lhs, int minPower, List<OpExpr> Rest)
         {
             var lhop = Rest[0].Op;
-            var lh = (InfixDecl)lhop.Resolved!;
+            var lh = lhop.InfixDecl!;
 
             while (Rest.Count > 0 && lh.Power >= minPower)
             {
@@ -44,7 +44,7 @@
                 if (Rest.Count > 0)
                 {
                     lhop = Rest[0].Op;
-                    lh = (InfixDecl)lhop.Resolved!;
+                    lh = lhop.InfixDecl!;
 
                     while (lh.Power > op.Power || lh.Assoc == InfixAssoc.Right && lh.Power == op.Power)
                     {
@@ -56,14 +56,14 @@
                             break;
                         }
 
-                        lh = (InfixDecl)Rest[0].Op.Resolved!;
+                        lh = Rest[0].Op.InfixDecl!;
                     }
                 }
-                Assert(lhs.Resolved != null && rhs.Resolved != null);
-                lhs = opop.Combine(lhs.Resolved, rhs.Resolved);
+                Assert(lhs.Resolved is Expr && rhs.Resolved is Expr);
+                lhs = opop.Combine((Expr)lhs.Resolved, (Expr)rhs.Resolved);
                 lhs.Resolved = lhs;
 
-                ResolvedOpChains++; ;
+                ResolvedOpChains++;
             }
 
             return lhs;

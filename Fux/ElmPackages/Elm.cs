@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Fux.ElmPackages
 {
-    internal class Elm
+    public class Elm
     {
         private const string File = "elm.json";
 

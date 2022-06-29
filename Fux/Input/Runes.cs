@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Fux.Input
 {
-    internal class Runes : IReadOnlyList<char>
+    public sealed class Runes : IReadOnlyList<char>
     {
         private readonly List<char> runes;
 

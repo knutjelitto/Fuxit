@@ -1,6 +1,6 @@
 ﻿namespace Fux.Building.Phases
 {
-    internal abstract class Phase
+    public abstract class Phase
     {
         protected Phase(string phaseName, Ambience ambience, Package package)
         {

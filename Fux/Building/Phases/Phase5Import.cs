@@ -6,7 +6,7 @@ using Fux.Input.Ast;
 
 namespace Fux.Building.Phases
 {
-    internal class Phase5Import : Phase
+    public sealed class Phase5Import : Phase
     {
         public Phase5Import(Ambience ambience, Package package)
             : base("import", ambience, package)

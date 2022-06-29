@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class InfixAssoc
+    public sealed class InfixAssoc
     {
         private InfixAssoc(string name)
         {

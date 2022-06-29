@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input.Ast
+﻿namespace Fux.Input.Ast
 {
-    internal abstract class Match : Node
+    public abstract class Match : Node.NodeImpl
     {
         public override void PP(Writer writer)
         {

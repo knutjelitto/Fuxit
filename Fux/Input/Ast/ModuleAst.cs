@@ -1,19 +1,17 @@
 ﻿namespace Fux.Input.Ast
 {
-    internal class ModuleAst : Expr
+    public sealed class ModuleAst : Expr.ExprImpl
     {
-        public ModuleAst(ModuleDecl header, IEnumerable<Expr> expressions)
+        public ModuleAst(ModuleDecl header, IEnumerable<Declaration> declarations)
         {
             Header = header;
-            Expressions = expressions.ToArray();
+            Declarations = declarations.ToArray();
         }
 
         public ModuleDecl Header { get; }
-        public IReadOnlyList<Expr> Expressions { get; }
+        public IReadOnlyList<Declaration> Declarations { get; }
 
-        public IEnumerable<ImportDecl> Imports => Expressions.OfType<ImportDecl>();
-        public IEnumerable<Declaration> Declarations => Expressions.OfType<Declaration>();
-        public IEnumerable<Expr> Rest => Expressions.Where(e => e is not Declaration);
+        public IEnumerable<ImportDecl> Imports => Declarations.OfType<ImportDecl>();
 
         public override string ToString()
         {
@@ -23,7 +21,7 @@
         public override void PP(Writer writer)
         {
             Header.PP(writer);
-            foreach (var expression in Expressions)
+            foreach (var expression in Declarations)
             {
                 writer.WriteLine();
                 expression.PP(writer);

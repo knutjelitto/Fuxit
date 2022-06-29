@@ -2,7 +2,7 @@
 
 namespace Fux.Input.Ast
 {
-    internal class LetAssign : Expr
+    public sealed class LetAssign : Declaration.DeclImpl
     {
         public LetAssign(Pattern pattern, Expr expression)
         {

@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input
 {
-    internal class Lex
+    public sealed class Lex
     {
         public static readonly List<Lex> allLex = new();
 

@@ -1,6 +1,6 @@
 ﻿namespace Fux.Building.AlgorithmW
 {
-    internal class TypeVarGenerator
+    public sealed class TypeVarGenerator
     {
         private int supply = 0;
 

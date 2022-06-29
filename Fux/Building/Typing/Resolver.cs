@@ -2,7 +2,7 @@
 
 namespace Fux.Building.Typing
 {
-    internal class Resolver
+    public sealed class Resolver
     {
         private readonly TypeBuilder typeBuilder;
         private readonly ExprBuilder exprBuilder;

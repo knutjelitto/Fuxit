@@ -4,7 +4,7 @@
 
 namespace Fux.Building.Typing
 {
-    internal class BindBuilder
+    public sealed class BindBuilder
     {
         private int wildcardNumber = 0;
 

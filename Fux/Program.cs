@@ -11,7 +11,7 @@ using Semver;
 
 namespace Fux
 {
-    internal class Program : Runner
+    public sealed class Program : Runner
     {
         static void Main(string[] args)
         {
