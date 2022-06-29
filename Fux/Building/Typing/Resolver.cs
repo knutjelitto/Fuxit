@@ -80,26 +80,26 @@ namespace Fux.Building.Typing
         private void Resolve(A.VarDecl var, bool investigated)
         {
             var inferrer = new W.Inferrer();
-            var env = inferrer.GetEmptyEnvironment();
+            var gamma = inferrer.GetEmptyEnvironment();
 
             Assert(var.Type != null);
             Assert(var.Parameters.Count >= 0);
 
-            var varType = typeBuilder.Build(env, var.Type);
+            var varType = typeBuilder.Build(gamma, var.Type);
 
             var variable = new W.Expr.Variable(var.Name);
-            env = env.Insert(variable.Term, varType);
+            gamma = gamma.Insert(variable.Term, varType);
 
-            var varExpr = exprBuilder.Build(ref env, var.Expression.Resolved, investigated);
+            var varExpr = exprBuilder.Build(ref gamma, var.Expression.Resolved, investigated);
 
-            var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
+            var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref gamma, investigated);
 
             var def = new W.Expr.Def(variable, wexpr);
             var unify = new W.Expr.Unify(wtype, wexpr);
 
             Writer.Indent(() =>
             {
-                Resolve(inferrer, env, unify, investigated);
+                Resolve(inferrer, gamma, unify, investigated);
             });
         }
 

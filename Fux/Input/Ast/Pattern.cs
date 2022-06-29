@@ -42,9 +42,9 @@
             public override string ToString() => Lex.Symbol.Wildcard;
         }
 
-        public class Sign : Pattern
+        public class Signature : Pattern
         {
-            public Sign(Identifier name, List<Pattern> parameters)
+            public Signature(Identifier name, List<Pattern> parameters)
             {
                 Assert(name.IsSingleLower);
 
@@ -174,28 +174,28 @@
 
         public abstract class Literal : Pattern
         {
-            public Literal(A.Literal lit)
+            public Literal(A.Expr.Literal lit)
             {
                 Lit = lit;
             }
 
-            public A.Literal Lit { get; }
+            public A.Expr.Literal Lit { get; }
 
             public override string ToString() => Lit.ToString();
 
             public class Integer : Literal
             {
-                public Integer(IntegerLiteral literal) : base(literal) { }
+                public Integer(Expr.Literal.Integer literal) : base(literal) { }
             }
 
             public class String : Literal
             {
-                public String(StringLiteral literal) : base(literal) { }
+                public String(Expr.Literal.String literal) : base(literal) { }
             }
 
             public class Char : Literal
             {
-                public Char(CharLiteral literal) : base(literal) { }
+                public Char(Expr.Literal.Char literal) : base(literal) { }
             }
         }
 

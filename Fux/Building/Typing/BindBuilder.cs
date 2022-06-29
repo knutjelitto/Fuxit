@@ -126,7 +126,7 @@ namespace Fux.Building.Typing
             return (result, type);
         }
 
-        private IEnumerable<A.Identifier> BindIdentifiers(A.Parameter parameter)
+        private IEnumerable<A.Identifier> BindIdentifiers(A.ParameterDecl parameter)
         {
             Assert(parameter.Expression is A.Pattern);
 
@@ -148,7 +148,7 @@ namespace Fux.Building.Typing
                     yield return id;
                     break;
 
-                case A.TupleExpr tuple:
+                case A.Expr.Tuple tuple:
                     foreach (var expr in tuple)
                     {
                         foreach (var id in BindIdentifiers(expr))
@@ -158,7 +158,7 @@ namespace Fux.Building.Typing
                     }
                     break;
 
-                case A.SequenceExpr sequence:
+                case A.Expr.Sequence sequence:
                     foreach (var expr in sequence)
                     {
                         foreach (var id in BindIdentifiers(expr))

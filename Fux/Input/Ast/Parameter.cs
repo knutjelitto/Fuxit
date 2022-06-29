@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    public sealed class Parameter : Expr.ExprImpl
+    public sealed class ParameterDecl : Declaration.DeclImpl
     {
-        public Parameter(Expr expression)
+        public ParameterDecl(Expr expression)
         {
             Expression = expression;
         }

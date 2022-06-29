@@ -1,14 +1,14 @@
 ﻿namespace Fux.Input.Ast
 {
-    public sealed class Parameters : ListOf<Parameter>
+    public sealed class Parameters : ListOf<ParameterDecl>
     {
-        public Parameters(IEnumerable<Parameter> items)
+        public Parameters(IEnumerable<ParameterDecl> items)
             : base(items)
         {
         }
 
         public Parameters()
-            : this(Enumerable.Empty<Parameter>())
+            : this(Enumerable.Empty<ParameterDecl>())
         {
         }
 

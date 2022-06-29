@@ -115,9 +115,9 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class UnionDecl : Declaration.NamedDeclImpl
+    public sealed class TypeDecl : Declaration.NamedDeclImpl
     {
-        public UnionDecl(Identifier name, TypeParameters parameters, Constructors constructors)
+        public TypeDecl(Identifier name, TypeParameterList parameters, ConstructorList constructors)
             : base(name)
         {
             Parameters = parameters;
@@ -126,8 +126,8 @@ namespace Fux.Input.Ast
             Type = new Type.UnionType(Name, parameters, constructors);
         }
 
-        public TypeParameters Parameters { get; }
-        public Constructors Constructors { get; }
+        public TypeParameterList Parameters { get; }
+        public ConstructorList Constructors { get; }
         public TypeScope Scope { get; } = new();
 
         public Type.UnionType Type { get; }
@@ -164,13 +164,13 @@ namespace Fux.Input.Ast
 
     public sealed class AliasDecl : Declaration.NamedDeclImpl
     {
-        public AliasDecl(Identifier name, TypeParameters parameters, Type declaration)
+        public AliasDecl(Identifier name, TypeParameterList parameters, Type declaration)
             : base(name)
         {
             Parameters = parameters;
             Declaration = declaration;
         }
-        public TypeParameters Parameters { get; }
+        public TypeParameterList Parameters { get; }
         public Type Declaration { get; }
 
         public override string ToString()
@@ -245,7 +245,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class NativeDecl : Expr.ExprImpl
+    public sealed class NativeDecl : Declaration.DeclImpl
     {
         public NativeDecl(Identifier moduleName, Identifier name)
         {
@@ -288,6 +288,48 @@ namespace Fux.Input.Ast
         {
             writer.Write($"{Name} {Lex.Colon} ");
             Type.PP(writer);
+        }
+    }
+
+    public sealed class Constructor : Declaration.NamedDeclImpl
+    {
+        public Constructor(Identifier name, TypeArgumentList arguments)
+            : base(name)
+        {
+            Assert(name.IsMultiUpper);
+
+            Arguments = arguments;
+        }
+        public TypeArgumentList Arguments { get; }
+
+        public override void PP(Writer writer)
+        {
+            writer.Write(ToString());
+        }
+
+        public override string ToString()
+        {
+            if (Arguments.Count == 0)
+            {
+                return Protected($"{Name}");
+            }
+            return Protected($"{Name} {Arguments}");
+        }
+    }
+
+
+    public sealed class TypeParameter : Declaration.NamedDeclImpl
+    {
+        public TypeParameter(Identifier name)
+            : base(name.SingleLower())
+        {
+        }
+
+        public string Text => Name.Text;
+
+        public override string ToString()
+        {
+            return $"{Name}";
         }
     }
 }

@@ -278,27 +278,27 @@ namespace Fux.Input
 
                 var name = new A.Identifier(cursor.Swallow(Lex.UpperId));
 
-                var parameterList = new List<A.Type.Parameter>();
+                var parameterList = new List<A.TypeParameter>();
 
                 while (cursor.IsNot(Lex.Assign))
                 {
                     Assert(cursor.Is(Lex.LowerId));
 
-                    var parameter = new A.Type.Parameter(new A.Identifier(cursor.Swallow(Lex.LowerId)));
+                    var parameter = TypeParameter(cursor);
 
                     parameterList.Add(parameter);
                 }
 
-                var assign = cursor.Swallow(Lex.Assign);
+                cursor.Swallow(Lex.Assign);
 
                 if (alias)
                 {
                     var def = Type(cursor);
 
-                    return new A.AliasDecl(name, new A.TypeParameters(parameterList), def);
+                    return new A.AliasDecl(name, new A.TypeParameterList(parameterList), def);
                 }
 
-                var ctors = new List<A.Type.Constructor>();
+                var ctors = new List<A.Constructor>();
 
                 ctors.Add(Constructor(cursor));
 
@@ -307,7 +307,15 @@ namespace Fux.Input
                     ctors.Add(Constructor(cursor));
                 }
 
-                return new A.UnionDecl(name, new A.TypeParameters(parameterList), new A.Constructors(ctors));
+                return new A.TypeDecl(name, new A.TypeParameterList(parameterList), new A.ConstructorList(ctors));
+            });
+        }
+
+        public A.TypeParameter TypeParameter(Cursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                return new A.TypeParameter(new A.Identifier(cursor.Swallow(Lex.LowerId)));
             });
         }
 
@@ -335,26 +343,24 @@ namespace Fux.Input
                 }
                 else
                 {
+                    var pattern = Pattern.Pattern(cursor);
+
+                    cursor.SwallowIf(Lex.Assign);
+
+                    var expression = Expression(cursor);
+
+                    if (pattern is A.Pattern.Signature sign)
                     {
-                        var pattern = Pattern.Pattern(cursor);
+                        var name = sign.Name.SingleLower();
+                        var prms = sign.Parameters;
 
-                        cursor.SwallowIf(Lex.Assign);
+                        var parameters = new A.Parameters(prms.Select(pattern => new A.ParameterDecl(pattern)));
 
-                        var expression = Expression(cursor);
-
-                        if (pattern is A.Pattern.Sign sign)
-                        {
-                            var name = sign.Name;
-                            var prms = sign.Parameters;
-
-                            var parameters = new A.Parameters(prms.Select(pattern => new A.Parameter(pattern)));
-
-                            return new A.VarDecl(name, parameters, expression);
-                        }
-                        else
-                        {
-                            return new A.LetAssign(pattern, expression);
-                        }
+                        return new A.VarDecl(name, parameters, expression);
+                    }
+                    else
+                    {
+                        return new A.LetAssign(pattern, expression);
                     }
                 }
             });
@@ -397,7 +403,7 @@ namespace Fux.Input
             {
                 var name = Identifier(cursor).MultiUpper();
 
-                var arguments = new A.TypeArguments();
+                var arguments = new A.TypeArgumentList();
 
                 do
                 {
@@ -439,13 +445,13 @@ namespace Fux.Input
             });
         }
 
-        private A.Type.Constructor Constructor(Cursor cursor)
+        private A.Constructor Constructor(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
                 Assert(cursor.Is(Lex.UpperId));
 
-                var name = Identifier(cursor).MultiUpper();
+                var name = Identifier(cursor).SingleUpper();
 
                 var arguments = new List<A.Type>();
 
@@ -460,7 +466,7 @@ namespace Fux.Input
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-                return new A.Type.Constructor(name, new A.TypeArguments(arguments));
+                return new A.Constructor(name, new A.TypeArgumentList(arguments));
             });
         }
 
@@ -631,7 +637,7 @@ namespace Fux.Input
 
                 if (expressions.Count == 0)
                 {
-                    return new A.Unit();
+                    return new A.Expr.Unit();
                 }
                 else if (expressions.Count == 1)
                 {
@@ -639,7 +645,7 @@ namespace Fux.Input
                 }
                 else
                 {
-                    return new A.TupleExpr(expressions);
+                    return new A.Expr.Tuple(expressions);
                 }
             });
         }
@@ -731,7 +737,7 @@ namespace Fux.Input
 
                 if (fields.All(f => f is A.FieldAssign))
                 {
-                    return new A.RecordExpr(baseName, fields.Cast<A.FieldAssign>());
+                    return new A.Expr.Record(baseName, fields.Cast<A.FieldAssign>());
                 }
                 else if (fields.All(f => f is A.FieldPattern))
                 {
@@ -762,7 +768,7 @@ namespace Fux.Input
             });
         }
 
-        private A.ListExpr ListLiteral(Cursor cursor)
+        private A.Expr.List ListLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -782,7 +788,7 @@ namespace Fux.Input
 
                 cursor.Swallow(Lex.RBracket);
 
-                return new A.ListExpr(expressions);
+                return new A.Expr.List(expressions);
             });
         }
 
@@ -797,7 +803,7 @@ namespace Fux.Input
                 cursor.Swallow(Lex.KwElse);
                 var whenFalse = Expression(cursor);
 
-                return new A.IfExpr(condition, whenTrue, whenFalse);
+                return new A.Expr.If(condition, whenTrue, whenFalse);
             });
         }
 
@@ -818,7 +824,7 @@ namespace Fux.Input
                 var kwIn = cursor.Swallow(Lex.KwIn);
                 var expression = Expression(cursor);
 
-                return new A.LetExpr(lets, expression);
+                return new A.Expr.Let(lets, expression);
             });
         }
 
@@ -850,7 +856,7 @@ namespace Fux.Input
                     cases.Add(matchCase);
                 }
 
-                return new A.MatchExpr(expression, cases);
+                return new A.Expr.Match(expression, cases);
             });
         }
 
@@ -908,7 +914,7 @@ namespace Fux.Input
                     return expressions[0];
                 }
 
-                return new A.SequenceExpr(expressions);
+                return new A.Expr.Sequence(expressions);
             });
         }
 
@@ -932,11 +938,11 @@ namespace Fux.Input
                     switch (op.Text)
                     {
                         case "-":
-                            app = new A.SequenceExpr(Fake.NativeNegate(Module, Source), argument);
+                            app = new A.Expr.Sequence(Fake.NativeNegate(Module, Source), argument);
                             break;
                         default:
                             Assert(false);
-                            app = new A.PrefixExpr(op, argument);
+                            app = new A.Expr.Prefix(op, argument);
                             break;
                     }
                 }
@@ -998,13 +1004,13 @@ namespace Fux.Input
 
                 return atom;
 
-                A.SelectExpr SelectExpr(Cursor cursor, A.Expr atom)
+                A.Expr.Select SelectExpr(Cursor cursor, A.Expr atom)
                 {
                     return cursor.Scope(cursor =>
                     {
                         cursor.Swallow(Lex.Dot);
 
-                        return new A.SelectExpr(atom, ParseAtom(cursor));
+                        return new A.Expr.Select(atom, ParseAtom(cursor));
                     });
                 }
 
@@ -1079,7 +1085,7 @@ namespace Fux.Input
                 cursor.Swallow(Lex.Dot);
                 var expr = SingleIdentifier(cursor);
 
-                return new A.DotExpr(expr);
+                return new A.Expr.Dot(expr);
             });
         }
 
@@ -1093,53 +1099,53 @@ namespace Fux.Input
             });
         }
 
-        public A.CharLiteral CharLiteral(Cursor cursor)
+        public A.Expr.Literal.Char CharLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
                 var token = cursor.Swallow(Lex.Char);
 
-                return new A.CharLiteral(token);
+                return new A.Expr.Literal.Char(token);
             });
         }
 
-        public A.StringLiteral StringLiteral(Cursor cursor)
+        public A.Expr.Literal.String StringLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
                 var token = cursor.Swallow(Lex.String);
 
-                return new A.StringLiteral(token);
+                return new A.Expr.Literal.String(token);
             });
         }
 
-        public A.Expr LongStringLiteral(Cursor cursor)
+        public A.Expr.Literal.LongString LongStringLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
                 var token = cursor.Swallow(Lex.LongString);
 
-                return new A.LongStringLiteral(token);
+                return new A.Expr.Literal.LongString(token);
             });
         }
 
-        public A.IntegerLiteral IntegerLiteral(Cursor cursor)
+        public A.Expr.Literal.Integer IntegerLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
                 var token = cursor.Swallow(Lex.Integer);
 
-                return new A.IntegerLiteral(token);
+                return new A.Expr.Literal.Integer(token);
             });
         }
 
-        public A.Expr FloatLiteral(Cursor cursor)
+        public A.Expr.Literal.Float FloatLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
                 var token = cursor.Swallow(Lex.Float);
 
-                return new A.FloatLiteral(token);
+                return new A.Expr.Literal.Float(token);
             });
         }
 
@@ -1155,7 +1161,7 @@ namespace Fux.Input
 
                 var expr = Expression(cursor);
 
-                return new A.LambdaExpr(pattern, expr);
+                return new A.Expr.Lambda(pattern, expr);
             });
         }
     }

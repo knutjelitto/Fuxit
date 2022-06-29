@@ -4,9 +4,9 @@ namespace Fux.Building
 {
     public sealed class TypeScope : Scope
     {
-        private readonly Dictionary<A.Identifier, A.Type.Parameter> parameters = new();
+        private readonly Dictionary<A.Identifier, A.TypeParameter> parameters = new();
 
-        public void Add(A.Type.Parameter parameter)
+        public void Add(A.TypeParameter parameter)
         {
             var name = parameter.Name.SingleLower();
 
@@ -15,9 +15,9 @@ namespace Fux.Building
             parameters.Add(name, parameter);
         }
 
-        public bool LookupParameter(A.Identifier identifier, [MaybeNullWhen(false)] out A.Type.Parameter var)
+        public bool LookupParameter(A.Identifier identifier, [MaybeNullWhen(false)] out A.TypeParameter parameter)
         {
-            return parameters.TryGetValue(identifier.SingleLowerOrOp(), out var);
+            return parameters.TryGetValue(identifier.SingleLowerOrOp(), out parameter);
         }
 
         public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Node expr)

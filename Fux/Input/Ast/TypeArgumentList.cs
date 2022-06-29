@@ -1,13 +1,13 @@
 ﻿namespace Fux.Input.Ast
 {
-    public sealed class TypeArguments : ListOf<Type>
+    public sealed class TypeArgumentList : ListOf<Type>
     {
-        public TypeArguments(IEnumerable<Type> items)
+        public TypeArgumentList(IEnumerable<Type> items)
             : base(items)
         {
         }
 
-        public TypeArguments(params Type[] items)
+        public TypeArgumentList(params Type[] items)
             : this(items.AsEnumerable())
         {
         }

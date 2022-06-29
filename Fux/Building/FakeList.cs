@@ -8,18 +8,31 @@ namespace Fux.Building
 {
     public static class FakeList
     {
-        public static A.UnionDecl MakeType(Module module)
+        public static A.TypeDecl MakeType(Module module)
         {
             Assert(module.Name == Lex.Primitive.List);
 
             var listId = A.Identifier.Artificial(module, Lex.Primitive.List);
+            listId.Module = module;
             var paraId = A.Identifier.Artificial(module, "a");
-            var para = new A.Type.Parameter(paraId);
-            var args = new A.TypeArguments(para);
-            var ctor = new A.Type.Constructor(listId, args);
-            var ctors = new A.Constructors(ctor);
-            var parameters = new A.TypeParameters(new A.Type.Parameter(paraId));
-            var type = new A.UnionDecl(listId, parameters, ctors);
+            paraId.Module = module;
+            var para = new A.TypeParameter(paraId);
+            para.Module = module;
+            var paras = new A.TypeParameterList(para);
+            paras.Module = module;
+            var parameters = new A.TypeParameterList(new A.TypeParameter(paraId));
+            parameters.Module = module;
+
+            var arg = new A.Type.Parameter(paraId);
+            arg.Module = module;
+            var args = new A.TypeArgumentList(arg);
+            args.Module = module;
+            var ctor = new A.Constructor(listId, args);
+            ctor.Module = module;
+            var ctors = new A.ConstructorList(ctor);
+            ctors.Module = module;
+
+            var type = new A.TypeDecl(listId, parameters, ctors);
             type.Module = module;
 
             return type;

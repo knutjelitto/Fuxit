@@ -73,14 +73,7 @@
         {
             public Parameter(Identifier name)
             {
-                Name = name;
-
-                if (name.ToString() == "number")
-                {
-                    Assert(true);
-                }
-
-                Assert(Name.IsSingleLower);
+                Name = name.SingleLower();
             }
 
             public Identifier Name { get; }
@@ -164,7 +157,7 @@
 
         public sealed class UnionType : Type
         {
-            public UnionType(Identifier name, TypeParameters parameters, Constructors constructors)
+            public UnionType(Identifier name, TypeParameterList parameters, ConstructorList constructors)
             {
                 Name = name;
                 Parameters = parameters;
@@ -172,13 +165,13 @@
             }
 
             public Identifier Name { get; }
-            public TypeParameters Parameters { get; }
-            public Constructors Constructors { get; }
+            public TypeParameterList Parameters { get; }
+            public ConstructorList Constructors { get; }
         }
 
         public class Union : Type
         {
-            public Union(Identifier name, TypeArguments arguments)
+            public Union(Identifier name, TypeArgumentList arguments)
             {
                 Name = name;
                 Arguments = arguments;
@@ -187,7 +180,7 @@
             }
 
             public Identifier Name { get; }
-            public TypeArguments Arguments { get; }
+            public TypeArgumentList Arguments { get; }
 
             public override void PP(Writer writer)
             {
@@ -206,7 +199,7 @@
 
         public sealed class Constructor : Expr.ExprImpl
         {
-            public Constructor(Identifier name, TypeArguments arguments)
+            public Constructor(Identifier name, TypeArgumentList arguments)
             {
                 Name = name;
                 Arguments = arguments;
@@ -215,7 +208,7 @@
             }
 
             public Identifier Name { get; }
-            public TypeArguments Arguments { get; }
+            public TypeArgumentList Arguments { get; }
 
             public override void PP(Writer writer)
             {

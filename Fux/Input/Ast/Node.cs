@@ -24,13 +24,21 @@ namespace Fux.Input.Ast
             {
                 get
                 {
-                    Assert(Span != null);
+                    Assert(Module != null);
+                    if (Span == null)
+                    {
+                        return new Location(Module.Source!, 0, 0);
+                    }
 
+                    Assert(Span != null);
                     return Span[0].Location;
                 }
             }
 
-            public abstract void PP(Writer writer);
+            public virtual void PP(Writer writer)
+            {
+                writer.Write($"{ToString()}");
+            }
 
             public string Protected(string text)
             {

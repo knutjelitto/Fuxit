@@ -351,11 +351,19 @@ namespace Fux.Building.AlgorithmW
                         {
                             return Substitution.Empty();
                         }
-                        if (typ1 is Type.Char && typ2 is Type.Variable variable)
+                        else if (typ1 is Type.Char && typ2 is Type.Variable variable)
                         {
                             Assert(true);
 
                             return new Substitution(variable.TypeVar, typ1);
+                        }
+                        else if (typ1 is Type.Variable v1)
+                        {
+                            return new Substitution(v1.TypeVar, typ2);
+                        }
+                        else if (typ2 is Type.Variable v2)
+                        {
+                            return new Substitution(v2.TypeVar, typ1);
                         }
                         break;
                     }
@@ -366,8 +374,14 @@ namespace Fux.Building.AlgorithmW
             }
 
             Assert(true);
-            //throw new WError($"types do not unify: {type1.GetType().FullName}({type1}) vs {type2.GetType().FullName}({type2})");
-            throw new WError($"types do not unify: {type1} vs {type2}");
+            if (type1 == type2)
+            {
+                throw new WError($"types do not unify: {type1} vs {type2}");
+            }
+            else
+            {
+                throw new WError($"types do not unify: {type1.GetType().FullName}({type1}) vs {type2.GetType().FullName}({type2})");
+            }
         }
 
         /// <summary>

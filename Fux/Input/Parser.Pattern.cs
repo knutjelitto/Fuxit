@@ -168,7 +168,7 @@ namespace Fux.Input
             {
                 var name = Parser.Identifier(cursor).SingleLower();
 
-                return new A.Pattern.Sign(name, CollectAtomic(cursor));
+                return new A.Pattern.Signature(name, CollectAtomic(cursor));
             }
         }
 

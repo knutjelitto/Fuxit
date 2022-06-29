@@ -7,9 +7,9 @@ namespace Fux.Building
         private readonly Dictionary<A.Identifier, A.ImportDecl> imports = new();
         private readonly List<A.InfixDecl> infixes = new();
         private readonly Dictionary<A.Identifier, A.InfixDecl> infixesIndex = new();
-        private readonly Dictionary<A.Identifier, A.UnionDecl> types = new();
+        private readonly Dictionary<A.Identifier, A.TypeDecl> types = new();
         private readonly Dictionary<A.Identifier, A.AliasDecl> aliases = new();
-        private readonly Dictionary<A.Identifier, A.Type.Constructor> constructors = new();
+        private readonly Dictionary<A.Identifier, A.Constructor> constructors = new();
         private readonly Dictionary<A.Identifier, Module> modules = new();
         private readonly Dictionary<A.Identifier, A.NativeDecl> natives = new();
 
@@ -39,7 +39,7 @@ namespace Fux.Building
             infixesIndex.Add(name, decl);
         }
 
-        public void AddType(A.UnionDecl decl)
+        public void AddType(A.TypeDecl decl)
         {
             var name = decl.Name.SingleUpper();
 
@@ -57,7 +57,7 @@ namespace Fux.Building
             aliases.Add(name, decl);
         }
 
-        public void AddConstructor(A.Type.Constructor constructor)
+        public void AddConstructor(A.Constructor constructor)
         {
             var name = constructor.Name.SingleUpper();
 
@@ -92,7 +92,7 @@ namespace Fux.Building
         }
 
 
-        public bool ImportAddType(A.UnionDecl decl)
+        public bool ImportAddType(A.TypeDecl decl)
         {
             return types.TryAdd(decl.Name.SingleUpper(), decl);
         }
@@ -110,7 +110,7 @@ namespace Fux.Building
             return false;
         }
 
-        public bool ImportAddConstructor(A.Type.Constructor constructor)
+        public bool ImportAddConstructor(A.Constructor constructor)
         {
             return constructors.TryAdd(constructor.Name.SingleUpper(), constructor);
         }
@@ -145,7 +145,7 @@ namespace Fux.Building
             return infixesIndex.TryGetValue(identifier.SingleOp(), out infix);
         }
 
-        public bool LookupType(A.Identifier identifier, [MaybeNullWhen(false)]out A.UnionDecl type)
+        public bool LookupType(A.Identifier identifier, [MaybeNullWhen(false)]out A.TypeDecl type)
         {
             return types.TryGetValue(identifier.SingleUpper(), out type);
         }
@@ -155,7 +155,7 @@ namespace Fux.Building
             return aliases.TryGetValue(identifier.SingleUpper(), out alias);
         }
 
-        public bool LookupConstructor(A.Identifier identifier, [MaybeNullWhen(false)] out A.Type.Constructor constructor)
+        public bool LookupConstructor(A.Identifier identifier, [MaybeNullWhen(false)] out A.Constructor constructor)
         {
             return constructors.TryGetValue(identifier.SingleUpper(), out constructor);
         }

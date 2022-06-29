@@ -20,7 +20,7 @@
 
         public Expr Combine(Expr lhs, Expr rhs)
         {
-            return new InfixExpr(this, lhs, rhs);
+            return new Expr.Infix(this, lhs, rhs);
         }
     }
 }

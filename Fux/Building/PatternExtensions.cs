@@ -4,14 +4,14 @@ namespace Fux.Building
 {
     public static class PatternExtensions
     {
-        public static IEnumerable<A.Parameter> ExtractNamedParameters(this A.Pattern pattern)
+        public static IEnumerable<A.ParameterDecl> ExtractNamedParameters(this A.Pattern pattern)
         {
-            return pattern.Flatten().Select(id => new A.Parameter(id));
+            return pattern.Flatten().Select(id => new A.ParameterDecl(id));
         }
 
-        public static IEnumerable<A.Parameter> ExractMatchNames(this A.Pattern matchPattern)
+        public static IEnumerable<A.ParameterDecl> ExractMatchNames(this A.Pattern matchPattern)
 {
-            return matchPattern.Flatten(null, true).Select(name => new A.Parameter(name));
+            return matchPattern.Flatten(null, true).Select(name => new A.ParameterDecl(name));
         }
 
         public static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)
@@ -28,7 +28,7 @@ namespace Fux.Building
                         yield return identifier.Identifier;
                         break;
                     }
-                case A.Pattern.Sign sign when inner && sign.Parameters.Count == 0:
+                case A.Pattern.Signature sign when inner && sign.Parameters.Count == 0:
                     {
                         yield return sign.Name;
                         break;
@@ -70,7 +70,7 @@ namespace Fux.Building
                         break;
                     }
 
-                case A.Pattern.Sign sign:
+                case A.Pattern.Signature sign:
                     {
                         foreach (var argument in sign.Parameters)
                         {

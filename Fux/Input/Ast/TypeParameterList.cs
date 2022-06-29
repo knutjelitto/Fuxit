@@ -1,14 +1,14 @@
 ﻿namespace Fux.Input.Ast
 {
-    public sealed class TypeParameters : ListOf<Type.Parameter>
+    public sealed class TypeParameterList : ListOf<TypeParameter>
     {
-        public TypeParameters(IEnumerable<Type.Parameter> items)
+        public TypeParameterList(IEnumerable<TypeParameter> items)
             : base(items)
         {
             Assert(this.All(p => p.Name.IsSingleLower));
         }
 
-        public TypeParameters(params Type.Parameter[] items)
+        public TypeParameterList(params TypeParameter[] items)
             : this(items.AsEnumerable())
         {
         }

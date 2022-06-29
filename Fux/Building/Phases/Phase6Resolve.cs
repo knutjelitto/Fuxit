@@ -64,11 +64,14 @@ namespace Fux.Building.Phases
                     case A.InfixDecl infix:
                         ResolveInfix(infix);
                         break;
-                    case A.UnionDecl type:
-                        ResolveUnion(type);
+                    case A.TypeDecl type:
+                        ResolveType(type);
                         break;
                     case A.VarDecl var:
                         ResolveVar(var);
+                        break;
+                    case A.LetAssign let:
+                        ResolveLet(let);
                         break;
                     case A.TypeAnnotation annotation:
                         ResolveAnnotation(annotation);
@@ -87,12 +90,17 @@ namespace Fux.Building.Phases
                 ResolveExpr(Module.Scope, infix.Expression);
             }
 
+            private void ResolveLet(A.LetAssign var)
+            {
+                ResolveExpr(var.Scope, var.Expression);
+            }
+
             private void ResolveVar(A.VarDecl var)
             {
                 ResolveExpr(var.Scope, var.Expression);
             }
 
-            private void ResolveUnion(A.UnionDecl type)
+            private void ResolveType(A.TypeDecl type)
             {
                 ResolveType(Module.Scope, type.Type);
             }
@@ -146,6 +154,33 @@ namespace Fux.Building.Phases
                         {
                             if (scope.Resolve(concrete.Name, out var resolved))
                             {
+                                if (resolved is A.TypeDecl typeDecl)
+                                {
+                                    Assert(typeDecl.Module != null);
+
+                                    if (typeDecl.Module.IsCore)
+                                    {
+                                        switch (concrete.Name.Text)
+                                        {
+                                            case Lex.Primitive.Int:
+                                                concrete.Resolved = new A.Type.Primitive.Int(concrete.Name);
+                                                break;
+                                            case Lex.Primitive.Float:
+                                                concrete.Resolved = new A.Type.Primitive.Float(concrete.Name);
+                                                break;
+                                            case Lex.Primitive.Bool:
+                                                concrete.Resolved = new A.Type.Primitive.Bool(concrete.Name);
+                                                break;
+                                            case Lex.Primitive.String:
+                                                concrete.Resolved = new A.Type.Primitive.String(concrete.Name);
+                                                break;
+                                            case Lex.Primitive.Char:
+                                                concrete.Resolved = new A.Type.Primitive.Char(concrete.Name);
+                                                break;
+
+                                        }
+                                    }
+                                }
                                 Assert(true);
                             }
                             break;
@@ -171,7 +206,7 @@ namespace Fux.Building.Phases
                             {
                                 Assert(resolved.Module != null);
 
-                                if (resolved.Module.IsCore && resolved is A.UnionDecl decl)
+                                if (resolved.Module.IsCore && resolved is A.TypeDecl decl)
                                 {
                                     foreach (var argument in union.Arguments)
                                     {
@@ -232,42 +267,125 @@ namespace Fux.Building.Phases
             {
                 switch (expression)
                 {
-                    case A.Literal:
-                    case A.Unit:
+                    case A.Expr.Literal:
+                    case A.Expr.Unit:
                     case A.Wildcard:
-                    case A.NativeDecl:
                         break;
-                    case A.DotExpr:
+                    case A.Expr.Dot:
                         break; //TODO: what to do here
                     case A.Identifier identifier:
                         {
-                            if (scope.Resolve(identifier, out var found))
+                            if (identifier.IsSingleLower)
                             {
-                                if (found is A.Identifier)
+                                if (scope.Resolve(identifier, out var resolved))
                                 {
-                                    scope.Resolve(identifier, out found);
+                                    Assert(resolved is not A.Identifier);
+                                    if (resolved is A.VarDecl var)
+                                    {
+                                        expression.Resolved = new A.Ref.Var(var);
+                                        break;
+                                    }
+                                    else if (resolved is A.ParameterDecl parameter)
+                                    {
+                                        expression.Resolved = new A.Ref.Parameter(parameter);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        Assert(false);
+                                    }
+                                    break;
                                 }
-                                Assert(found is not A.Identifier);
-                                Assert(found != null);
-                                if (found is A.Node node)
-                                {
-                                    expression.Resolved = node;
-                                }
-                                else
-                                {
-                                    Assert(false);
-                                }
-                                break;
+                                Assert(false);
+                                throw new NotImplementedException();
                             }
-                            Assert(false);
-                            throw new NotImplementedException();
+                            else if (identifier.IsQualified)
+                            {
+                                if (scope.Resolve(identifier, out var resolved))
+                                {
+                                    if (resolved is A.NativeDecl native)
+                                    {
+                                        expression.Resolved = new A.Ref.Native(native);
+                                        break;
+                                    }
+                                    else if (resolved is A.VarDecl var)
+                                    {
+                                        expression.Resolved = new A.Ref.Var(var);
+                                        break;
+                                    }
+                                }
+
+                                Assert(false);
+                                throw new NotImplementedException();
+                            }
+                            else if (identifier.IsSingleOp)
+                            {
+                                if (scope.Resolve(identifier, out var resolved))
+                                {
+                                    if (resolved is A.InfixDecl infix)
+                                    {
+                                        expression.Resolved = new A.Ref.Infix(infix);
+                                        break;
+                                    }
+                                }
+                                Assert(false);
+                                throw new NotImplementedException();
+                            }
+                            else if (identifier.IsSingleUpper)
+                            {
+                                if (scope.Resolve(identifier, out var resolved))
+                                {
+                                    if (resolved is A.Constructor ctor)
+                                    {
+                                        expression.Resolved = new A.Ref.Ctor(ctor);
+                                        break;
+                                    }
+                                    else if (resolved is A.TypeDecl type)
+                                    {
+                                        expression.Resolved = new A.Ref.Type(type);
+                                        break;
+                                    }
+                                    else if (resolved is A.AliasDecl alias)
+                                    {
+                                        expression.Resolved = new A.Ref.Alias(alias);
+                                        break;
+                                    }
+                                    Assert(false);
+                                    throw new NotImplementedException();
+                                }
+                                Assert(false);
+                                throw new NotImplementedException();
+                            }
+                            else if (identifier.IsMultiUpper)
+                            {
+                                if (scope.Resolve(identifier, out var resolved))
+                                {
+                                    if (resolved is A.Constructor ctor)
+                                    {
+                                        expression.Resolved = new A.Ref.Ctor(ctor);
+                                        break;
+                                    }
+                                    if (resolved is A.TypeDecl type)
+                                    {
+                                        expression.Resolved = new A.Ref.Type(type);
+                                        break;
+                                    }
+                                }
+                                Assert(false);
+                                throw new NotImplementedException();
+                            }
+                            else
+                            {
+                                Assert(false);
+                                throw new NotImplementedException();
+                            }
                         }
-                    case A.IfExpr iff:
+                    case A.Expr.If iff:
                         ResolveExpr(scope, iff.Condition);
                         ResolveExpr(scope, iff.IfTrue);
                         ResolveExpr(scope, iff.IfFalse);
                         break;
-                    case A.MatchExpr match:
+                    case A.Expr.Match match:
                         ResolveExpr(scope, match.Expression);
                         foreach (var matchCase in match.Cases)
                         {
@@ -278,7 +396,7 @@ namespace Fux.Building.Phases
                         ResolveExpr(matchCase.Scope, matchCase.Pattern);
                         ResolveExpr(matchCase.Scope, matchCase.Expression);
                         break;
-                    case A.LetExpr let:
+                    case A.Expr.Let let:
                         {
                             foreach (var expr in let.LetDecls)
                             {
@@ -287,29 +405,29 @@ namespace Fux.Building.Phases
                             ResolveExpr(let.Scope, let.InExpression);
                             break;
                         }
-                    case A.LambdaExpr lambda:
+                    case A.Expr.Lambda lambda:
                         ResolveExpr(lambda.Scope, lambda.Parameters);
                         ResolveExpr(lambda.Scope, lambda.Expression);
                         break;
-                    case A.SequenceExpr sequence:
+                    case A.Expr.Sequence sequence:
                         foreach (var expr in sequence)
                         {
                             ResolveExpr(scope, expr);
                         }
                         break;
-                    case A.TupleExpr tuple:
+                    case A.Expr.Tuple tuple:
                         foreach (var expr in tuple)
                         {
                             ResolveExpr(scope, expr);
                         }
                         break;
-                    case A.ListExpr list:
+                    case A.Expr.List list:
                         foreach (var expr in list)
                         {
                             ResolveExpr(scope, expr);
                         }
                         break;
-                    case A.RecordExpr record:
+                    case A.Expr.Record record:
                         if (record.BaseRecord != null)
                         {
                             ResolveExpr(scope, record.BaseRecord);
@@ -322,7 +440,7 @@ namespace Fux.Building.Phases
                     case A.FieldAssign fieldAssign:
                         ResolveExpr(scope, fieldAssign.Expression);
                         break;
-                    case A.PrefixExpr prefix:
+                    case A.Expr.Prefix prefix:
                         //TODO: prefix operator
                         //ResolveExpr(scope, prefix.Op);
                         ResolveExpr(scope, prefix.Rhs);
@@ -331,7 +449,7 @@ namespace Fux.Building.Phases
                         Assert(chain.Resolved is A.OpChain);
                         ResolveInfix(scope, chain);
                         break;
-                    case A.SelectExpr select:
+                    case A.Expr.Select select:
                         ResolveExpr(scope, select.Lhs);
                         break;
                     case A.RecordPattern recordPattern:
@@ -348,13 +466,8 @@ namespace Fux.Building.Phases
                         {
                             foreach (var parameter in parameters)
                             {
-                                ResolveExpr(scope, parameter);
+                                ResolveExpr(scope, parameter.Expression);
                             }
-                            break;
-                        }
-                    case A.Parameter parameter:
-                        {
-                            ResolveExpr(scope, parameter.Expression);
                             break;
                         }
 
@@ -392,7 +505,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.Sign sign:
+                    case A.Pattern.Signature sign:
                         {
                             foreach (var pattern in sign.Parameters)
                             {
@@ -438,6 +551,9 @@ namespace Fux.Building.Phases
                     case A.Pattern.UpperId:
                         break;
 
+                    case A.Ref.Native:
+                        break;
+
 
                     default:
                         Assert(false);
@@ -458,6 +574,7 @@ namespace Fux.Building.Phases
                         if (resolved is A.InfixDecl infixDecl)
                         {
                             opExpr.Op.InfixDecl = infixDecl;
+                            opExpr.Op.Resolved = infixDecl;
 
                             ResolveExpr(scope, opExpr.Expression);
                         }
@@ -473,7 +590,7 @@ namespace Fux.Building.Phases
 
                 chain.Resolved = infix;
 
-                Assert(chain.Resolved is A.InfixExpr);
+                Assert(chain.Resolved is A.Expr.Infix);
             }
         }
     }
