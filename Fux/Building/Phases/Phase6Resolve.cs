@@ -114,84 +114,101 @@ namespace Fux.Building.Phases
                 switch (type)
                 {
                     case A.Type.Function function:
-                        ResolveType(scope, function.InType);
-                        ResolveType(scope, function.OutType);
-                        break;
+                        {
+                            ResolveType(scope, function.InType);
+                            ResolveType(scope, function.OutType);
+                            break;
+                        }
                     case A.Type.Tuple tuple:
-                        foreach (var item in tuple.Types)
                         {
-                            ResolveType(scope, item);
+                            foreach (var item in tuple.Types)
+                            {
+                                ResolveType(scope, item);
+                            }
+                            break;
                         }
-                        break;
                     case A.Type.Record record:
-                        if (record.BaseRecord != null)
                         {
-                            ResolveType(scope, record.BaseRecord);
+                            if (record.BaseRecord != null)
+                            {
+                                ResolveType(scope, record.BaseRecord);
+                            }
+                            foreach (var field in record.Fields)
+                            {
+                                ResolveType(scope, field.TypeDef);
+                            }
+                            break;
                         }
-                        foreach (var field in record.Fields)
-                        {
-                            ResolveType(scope, field.TypeDef);
-                        }
-                        break;
                     case A.Type.Concrete concrete:
-                        if (scope.Resolve(concrete.Name, out _))
                         {
-                            Assert(true);
+                            if (scope.Resolve(concrete.Name, out var resolved))
+                            {
+                                Assert(true);
+                            }
+                            break;
                         }
-                        break;
                     case A.Type.Primitive primitive:
-                        if (scope.Resolve(primitive.Name, out _))
                         {
+                            if (scope.Resolve(primitive.Name, out _))
+                            {
 
+                            }
+                            break;
                         }
-                        break;
                     case A.Type.UnionType unionType:
                         {
                             break;
                         }
                     case A.Type.Union union:
-                        if (scope.Resolve(union.Name, out var resolved))
                         {
-                            Assert(resolved.Module != null);
-
-                            if (resolved.Module.IsCore && resolved is A.UnionDecl decl)
+                            if (scope.Resolve(union.Name, out var resolved))
                             {
-                                if (union.Arguments.Count == 0)
-                                {
-                                    Assert(union.Arguments.Count == 0);
-                                    //Assert(union.Name.Text == decl.Name.Text);
+                                Assert(resolved.Module != null);
 
-                                    switch (union.Name.Text)
-                                    {
-                                        case Lex.Primitive.Int:
-                                            union.Resolved = new A.Type.Primitive.Int(union.Name);
-                                            break;
-                                        case Lex.Primitive.Float:
-                                            union.Resolved = new A.Type.Primitive.Float(union.Name);
-                                            break;
-                                        case Lex.Primitive.Bool:
-                                            union.Resolved = new A.Type.Primitive.Bool(union.Name);
-                                            break;
-                                        case Lex.Primitive.String:
-                                            union.Resolved = new A.Type.Primitive.String(union.Name);
-                                            break;
-                                        case Lex.Primitive.Char:
-                                            union.Resolved = new A.Type.Primitive.Char(union.Name);
-                                            break;
-                                    }
-                                }
-                                else if (union.Arguments.Count == 1)
+                                if (resolved.Module.IsCore && resolved is A.UnionDecl decl)
                                 {
-                                    switch (union.Name.Text)
+                                    foreach (var argument in union.Arguments)
                                     {
-                                        case Lex.Primitive.List:
-                                            union.Resolved = new A.Type.Primitive.List(union.Name, union.Arguments[0]);
-                                            break;
+                                        ResolveType(scope, argument);
+                                    }
+
+                                    if (union.Arguments.Count == 0)
+                                    {
+                                        Assert(union.Arguments.Count == 0);
+                                        //Assert(union.Name.Text == decl.Name.Text);
+
+                                        switch (union.Name.Text)
+                                        {
+                                            case Lex.Primitive.Int:
+                                                union.Resolved = new A.Type.Primitive.Int(union.Name);
+                                                break;
+                                            case Lex.Primitive.Float:
+                                                union.Resolved = new A.Type.Primitive.Float(union.Name);
+                                                break;
+                                            case Lex.Primitive.Bool:
+                                                union.Resolved = new A.Type.Primitive.Bool(union.Name);
+                                                break;
+                                            case Lex.Primitive.String:
+                                                union.Resolved = new A.Type.Primitive.String(union.Name);
+                                                break;
+                                            case Lex.Primitive.Char:
+                                                union.Resolved = new A.Type.Primitive.Char(union.Name);
+                                                break;
+                                        }
+                                    }
+                                    else if (union.Arguments.Count == 1)
+                                    {
+                                        switch (union.Name.Text)
+                                        {
+                                            case Lex.Primitive.List:
+                                                union.Resolved = new A.Type.Primitive.List(union.Name, union.Arguments[0]);
+                                                break;
+                                        }
                                     }
                                 }
                             }
+                            break;
                         }
-                        break;
                     case A.Type.Parameter:
                     case A.Type.NumberClass:
                     case A.Type.AppendableClass:
