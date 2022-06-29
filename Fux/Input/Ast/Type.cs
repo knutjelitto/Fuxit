@@ -23,6 +23,7 @@ namespace Fux.Input.Ast
                 Name = name;
 
                 Assert(Name.IsMultiUpper);
+                Assert(Name.Text != Lex.Primitive.Char);
             }
 
             public Identifier Name { get; }

@@ -49,6 +49,7 @@ namespace Fux.Building.Typing
                 case A.Type.Primitive.Char:
                     return new W.Type.Char();
                 case A.Type.Concrete concrete:
+                    Assert(concrete.Name.Text != Lex.Primitive.Char);
                     return new W.Type.Concrete(concrete.Name.Text);
                 case A.Type.Primitive.List list:
                     return new W.Type.List(Resolve(env, list.Argument));
@@ -69,15 +70,9 @@ namespace Fux.Building.Typing
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
-#if true
-                    typeVar = new W.FixTypeVariable(text);
-                    index.Add(text, typeVar);
-                    vars.Add(typeVar);
-#else
                     typeVar = env.Generator.GetNext().TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
-#endif
                 }
                 return new W.Type.Variable(typeVar);
             }

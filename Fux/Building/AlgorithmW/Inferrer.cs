@@ -48,10 +48,6 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private static (Substitution, Type) InferType(Expr expression, Environment env, bool investigated)
         {
-            if (investigated)
-            {
-                Assert(true);
-            }
             switch (expression)
             {
                 case Expr.Unify({ } type, { } expr):
@@ -139,16 +135,21 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Iff({ } cond, { } expr1, { } expr2):
                     {
+                        if (investigated)
                         {
-                            var (_, type1) = InferType(cond, env, investigated);
+                            Assert(true);
+                        }
+
+                        {
+                            var (s1, type1) = InferType(cond, env, investigated);
                             var type2 = new Type.Bool();
-                            _ = MostGeneralUnifier(type1, type2);
+                            var s2 = MostGeneralUnifier(type1, type2);
                         }
                         {
-                            var (s1, type1) = InferType(expr1, env, investigated);
-                            var (s2, type2) = InferType(expr2, env, investigated);
-                            var s3 = MostGeneralUnifier(type1, type2);
-                            return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(type1, s3));
+                            var (s3, type3) = InferType(expr1, env, investigated);
+                            var (s4, type4) = InferType(expr2, env, investigated);
+                            var s5 = MostGeneralUnifier(type3, type4);
+                            return (ComposeSubstitutions(s5, ComposeSubstitutions(s4, s3)), ApplySubstitution(type3, s5));
                         }
                     }
 
@@ -306,10 +307,6 @@ namespace Fux.Building.AlgorithmW
                 // This also handles the case where they are both variables.
                 case (Type.Variable({ } v1) t1, Type.Variable({ } v2) t2):
                     {
-                        if (v1 is FixTypeVariable)
-                        {
-                            return BindVariable(v2, t1);
-                        }
                         return BindVariable(v1, t2);
                     }
 
@@ -354,6 +351,12 @@ namespace Fux.Building.AlgorithmW
                         {
                             return Substitution.Empty();
                         }
+                        if (typ1 is Type.Char && typ2 is Type.Variable variable)
+                        {
+                            Assert(true);
+
+                            return new Substitution(variable.TypeVar, typ1);
+                        }
                         break;
                     }
 
@@ -363,7 +366,8 @@ namespace Fux.Building.AlgorithmW
             }
 
             Assert(true);
-            throw new WError($"types do not unify: {type1.GetType().FullName}({type1}) vs {type2.GetType().FullName}({type2})");
+            //throw new WError($"types do not unify: {type1.GetType().FullName}({type1}) vs {type2.GetType().FullName}({type2})");
+            throw new WError($"types do not unify: {type1} vs {type2}");
         }
 
         /// <summary>

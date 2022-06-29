@@ -6,7 +6,7 @@
 
         public Type.Variable GetNext()
         {
-            return new Type.Variable(new GenTypeVariable(supply++));
+            return new Type.Variable(new TypeVariable(supply++));
         }
     }
 }

@@ -25,4 +25,8 @@
     <PackageReference Include="Semver" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Fux.TypeSystem\Fux.TypeSystem.csproj" />
+  </ItemGroup>
+
 </Project>

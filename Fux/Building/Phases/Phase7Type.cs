@@ -11,10 +11,10 @@ namespace Fux.Building.Phases
 {
     internal class Phase7Typing : Phase
     {
-        private const int underInvestigation = 133;
+        private const int underInvestigation = 90;
         private static int numero = 0;
         private const int numeroFrom = 1;
-        private const int numeroTo = 200;
+        private const int numeroTo = 150;
 
         //private static Func<int, bool> Qualify = (no => no == huntingFor);
         private static readonly Func<int, bool> Qualify = no => true;
