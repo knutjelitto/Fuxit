@@ -97,6 +97,10 @@ namespace Fux.Building.Phases
 
             private void ResolveVar(A.VarDecl var)
             {
+                if (var.Name.Text == "radians")
+                {
+                    Assert(true);
+                }
                 ResolveExpr(var.Scope, var.Expression);
             }
 

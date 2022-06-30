@@ -28,6 +28,7 @@ namespace Fux.Building
                         yield return identifier.Identifier;
                         break;
                     }
+
                 case A.Pattern.Signature sign when inner && sign.Parameters.Count == 0:
                     {
                         yield return sign.Name;

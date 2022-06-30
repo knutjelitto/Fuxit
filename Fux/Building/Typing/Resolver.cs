@@ -79,6 +79,11 @@ namespace Fux.Building.Typing
 
         private void Resolve(A.VarDecl var, bool investigated)
         {
+            if (var.Name.Text == "radians")
+            {
+                Assert(true);
+            }
+
             var inferrer = new W.Inferrer();
             var gamma = inferrer.GetEmptyEnvironment();
 

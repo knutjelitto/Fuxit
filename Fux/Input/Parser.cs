@@ -251,11 +251,7 @@ namespace Fux.Input
                 var operatorTok = cursor.Swallow(Lex.OperatorId);
                 var operatorSymbol = new A.Identifier(operatorTok);
                 var defineTok = cursor.Swallow(Lex.Assign);
-#if true
                 var definition = Identifier(cursor).SingleLower(); ;
-#else
-                var definition = new A.Identifier(cursor.Swallow(Lex.LowerId));
-#endif
 
                 return new A.InfixDecl(assoc, power, operatorSymbol, definition);
             });
@@ -414,33 +410,6 @@ namespace Fux.Input
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-#if false
-                if (arguments.Count == 0)
-                {
-                    switch (name.Text)
-                    {
-                        case Lex.Primitive.Int:
-                            return new A.Type.Primitive.Int(name);
-                        case Lex.Primitive.Float:
-                            return new A.Type.Primitive.Float(name);
-                        case Lex.Primitive.Bool:
-                            return new A.Type.Primitive.Bool(name);
-                        case Lex.Primitive.String:
-                            return new A.Type.Primitive.String(name);
-                        case Lex.Primitive.Char:
-                            return new A.Type.Primitive.Char(name);
-                    }
-
-                    return new A.Type.Concrete(name);
-                }
-                else if (arguments.Count == 1)
-                {
-                    if (name.Text == "List")
-                    {
-                        Assert(true);
-                    }
-                }
-#endif
                 return new A.Type.Union(name, arguments);
             });
         }
@@ -832,10 +801,28 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
+                if (cursor.Line == 578)
+                {
+                    Assert(true);
+                }
                 cursor.Swallow(Lex.KwCase);
                 var expression = Expression(cursor);
                 cursor.Swallow(Lex.KwOf);
 
+#if true
+                var cases = new List<A.Expr.Lambda>();
+
+                while (cursor.StartsAtomic)
+                {
+                    var subCursor = cursor.Subcursor();
+
+                    var lambda = Lambda(subCursor, true);
+
+                    cases.Add(lambda);
+                }
+
+                return new A.Expr.CaseMatch(expression, cases);
+#else
                 var cases = new List<A.Case>();
 
                 while (cursor.StartsAtomic)
@@ -857,6 +844,7 @@ namespace Fux.Input
                 }
 
                 return new A.Expr.CaseMatch(expression, cases);
+#endif
             });
         }
 
@@ -1149,19 +1137,31 @@ namespace Fux.Input
             });
         }
 
-        private A.Expr Lambda(Cursor cursor)
+        private A.Expr.Lambda Lambda(Cursor cursor, bool @case = false)
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.Lambda);
+                if (!@case)
+                {
+                    cursor.Swallow(Lex.Lambda);
+                }
+                else
+                {
+                    Assert(true);
+                }
 
-                var pattern = Pattern.Lambda(cursor);
+                if (cursor.Line == 579)
+                {
+                    Assert(true);
+                }
+
+                var pattern = @case ? Pattern.Pattern(cursor) : Pattern.Lambda(cursor);
 
                 cursor.Swallow(Lex.Arrow);
 
                 var expr = Expression(cursor);
 
-                return new A.Expr.Lambda(pattern, expr);
+                return new A.Expr.Lambda(pattern, expr, @case);
             });
         }
     }

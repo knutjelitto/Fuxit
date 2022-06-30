@@ -67,7 +67,7 @@
             public override string ToString() => $"(if {Cond} then {Then} else {Else})";
         }
 
-        public sealed record CaseMatch(Expr Expr, IReadOnlyList<Case> Cases) : Expr
+        public sealed record CaseMatch(Expr Expr, IReadOnlyList<Expr> Cases) : Expr
         {
             public override string ToString()
             {

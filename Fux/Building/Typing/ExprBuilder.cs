@@ -22,6 +22,7 @@ namespace Fux.Building.Typing
                 case A.Identifier identifier:
                     {
                         Assert(identifier.Resolved != null);
+
                         if (identifier.Resolved != null)
                         {
                             switch (identifier.Resolved)
@@ -33,11 +34,12 @@ namespace Fux.Building.Typing
                                     }
                                 case A.Ref.Infix infixRef:
                                     {
-                                        var infix = infixRef.Decl;
                                         if (investigated)
                                         {
                                             Assert(true);
                                         }
+
+                                        var infix = infixRef.Decl;
 
                                         Assert(identifier.IsSingleOp);
                                         Assert(infix.Expression.Resolved is A.Ref.Var);
@@ -70,15 +72,22 @@ namespace Fux.Building.Typing
                                         var variable = new W.Expr.Variable(name);
                                         return variable;
                                     }
+                                case A.Ref.Ctor ctorRef:
+                                    {
+                                        Assert(false);
+                                        break;
+                                    }
                                 case A.Identifier name:
                                     {
                                         var variable = new W.Expr.Variable(name);
                                         return variable;
                                     }
                                 default:
+                                    Assert(false);
                                     break;
                             }
                         }
+                        Assert(false);
                         break;
                     }
 
@@ -208,6 +217,7 @@ namespace Fux.Building.Typing
                         }
                         break;
                     }
+
                 case A.Pattern.Destruct destruct:
                     {
                         var first = destruct.Patterns.First();
@@ -289,18 +299,14 @@ namespace Fux.Building.Typing
             }
 
             var expr = Build(ref env, caseMatch.Expression, investigated);
-
-            var cases = new List<W.Expr.Case>();
-            foreach (var x in caseMatch.Cases)
+            var abstractions = new List<W.Expr>();
+            foreach (var lambda in caseMatch.Cases)
             {
-                var p = Build(ref env, x.Pattern, investigated);
-                var e = Build(ref env, x.Expression, investigated);
-                cases.Add(new W.Expr.Case(p, e));
+                var abstraction = Build(ref env, lambda, investigated);
+                abstractions.Add(abstraction);
             }
 
-            var match = new W.Expr.CaseMatch(expr, cases.ToArray());
-
-            return match;
+            return new W.Expr.CaseMatch(expr, abstractions.ToArray());
         }
 
         private W.Expr BuildLetExpr(A.Expr.Let letExpr, ref W.Environment env, bool investigated)

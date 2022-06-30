@@ -24,7 +24,7 @@
 
         public override string ToString()
         {
-            return $"{Source.Path}({Line},{Column})";
+            return $"{Source.Display}({Line},{Column})";
         }
     }
 }

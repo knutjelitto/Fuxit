@@ -57,8 +57,12 @@
 
             public override string ToString()
             {
-                var parameters = Parameters.Count == 0 ? "" : $" {string.Join(" ", Parameters)}";
-                return $"({Name}{parameters})";
+                if (Parameters.Count == 0)
+                {
+                    return $"{Name}";
+                }
+
+                return $"({Name} {string.Join(" ", Parameters)})";
             }
         }
 
@@ -92,8 +96,12 @@
 
             public override string ToString()
             {
-                var arguments = Arguments.Count == 0 ? "" : $" {string.Join(" ", Arguments)}";
-                return $"({Name}{arguments})";
+                if (Arguments.Count == 0)
+                {
+                    return $"{Name}";
+                }
+
+                return $"({Name} {string.Join(" ", Arguments)})";
             }
         }
 
@@ -186,6 +194,11 @@
             public class Integer : Literal
             {
                 public Integer(Expr.Literal.Integer literal) : base(literal) { }
+            }
+
+            public class Float : Literal
+            {
+                public Float(Expr.Literal.Float literal) : base(literal) { }
             }
 
             public class String : Literal

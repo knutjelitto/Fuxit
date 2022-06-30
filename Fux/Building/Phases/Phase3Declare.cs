@@ -394,9 +394,9 @@ namespace Fux.Building.Phases
 
             private void ScopeLambda(A.Expr.Lambda lambda)
             {
-                foreach (var identifier in lambda.Parameters.Flatten())
+                foreach (var parameter in lambda.Parameters.ExractMatchNames())
                 {
-                    lambda.Scope.Add(new A.ParameterDecl(identifier));
+                    lambda.Scope.Add(parameter);
                 }
 
                 ScopeExpr(lambda.Scope, lambda.Expression);

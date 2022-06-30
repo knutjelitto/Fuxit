@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
     public sealed class PatternParser
     {
@@ -14,22 +8,6 @@ namespace Fux.Input
         }
 
         public Parser Parser { get; }
-
-        public List<A.Pattern> PatternList(Cursor cursor)
-        {
-            var patterns = new List<A.Pattern>();
-
-            while (cursor.More() && !cursor.TerminatesSomething)
-            {
-                var pattern = Pattern(cursor);
-
-                patterns.Add(pattern);
-            }
-
-            Assert(patterns.Count >= 1);
-
-            return patterns;
-        }
 
         public A.Pattern Lambda(Cursor cursor)
         {
@@ -123,11 +101,15 @@ namespace Fux.Input
             }
             else if (cursor.Is(Lex.LBracket))
             {
-                return List(cursor);
+                return ListPattern(cursor);
             }
             else if (cursor.Is(Lex.Integer))
             {
                 return new A.Pattern.Literal.Integer(Parser.IntegerLiteral(cursor));
+            }
+            else if (cursor.Is(Lex.Float))
+            {
+                return new A.Pattern.Literal.Float(Parser.FloatLiteral(cursor));
             }
             else if (cursor.Is(Lex.String))
             {
@@ -228,7 +210,7 @@ namespace Fux.Input
             }
         }
 
-        private A.Pattern.List List(Cursor cursor)
+        private A.Pattern.List ListPattern(Cursor cursor)
         {
             cursor.Swallow(Lex.LBracket);
 

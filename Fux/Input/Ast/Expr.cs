@@ -2,6 +2,8 @@
 
 using Fux.Building;
 
+#pragma warning disable IDE1006 // Naming Styles
+
 namespace Fux.Input.Ast
 {
     public interface Expr : Node
@@ -24,7 +26,7 @@ namespace Fux.Input.Ast
             public Expr Resolved { get; set; }
         }
 
-        public sealed class Arrow : Expr.ExprImpl
+        public sealed class Arrow : ExprImpl
         {
             public Arrow(Expr lhs, Expr rhs)
             {
@@ -48,7 +50,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Dot : Expr.ExprImpl
+        public sealed class Dot : ExprImpl
         {
             public Dot(Expr rhs)
             {
@@ -68,7 +70,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class If : Expr.ExprImpl
+        public sealed class If : ExprImpl
         {
             public If(Expr condition, Expr ifTrue, Expr ifFalse)
             {
@@ -131,7 +133,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Infix : Expr.ExprImpl
+        public sealed class Infix : ExprImpl
         {
             public Infix(OperatorSymbol op, Expr lhs, Expr rhs)
             {
@@ -156,21 +158,27 @@ namespace Fux.Input.Ast
                 Rhs.PP(writer);
             }
         }
-        public sealed class Lambda : Expr.ExprImpl
+        public sealed class Lambda : ExprImpl
         {
-            public Lambda(Pattern parameters, Expr expr)
+            public Lambda(Pattern parameters, Expr expr, bool inCase)
             {
                 Parameters = parameters;
                 Expression = expr;
+                InCase = inCase;
             }
 
             public Pattern Parameters { get; }
             public Expr Expression { get; }
+            public bool InCase { get; }
 
             public LetScope Scope { get; } = new();
 
             public override string ToString()
             {
+                if (InCase)
+                {
+                    return Protected($"{Parameters} {Lex.Arrow} {Expression}");
+                }
                 return Protected($"{Lex.Lambda}{Parameters} {Lex.Arrow} {Expression}");
             }
 
@@ -179,7 +187,7 @@ namespace Fux.Input.Ast
                 writer.Write(ToString());
             }
         }
-        public sealed class Let : Expr.ExprImpl
+        public sealed class Let : ExprImpl
         {
             public Let(List<Declaration> letExpressions, Expr inExpression)
             {
@@ -268,16 +276,16 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class CaseMatch : Expr.ExprImpl
+        public sealed class CaseMatch : ExprImpl
         {
-            public CaseMatch(Expr expression, IEnumerable<Case> cases)
+            public CaseMatch(Expr expression, List<Lambda> cases)
             {
                 Expression = expression;
-                Cases = cases.ToArray(); ;
+                Cases = cases.ToArray();
             }
 
             public Expr Expression { get; }
-            public IReadOnlyList<Case> Cases { get; }
+            public IReadOnlyList<Lambda> Cases { get; }
 
             public override string ToString()
             {
@@ -317,7 +325,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Prefix : Expr.ExprImpl
+        public sealed class Prefix : ExprImpl
         {
             public Prefix(OperatorSymbol op, Expr rhs)
             {
@@ -339,7 +347,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Record : Expr.ExprImpl
+        public sealed class Record : ExprImpl
         {
             public Record(Identifier? baseRecord, IEnumerable<FieldAssign> fields)
             {
@@ -404,7 +412,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Select : Expr.ExprImpl
+        public sealed class Select : ExprImpl
         {
             public Select(Expr lhs, Expr rhs)
             {
@@ -470,7 +478,7 @@ namespace Fux.Input.Ast
             public Tuple(IEnumerable<Expr> expressions)
                 : base(expressions)
             {
-                Assert(this.Count >= 1 && this.Count <= 3);
+                Assert(Count >= 1 && Count <= 3);
             }
 
             public override string ToString()
@@ -495,7 +503,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Unit : Expr.ExprImpl
+        public sealed class Unit : ExprImpl
         {
             public override string ToString()
             {
@@ -507,7 +515,7 @@ namespace Fux.Input.Ast
                 writer.Write("()");
             }
         }
-        public abstract class Literal : Expr.ExprImpl
+        public abstract class Literal : ExprImpl
         {
             public Literal(Token token)
             {
@@ -537,7 +545,7 @@ namespace Fux.Input.Ast
 
                     if (text.StartsWith("0x"))
                     {
-                        Value = long.Parse(text.Substring(2), NumberStyles.HexNumber);
+                        Value = long.Parse(text[2..], NumberStyles.HexNumber);
                     }
                     else
                     {
