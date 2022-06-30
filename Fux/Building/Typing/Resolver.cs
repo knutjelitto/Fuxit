@@ -16,7 +16,7 @@ namespace Fux.Building.Typing
             Pretty = new W.Pretty(Writer);
 
             typeBuilder = new();
-            exprBuilder = new(typeBuilder);
+            exprBuilder = new(module, typeBuilder);
             bindBuilder = new(module, exprBuilder);
         }
 

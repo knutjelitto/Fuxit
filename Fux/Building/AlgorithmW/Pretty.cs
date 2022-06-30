@@ -45,6 +45,10 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Application expr:
                     Print(SugarApp(expr));
                     break;
+                case Expr.Abstraction expr:
+                    Write($"{expr.Term} => ");
+                    Print(expr.Exp);
+                    break;
                 case Expr.Sugar.Application expr:
                     if (expr.ToString().Length <= maxWidth)
                     {

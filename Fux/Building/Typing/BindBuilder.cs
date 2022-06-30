@@ -6,8 +6,6 @@ namespace Fux.Building.Typing
 {
     public sealed class BindBuilder
     {
-        private int wildcardNumber = 0;
-
         public BindBuilder(Module module, ExprBuilder exprBuilder)
         {
             Module = module;
@@ -134,7 +132,7 @@ namespace Fux.Building.Typing
             {
                 return pattern.Flatten(() =>
                 {
-                    return A.Identifier.Artificial(Module, $"_{++wildcardNumber}");
+                    return ExprBuilder.GenWildcard();
                 });
             }
             return BindIdentifiers(parameter.Expression).Where(id => id.IsSingleLower);
@@ -169,7 +167,7 @@ namespace Fux.Building.Typing
                     break;
 
                 case A.Wildcard:
-                    yield return A.Identifier.Artificial(Module, $"_{++wildcardNumber}");
+                    yield return ExprBuilder.GenWildcard();
                     break;
 
                 default:

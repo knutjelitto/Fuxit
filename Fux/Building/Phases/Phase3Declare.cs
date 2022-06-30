@@ -231,7 +231,7 @@ namespace Fux.Building.Phases
                         ScopeExpr(scope, iff.IfTrue);
                         ScopeExpr(scope, iff.IfFalse);
                         break;
-                    case A.Expr.Match match:
+                    case A.Expr.CaseMatch match:
                         ScopeExpr(scope, match.Expression);
                         foreach (var matchCase in match.Cases)
                         {
@@ -239,7 +239,7 @@ namespace Fux.Building.Phases
                             Assert(matchCase.Scope.Parent != null);
                         }
                         break;
-                    case A.MatchCase matchCase:
+                    case A.Case matchCase:
                         Assert(matchCase.Scope.Parent == null);
                         matchCase.Scope.Parent = scope;
                         if (matchCase.Pattern is A.Pattern pattern)

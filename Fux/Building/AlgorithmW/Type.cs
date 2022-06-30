@@ -37,7 +37,7 @@ namespace Fux.Building.AlgorithmW
             public override string ToString() => $"{Lex.Primitive.List}<{Type}>";
         }
 
-        public sealed record Concrete(string Name, IReadOnlyList<Type>? Arguments = null) : Type
+        public sealed record Concrete(string Name, IReadOnlyList<Type> Arguments) : Type
         {
             public override string ToString() => $"{Name}{arguments}";
 

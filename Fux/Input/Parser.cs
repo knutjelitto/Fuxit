@@ -836,7 +836,7 @@ namespace Fux.Input
                 var expression = Expression(cursor);
                 cursor.Swallow(Lex.KwOf);
 
-                var cases = new List<A.MatchCase>();
+                var cases = new List<A.Case>();
 
                 while (cursor.StartsAtomic)
                 {
@@ -848,7 +848,7 @@ namespace Fux.Input
 
                     var expr = Expression(subCursor);
 
-                    var matchCase = new A.MatchCase(pattern, expr)
+                    var matchCase = new A.Case(pattern, expr)
                     {
                         Module = Module
                     };
@@ -856,7 +856,7 @@ namespace Fux.Input
                     cases.Add(matchCase);
                 }
 
-                return new A.Expr.Match(expression, cases);
+                return new A.Expr.CaseMatch(expression, cases);
             });
         }
 

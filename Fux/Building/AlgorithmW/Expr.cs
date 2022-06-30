@@ -67,6 +67,22 @@
             public override string ToString() => $"(if {Cond} then {Then} else {Else})";
         }
 
+        public sealed record CaseMatch(Expr Expr, IReadOnlyList<Case> Cases) : Expr
+        {
+            public override string ToString()
+            {
+                return $"(case {Expr} of {string.Join(" ", Cases)}";
+            }
+        }
+
+        public sealed record Case(Expr Pattern, Expr Expr)
+        {
+            public override string ToString()
+            {
+                return $"({Pattern} -> {Expr})";
+            }
+        }
+
         /// <summary>
         /// A literal value of some primitive
         /// </summary>

@@ -5,11 +5,15 @@ namespace Fux.Building.Typing
     public sealed class ExprBuilder
     {
         private readonly TypeBuilder typeBuilder;
+        private int wildcardNumber = 0;
 
-        public ExprBuilder(TypeBuilder typeBuilder)
+        public ExprBuilder(Module module, TypeBuilder typeBuilder)
         {
+            Module = module;
             this.typeBuilder = typeBuilder;
         }
+
+        public Module Module { get; }
 
         public W.Expr Build(ref W.Environment env, A.Node expr, bool investigated)
         {
@@ -27,10 +31,6 @@ namespace Fux.Building.Typing
                                         var native = nativeRef.Decl;
                                         return new W.Expr.Native(native);
                                     }
-                                case A.NativeDecl native:
-                                    {
-                                        return new W.Expr.Native(native);
-                                    }
                                 case A.Ref.Infix infixRef:
                                     {
                                         var infix = infixRef.Decl;
@@ -40,21 +40,7 @@ namespace Fux.Building.Typing
                                         }
 
                                         Assert(identifier.IsSingleOp);
-                                        Assert(infix.Expression.Resolved != infix);
                                         Assert(infix.Expression.Resolved is A.Ref.Var);
-
-                                        return Build(ref env, infix.Expression.Resolved, investigated);
-                                    }
-                                case A.InfixDecl infix:
-                                    {
-                                        if (investigated)
-                                        {
-                                            Assert(true);
-                                        }
-
-                                        Assert(identifier.IsSingleOp);
-                                        Assert(infix.Expression.Resolved != infix);
-                                        Assert(infix.Expression.Resolved is A.VarDecl);
 
                                         return Build(ref env, infix.Expression.Resolved, investigated);
                                     }
@@ -76,35 +62,9 @@ namespace Fux.Building.Typing
                                         }
                                         return variable;
                                     }
-                                case A.VarDecl var:
-                                    {
-                                        Assert(identifier.IsSingleLower || identifier.IsQualified);
-                                        W.Polytype wtype;
-                                        wtype = typeBuilder.Build(env, var.Type);
-                                        var variable = new W.Expr.Variable(identifier.Text);
-                                        var already = env.TryGet(variable.Term);
-                                        if (already != null)
-                                        {
-                                            Assert(true);
-                                            //Assert(already.ToString() == wtype.ToString());
-                                        }
-                                        else
-                                        {
-                                            env = env.Insert(variable.Term, wtype);
-                                        }
-                                        return variable;
-                                    }
                                 case A.Ref.Parameter parameterRef:
                                     {
                                         var parameter = parameterRef.Decl;
-                                        Assert(parameter.Expression is A.Identifier);
-                                        var name = (A.Identifier)parameter.Expression;
-                                        var variable = new W.Expr.Variable(name);
-                                        return variable;
-                                    }
-
-                                case A.ParameterDecl parameter:
-                                    {
                                         Assert(parameter.Expression is A.Identifier);
                                         var name = (A.Identifier)parameter.Expression;
                                         var variable = new W.Expr.Variable(name);
@@ -165,7 +125,6 @@ namespace Fux.Building.Typing
 
                 case A.Expr.Infix infix:
                     {
-                        Assert(infix.Op.Resolved != infix.Op);
                         var infixDecl = infix.Op.InfixDecl;
                         Assert(infixDecl != null);
                         var op = Build(ref env, infixDecl.Expression, investigated);
@@ -226,6 +185,11 @@ namespace Fux.Building.Typing
                         return BuildLetExpr(let, ref env, investigated);
                     }
 
+                case A.Expr.CaseMatch caseMatch:
+                    {
+                        return BuildCaseExpr(caseMatch, ref env, investigated);
+                    }
+
                 case A.Expr.Lambda lambda:
                     {
                         return BuildLambdaExpr(lambda, ref env, investigated);
@@ -236,6 +200,35 @@ namespace Fux.Building.Typing
                         return Cons(ref env, list, 0);
                     }
 
+                case A.Pattern.List list:
+                    {
+                        if (list.Patterns.Count == 0)
+                        {
+                            return new W.Expr.List.Empty();
+                        }
+                        break;
+                    }
+                case A.Pattern.Destruct destruct:
+                    {
+                        var first = destruct.Patterns.First();
+                        var rest = destruct.Patterns.Skip(1).ToList();
+
+                        var list = destructure(ref env, rest, 0);
+
+                        break;
+
+                        W.Expr.List destructure(ref W.Environment env, List<A.Pattern> list, int index)
+                        {
+                            if (index == list.Count)
+                            {
+                                return new W.Expr.Empty();
+                            }
+                            else
+                            {
+                                return new W.Expr.Cons(Build(ref env, list[index], investigated), destructure(ref env, list, index + 1));
+                            }
+                        }
+                    }
                 default:
                     break;
             }
@@ -276,7 +269,7 @@ namespace Fux.Building.Typing
         {
             var expr = Build(ref env, lambdaExpr.Expression, investigated);
 
-            foreach (var x in lambdaExpr.Parameters.Flatten().Reverse())
+            foreach (var x in lambdaExpr.Parameters.Flatten(GenWildcard).Reverse())
             {
                 var var = new W.TermVariable(x.Text);
                 var type = env.Generator.GetNext();
@@ -286,6 +279,28 @@ namespace Fux.Building.Typing
             }
 
             return expr;
+        }
+
+        private W.Expr BuildCaseExpr(A.Expr.CaseMatch caseMatch, ref W.Environment env, bool investigated)
+        {
+            if (investigated)
+            {
+                Assert(true);
+            }
+
+            var expr = Build(ref env, caseMatch.Expression, investigated);
+
+            var cases = new List<W.Expr.Case>();
+            foreach (var x in caseMatch.Cases)
+            {
+                var p = Build(ref env, x.Pattern, investigated);
+                var e = Build(ref env, x.Expression, investigated);
+                cases.Add(new W.Expr.Case(p, e));
+            }
+
+            var match = new W.Expr.CaseMatch(expr, cases.ToArray());
+
+            return match;
         }
 
         private W.Expr BuildLetExpr(A.Expr.Let letExpr, ref W.Environment env, bool investigated)
@@ -329,6 +344,11 @@ namespace Fux.Building.Typing
         private static Exception NotImplemented(A.Node node)
         {
             return new NotImplementedException($"missing implementation: '{node.GetType().FullName} - {node}'");
+        }
+
+        public A.Identifier GenWildcard()
+        {
+            return A.Identifier.Artificial(Module, $"_{++wildcardNumber}");
         }
     }
 }

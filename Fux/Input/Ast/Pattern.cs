@@ -203,12 +203,14 @@
         {
             public Destruct(List<Pattern> patterns)
             {
+                Assert(patterns.Count >= 2);
+
                 Patterns = patterns.ToArray();
             }
 
             public IReadOnlyList<Pattern> Patterns { get; }
 
-            public override string ToString() => $"{string.Join($" {Lex.Symbol.Cons} ", Patterns)}";
+            public override string ToString() => $"{Patterns.First()} {Lex.Symbol.Cons} {string.Join($" {Lex.Symbol.Cons} ", Patterns.Skip(1))}";
         }
 
     }

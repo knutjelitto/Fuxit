@@ -293,7 +293,7 @@ namespace Fux.Building.AlgorithmW
                     }
 
                 // For 2-tuples, we find the most general unifier for the first types, apply the resulting
-                // substitution to the outputs, find the outputs' most general unifier, and finally
+                // substitution to the second types, find the seconds' most general unifier, and finally
                 // compose the two resulting substitutions.
                 case (Type.Tuple2({ } type11, { } type12), Type.Tuple2({ } type21, { } type22)):
                     {
@@ -307,7 +307,14 @@ namespace Fux.Building.AlgorithmW
                 // This also handles the case where they are both variables.
                 case (Type.Variable({ } v1) t1, Type.Variable({ } v2) t2):
                     {
-                        return BindVariable(v1, t2);
+                        if (v1.ID > v2.ID)
+                        {
+                            return BindVariable(v1, t2);
+                        }
+                        else
+                        {
+                            return BindVariable(v2, t1);
+                        }
                     }
 
                 // If one of the types is variable, we can bind the variable to the type.
@@ -339,37 +346,53 @@ namespace Fux.Building.AlgorithmW
                         return Substitution.Empty();
                     }
 
-                case (Type.Concrete c1, Type.Concrete c2) when (c1.ToString() == c2.ToString()):
+                case (Type.Concrete c1, Type.Concrete c2):
                     {
-                        return Substitution.Empty();
+                        if (c1.Name == c2.Name && c1.Arguments.Count == c2.Arguments.Count)
+                        {
+                            var subst = Substitution.Empty();
+
+                            for (var i = 0; i < c1.Arguments.Count; i++)
+                            {
+                                subst = ComposeSubstitutions(subst, MostGeneralUnifier(c1.Arguments[i], c2.Arguments[i]));
+                            }
+
+                            return subst;
+                        }
+                        break;
                     }
 
-
-                case (Type.List({ } typ1) list1, Type.List({ } typ2) list2):
+                case (Type.List({ } typ1) c1, Type.List({ } typ2) c2):
                     {
                         if (typ1 == typ2)
                         {
                             return Substitution.Empty();
                         }
-                        else if (typ1 is Type.Char && typ2 is Type.Variable variable)
+                        else if (typ1 is Type.Variable v1 && typ2 is Type.Variable v2)
                         {
-                            Assert(true);
-
-                            return new Substitution(variable.TypeVar, typ1);
+                            if (v1.TypeVar.ID > v2.TypeVar.ID)
+                            {
+                                return new Substitution(v1.TypeVar, typ2);
+                            }
+                            else
+                            {
+                                return new Substitution(v2.TypeVar, typ1);
+                            }
                         }
-                        else if (typ1 is Type.Variable v1)
+                        else if (typ2 is Type.Variable v3)
                         {
-                            return new Substitution(v1.TypeVar, typ2);
+                            return new Substitution(v3.TypeVar, typ1);
                         }
-                        else if (typ2 is Type.Variable v2)
+                        else if (typ1 is Type.Variable v4)
                         {
-                            return new Substitution(v2.TypeVar, typ1);
+                            return new Substitution(v4.TypeVar, typ2);
                         }
                         break;
                     }
 
                 // Otherwise, the types cannot be unified.
                 default:
+                    
                     break;
             }
 

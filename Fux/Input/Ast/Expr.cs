@@ -7,7 +7,7 @@ namespace Fux.Input.Ast
     public interface Expr : Node
     {
         Identifier? Alias { get; set; }
-        Node Resolved { get; set; }
+        Expr Resolved { get; set; }
 
         public abstract class ExprImpl : NodeImpl, Expr
         {
@@ -21,7 +21,7 @@ namespace Fux.Input.Ast
 
             public Identifier? Alias { get; set; }
 
-            public Node Resolved { get; set; }
+            public Expr Resolved { get; set; }
         }
 
         public sealed class Arrow : Expr.ExprImpl
@@ -268,16 +268,16 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Match : Expr.ExprImpl
+        public sealed class CaseMatch : Expr.ExprImpl
         {
-            public Match(Expr expression, IEnumerable<MatchCase> cases)
+            public CaseMatch(Expr expression, IEnumerable<Case> cases)
             {
                 Expression = expression;
                 Cases = cases.ToArray(); ;
             }
 
             public Expr Expression { get; }
-            public IReadOnlyList<MatchCase> Cases { get; }
+            public IReadOnlyList<Case> Cases { get; }
 
             public override string ToString()
             {

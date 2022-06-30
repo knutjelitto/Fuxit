@@ -385,14 +385,14 @@ namespace Fux.Building.Phases
                         ResolveExpr(scope, iff.IfTrue);
                         ResolveExpr(scope, iff.IfFalse);
                         break;
-                    case A.Expr.Match match:
+                    case A.Expr.CaseMatch match:
                         ResolveExpr(scope, match.Expression);
                         foreach (var matchCase in match.Cases)
                         {
                             ResolveExpr(scope, matchCase);
                         }
                         break;
-                    case A.MatchCase matchCase:
+                    case A.Case matchCase:
                         ResolveExpr(matchCase.Scope, matchCase.Pattern);
                         ResolveExpr(matchCase.Scope, matchCase.Expression);
                         break;
@@ -574,7 +574,6 @@ namespace Fux.Building.Phases
                         if (resolved is A.InfixDecl infixDecl)
                         {
                             opExpr.Op.InfixDecl = infixDecl;
-                            opExpr.Op.Resolved = infixDecl;
 
                             ResolveExpr(scope, opExpr.Expression);
                         }
