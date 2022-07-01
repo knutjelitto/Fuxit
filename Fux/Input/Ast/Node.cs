@@ -6,7 +6,7 @@ namespace Fux.Input.Ast
     {
         Tokens? Span { get; set; }
 
-        Module? Module { get; set; }
+        Module? InModule { get; set; }
 
         ILocation Location { get; }
 
@@ -18,16 +18,16 @@ namespace Fux.Input.Ast
         {
             public Tokens? Span { get; set; } = null;
 
-            public Module? Module { get; set; } = null;
+            public Module? InModule { get; set; } = null;
 
             public ILocation Location
             {
                 get
                 {
-                    Assert(Module != null);
+                    Assert(InModule != null);
                     if (Span == null)
                     {
-                        return new Location(Module.Source!, 0, 0);
+                        return new Location(InModule.Source!, 0, 0);
                     }
 
                     Assert(Span != null);

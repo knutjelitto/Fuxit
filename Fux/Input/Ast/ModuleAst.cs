@@ -2,16 +2,16 @@
 {
     public sealed class ModuleAst : Expr.ExprImpl
     {
-        public ModuleAst(ModuleDecl header, IEnumerable<Decl> declarations)
+        public ModuleAst(Decl.Module header, IEnumerable<Decl> declarations)
         {
             Header = header;
             Declarations = declarations.ToArray();
         }
 
-        public ModuleDecl Header { get; }
+        public Decl.Module Header { get; }
         public IReadOnlyList<Decl> Declarations { get; }
 
-        public IEnumerable<ImportDecl> Imports => Declarations.OfType<ImportDecl>();
+        public IEnumerable<Decl.Import> Imports => Declarations.OfType<Decl.Import>();
 
         public override string ToString()
         {

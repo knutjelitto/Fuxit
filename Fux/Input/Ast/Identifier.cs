@@ -25,7 +25,7 @@ namespace Fux.Input.Ast
         public static Identifier Artificial(Module module, string artifical)
         {
             var identifier = Artificial(module.Ast!.Header.Name.items.First().Location.Source, artifical);
-            identifier.Module = module;
+            identifier.InModule = module;
             return identifier;
         }
 

@@ -4,8 +4,8 @@ namespace Fux.Building
 {
     public class Scope
     {
-        private readonly Dictionary<A.Identifier, A.VarDecl> vars = new();
-        private readonly Dictionary<A.Identifier, A.TypeAnnotation> annotations = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Var> vars = new();
+        private readonly Dictionary<A.Identifier, A.Decl.TypeAnnotation> annotations = new();
         private Scope? parent;
 
         public Scope? Parent
@@ -19,7 +19,7 @@ namespace Fux.Building
         }
         public bool HintsAreEmpty => annotations.Count == 0;
 
-        public void AddHint(A.TypeAnnotation annotation)
+        public void AddHint(A.Decl.TypeAnnotation annotation)
         {
             var name = annotation.Name.SingleLower();
 
@@ -28,7 +28,7 @@ namespace Fux.Building
             annotations.Add(name, annotation);
         }
 
-        public void AddVar(A.VarDecl decl)
+        public void AddVar(A.Decl.Var decl)
         {
             var name = decl.Name.SingleLower();
 
@@ -43,12 +43,12 @@ namespace Fux.Building
             }
         }
 
-        public bool ImportAddVar(A.VarDecl decl)
+        public bool ImportAddVar(A.Decl.Var decl)
         {
             return vars.TryAdd(decl.Name.SingleLower(), decl);
         }
 
-        public bool LookupVar(A.Identifier identifier, [MaybeNullWhen(false)] out A.VarDecl var)
+        public bool LookupVar(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Var var)
         {
             return vars.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }

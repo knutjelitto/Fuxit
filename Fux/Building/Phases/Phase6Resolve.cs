@@ -61,24 +61,24 @@ namespace Fux.Building.Phases
             {
                 switch (declaration)
                 {
-                    case A.ImportDecl:
+                    case A.Decl.Import:
                         return;
-                    case A.InfixDecl infix:
+                    case A.Decl.Infix infix:
                         ResolveInfix(infix);
                         break;
-                    case A.TypeDecl type:
+                    case A.Decl.Custom type:
                         ResolveType(type);
                         break;
-                    case A.VarDecl var:
+                    case A.Decl.Var var:
                         ResolveVar(var);
                         break;
                     case A.LetAssign let:
                         ResolveLet(let);
                         break;
-                    case A.TypeAnnotation annotation:
+                    case A.Decl.TypeAnnotation annotation:
                         ResolveAnnotation(annotation);
                         break;
-                    case A.AliasDecl alias:
+                    case A.Decl.Alias alias:
                         ResolveAlias(alias);
                         break;
                     default:
@@ -87,7 +87,7 @@ namespace Fux.Building.Phases
                 }
             }
 
-            private void ResolveInfix(A.InfixDecl infix)
+            private void ResolveInfix(A.Decl.Infix infix)
             {
                 ResolveExpr(Module.Scope, infix.Expression);
             }
@@ -97,26 +97,22 @@ namespace Fux.Building.Phases
                 ResolveExpr(var.Scope, var.Expression);
             }
 
-            private void ResolveVar(A.VarDecl var)
+            private void ResolveVar(A.Decl.Var var)
             {
-                if (var.Name.Text == "radians")
-                {
-                    Assert(true);
-                }
                 ResolveExpr(var.Scope, var.Expression);
             }
 
-            private void ResolveType(A.TypeDecl type)
+            private void ResolveType(A.Decl.Custom type)
             {
                 ResolveType(Module.Scope, type.Type);
             }
 
-            private void ResolveAnnotation(A.TypeAnnotation annotation)
+            private void ResolveAnnotation(A.Decl.TypeAnnotation annotation)
             {
                 ResolveType(Module.Scope, annotation.Type);
             }
 
-            private void ResolveAlias(A.AliasDecl alias)
+            private void ResolveAlias(A.Decl.Alias alias)
             {
                 Assert(alias.Parameters.Count >= 0);
 
@@ -160,11 +156,11 @@ namespace Fux.Building.Phases
                         {
                             if (scope.Resolve(concrete.Name, out var resolved))
                             {
-                                if (resolved is A.TypeDecl typeDecl)
+                                if (resolved is A.Decl.Custom typeDecl)
                                 {
-                                    Assert(typeDecl.Module != null);
+                                    Assert(typeDecl.InModule != null);
 
-                                    if (typeDecl.Module.IsCore)
+                                    if (typeDecl.InModule.IsCore)
                                     {
                                         switch (concrete.Name.Text)
                                         {
@@ -210,9 +206,9 @@ namespace Fux.Building.Phases
                         {
                             if (scope.Resolve(union.Name, out var resolved))
                             {
-                                Assert(resolved.Module != null);
+                                Assert(resolved.InModule != null);
 
-                                if (resolved.Module.IsCore && resolved is A.TypeDecl decl)
+                                if (resolved.InModule.IsCore && resolved is A.Decl.Custom)
                                 {
                                     foreach (var argument in union.Arguments)
                                     {
@@ -283,7 +279,7 @@ namespace Fux.Building.Phases
                         {
                             if (scope.Resolve(identifier, out var resolved))
                             {
-                                if (resolved is A.VarDecl var)
+                                if (resolved is A.Decl.Var var)
                                 {
                                     expression.Resolved = new A.Ref.Var(var);
                                     break;
@@ -293,17 +289,17 @@ namespace Fux.Building.Phases
                                     expression.Resolved = new A.Ref.Parameter(parameter);
                                     break;
                                 }
-                                else if (resolved is A.NativeDecl native)
+                                else if (resolved is A.Decl.Native native)
                                 {
                                     expression.Resolved = new A.Ref.Native(native);
                                     break;
                                 }
-                                else if (resolved is A.InfixDecl infix)
+                                else if (resolved is A.Decl.Infix infix)
                                 {
                                     expression.Resolved = new A.Ref.Infix(infix);
                                     break;
                                 }
-                                else if (resolved is A.Constructor ctor)
+                                else if (resolved is A.Decl.Constructor ctor)
                                 {
                                     if (ctor.Name.Text == "Just")
                                     {
@@ -312,12 +308,12 @@ namespace Fux.Building.Phases
                                     expression.Resolved = new A.Ref.Ctor(ctor);
                                     break;
                                 }
-                                else if (resolved is A.TypeDecl type)
+                                else if (resolved is A.Decl.Custom type)
                                 {
                                     expression.Resolved = new A.Ref.Type(type);
                                     break;
                                 }
-                                else if (resolved is A.AliasDecl alias)
+                                else if (resolved is A.Decl.Alias alias)
                                 {
                                     expression.Resolved = new A.Ref.Alias(alias);
                                     break;
@@ -526,7 +522,7 @@ namespace Fux.Building.Phases
                 {
                     if (scope.Resolve(opExpr.Op.Name, out var resolved))
                     {
-                        if (resolved is A.InfixDecl infixDecl)
+                        if (resolved is A.Decl.Infix infixDecl)
                         {
                             opExpr.Op.InfixDecl = infixDecl;
 

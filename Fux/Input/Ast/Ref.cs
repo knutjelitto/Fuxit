@@ -30,34 +30,34 @@
             public Parameter(ParameterDecl decl) : base(decl) { }
         }
 
-        public sealed class Var : RefImpl<VarDecl>
+        public sealed class Var : RefImpl<Decl.Var>
         {
-            public Var(VarDecl decl) : base(decl) { }
+            public Var(Decl.Var decl) : base(decl) { }
         }
 
-        public sealed class Ctor : RefImpl<Constructor>
+        public sealed class Ctor : RefImpl<Decl.Constructor>
         {
-            public Ctor(Constructor decl) : base(decl) { }
+            public Ctor(Decl.Constructor decl) : base(decl) { }
         }
 
-        public sealed class Infix : RefImpl<InfixDecl>
+        public sealed class Infix : RefImpl<Decl.Infix>
         {
-            public Infix(InfixDecl decl) : base(decl) { }
+            public Infix(Decl.Infix decl) : base(decl) { }
         }
 
-        public sealed class Type : RefImpl<TypeDecl>
+        public sealed class Type : RefImpl<Decl.Custom>
         {
-            public Type(TypeDecl decl) : base(decl) { }
+            public Type(Decl.Custom decl) : base(decl) { }
         }
 
-        public sealed new class Alias : RefImpl<AliasDecl>
+        public sealed new class Alias : RefImpl<Decl.Alias>
         {
-            public Alias(AliasDecl decl) : base(decl) { }
+            public Alias(Decl.Alias decl) : base(decl) { }
         }
 
-        public sealed class Native : RefImpl<A.NativeDecl>
+        public sealed class Native : RefImpl<A.Decl.Native>
         {
-            public Native(A.NativeDecl decl) : base(decl) { }
+            public Native(A.Decl.Native decl) : base(decl) { }
         }
     }
 }

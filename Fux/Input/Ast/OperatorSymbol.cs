@@ -11,7 +11,7 @@
 
         public string Text => Token.ToString();
 
-        public InfixDecl? InfixDecl { get; set; }
+        public Decl.Infix? InfixDecl { get; set; }
 
         public override string ToString()
         {

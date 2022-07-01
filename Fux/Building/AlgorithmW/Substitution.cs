@@ -8,9 +8,11 @@ namespace Fux.Building.AlgorithmW
 
         public static Substitution Empty() => new(ImmutableDictionary<TypeVariable, Type>.Empty);
 
+        public static Substitution Solo(TypeVariable variable, Type type) => new(variable, type);
+
         public Substitution(ImmutableDictionary<TypeVariable, Type> map) => this.map = map;
 
-        public Substitution(TypeVariable variable, Type type)
+        private Substitution(TypeVariable variable, Type type)
             : this(ImmutableDictionary.Create<TypeVariable, Type>().Add(variable, type))
         {
         }

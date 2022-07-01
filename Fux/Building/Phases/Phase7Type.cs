@@ -1,5 +1,4 @@
-﻿using W = Fux.Building.AlgorithmW;
-using T = Fux.Building.Typing;
+﻿using T = Fux.Building.Typing;
 
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1822 // Mark members as static
@@ -11,13 +10,13 @@ namespace Fux.Building.Phases
 {
     public sealed class Phase7Typing : Phase
     {
-        private const int underInvestigation = 135;
+        private const int underInvestigation = 140;
         private static int numero = 0;
         private const int numeroFrom = 1;
         private const int numeroTo = 150;
 
-        //private static Func<int, bool> Qualify = (no => no == huntingFor);
-        private static readonly Func<int, bool> Qualify = no => true;
+        //private static Func<int, bool> QualifyNumero = (no => no == underInvestigation);
+        private static readonly Func<int, bool> QualifyNumero = numero => true;
 
         public Phase7Typing(Ambience ambience, Package package)
             : base("typing", ambience, package)
@@ -63,7 +62,7 @@ namespace Fux.Building.Phases
                 return;
             }
 
-            var declarations = module.Ast.Declarations.OfType<A.VarDecl>().ToList();
+            var declarations = module.Ast.Declarations.OfType<A.Decl.Var>().ToList();
 
 
             if (numero + declarations.Count < numeroFrom)
@@ -83,7 +82,7 @@ namespace Fux.Building.Phases
                     continue;
                 }
 
-                if (Qualify(numero))
+                if (QualifyNumero(numero))
                 {
                     resolver.TypeVar(declaration, numero, numero == underInvestigation);
                 }

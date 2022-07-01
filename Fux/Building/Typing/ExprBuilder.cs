@@ -14,8 +14,16 @@ namespace Fux.Building.Typing
         }
 
         public Module Module { get; }
+        public bool Investigated { get; set; }
 
         public W.Expr Build(ref W.Environment env, A.Expr expr, bool investigated)
+        {
+            Investigated = investigated;
+
+            return Build(ref env, expr);
+        }
+
+        private W.Expr Build(ref W.Environment env, A.Expr expr)
         {
             switch (expr)
             {
@@ -37,7 +45,7 @@ namespace Fux.Building.Typing
 
                                 case A.Ref.Infix infixRef:
                                     {
-                                        if (investigated)
+                                        if (Investigated)
                                         {
                                             Assert(true);
                                         }
@@ -47,7 +55,7 @@ namespace Fux.Building.Typing
                                         Assert(identifier.IsSingleOp);
                                         Assert(infix.Expression.Resolved is A.Ref.Var);
 
-                                        return Build(ref env, infix.Expression.Resolved, investigated);
+                                        return Build(ref env, infix.Expression.Resolved);
                                     }
 
                                 case A.Ref.Var varRef:
@@ -96,9 +104,9 @@ namespace Fux.Building.Typing
 
                 case A.Expr.If ifExpr:
                     {
-                        var condition = Build(ref env, ifExpr.Condition, investigated);
-                        var ifTrue = Build(ref env, ifExpr.IfTrue, investigated);
-                        var ifFalse = Build(ref env, ifExpr.IfFalse, investigated);
+                        var condition = Build(ref env, ifExpr.Condition);
+                        var ifTrue = Build(ref env, ifExpr.IfTrue);
+                        var ifFalse = Build(ref env, ifExpr.IfFalse);
 
                         return new W.Expr.Iff(condition, ifTrue, ifFalse);
                     }
@@ -115,8 +123,8 @@ namespace Fux.Building.Typing
                         if (tupleExpr.Count == 2)
                         {
                             return new W.Expr.Tuple2(
-                                Build(ref env, tupleExpr[0], investigated),
-                                Build(ref env, tupleExpr[1], investigated)
+                                Build(ref env, tupleExpr[0]),
+                                Build(ref env, tupleExpr[1])
                                 );
                         }
                         break;
@@ -130,15 +138,15 @@ namespace Fux.Building.Typing
 
                 case A.OpChain chain:
                     Assert(chain.Resolved is A.Expr.Infix);
-                    return Build(ref env, chain.Resolved, investigated);
+                    return Build(ref env, chain.Resolved);
 
                 case A.Expr.Infix infix:
                     {
                         var infixDecl = infix.Op.InfixDecl;
                         Assert(infixDecl != null);
-                        var op = Build(ref env, infixDecl.Expression, investigated);
-                        var arg1 = Build(ref env, infix.Lhs.Resolved, investigated);
-                        var arg2 = Build(ref env, infix.Rhs.Resolved, investigated);
+                        var op = Build(ref env, infixDecl.Expression);
+                        var arg1 = Build(ref env, infix.Lhs.Resolved);
+                        var arg2 = Build(ref env, infix.Rhs.Resolved);
 
                         return new W.Expr.Usage(new W.Expr.Usage(op, arg1), arg2);
                     }
@@ -179,22 +187,22 @@ namespace Fux.Building.Typing
 
                 case A.Expr.Let let:
                     {
-                        return BuildLetExpr(ref env, let, investigated);
+                        return BuildLetExpr(ref env, let);
                     }
 
                 case A.Expr.Matcher caseMatch:
                     {
-                        return Matcher(ref env, caseMatch, investigated);
+                        return Matcher(ref env, caseMatch);
                     }
 
-                case A.Expr.Case @case:
+                case A.Expr.Case cheese:
                     {
-                        return BuildCaseExpr(ref env, @case, investigated);
+                        return BuildCaseExpr(ref env, cheese);
                     }
 
                 case A.Expr.Lambda lambda:
                     {
-                        return BuildLambdaExpr(ref env, lambda, investigated);
+                        return BuildLambdaExpr(ref env, lambda);
                     }
 
                 case A.Expr.List list:
@@ -215,7 +223,7 @@ namespace Fux.Building.Typing
                     {
                         if (list.Patterns.Count == 0)
                         {
-                            return new W.Expr.List.Empty();
+                            return new W.Expr.Empty();
                         }
                         Assert(false);
                         break;
@@ -236,7 +244,7 @@ namespace Fux.Building.Typing
 
                 case A.Pattern.LowerId lower:
                     {
-                        return Build(ref env, lower.Identifier, investigated);
+                        return Build(ref env, lower.Identifier);
                     }
 
                 case A.Pattern.Destruct destruct:
@@ -251,14 +259,14 @@ namespace Fux.Building.Typing
                         {
                             if (index + 2 == list.Count)
                             {
-                                var first = Build(ref env, list[index], investigated);
-                                var rest = Build(ref env, list[index + 1], investigated);
+                                var first = Build(ref env, list[index]);
+                                var rest = Build(ref env, list[index + 1]);
 
                                 return new W.Expr.Decons(first, rest);
                             }
                             else
                             {
-                                var first = Build(ref env, list[index], investigated);
+                                var first = Build(ref env, list[index]);
                                 var rest = destructure(ref env, list, index + 1);
 
                                 return new W.Expr.Decons(first, rest);
@@ -266,19 +274,24 @@ namespace Fux.Building.Typing
                         }
                     }
 
-                case A.Pattern.Ctor ctor:
+                case A.Pattern.Ctor ctorPattern:
                     {
-                        var first = Build(ref env, ctor.Name, investigated);
+                        Assert(ctorPattern.Name.Resolved is A.Ref.Ctor);
 
-                        if (ctor.Arguments.Count == 0)
+                        if (ctorPattern.Name.Resolved is A.Ref.Ctor ctorRef)
+                        {
+                        }
+
+                        var first = Build(ref env, ctorPattern.Name);
+
+                        if (ctorPattern.Arguments.Count == 0)
                         {
                             return first;
                         }
                         else
                         {
-                            return apply(ref env, first, ctor.Arguments.Count - 1);
+                            return apply(ref env, first, ctorPattern.Arguments.Count - 1);
                         }
-                        break;
 
                         W.Expr apply(ref W.Environment env, W.Expr first, int index)
                         {
@@ -288,7 +301,7 @@ namespace Fux.Building.Typing
                             }
                             else
                             {
-                                return new W.Expr.Usage(first, apply(ref env,Build(ref env, ctor.Arguments[index], investigated), index - 1));
+                                return new W.Expr.Usage(first, apply(ref env,Build(ref env, ctorPattern.Arguments[index]), index - 1));
                             }
                         }
                     }
@@ -307,7 +320,7 @@ namespace Fux.Building.Typing
                 }
                 else
                 {
-                    return new W.Expr.Cons(Build(ref env, list[index], investigated), Cons(ref env, list, index + 1));
+                    return new W.Expr.Cons(Build(ref env, list[index]), Cons(ref env, list, index + 1));
                 }
             }
 
@@ -316,26 +329,26 @@ namespace Fux.Building.Typing
                 if (index == 1)
                 {
                     return new W.Expr.Usage(
-                        Build(ref env, seq[0], investigated),
-                        Build(ref env, seq[1], investigated));
+                        Build(ref env, seq[0]),
+                        Build(ref env, seq[1]));
                 }
                 else
                 {
                     Assert(index > 1);
                     return new W.Expr.Usage(
                         Apply(ref env, seq, index - 1),
-                        Build(ref env, seq[index], investigated));
+                        Build(ref env, seq[index]));
                 }
             }
         }
 
-        private W.Expr BuildLambdaExpr(ref W.Environment env, A.Expr.Lambda lambdaExpr, bool investigated)
+        private W.Expr BuildLambdaExpr(ref W.Environment env, A.Expr.Lambda lambdaExpr)
         {
-            if (investigated)
+            if (Investigated)
             {
                 Assert(true);
             }
-            var expr = Build(ref env, lambdaExpr.Expression, investigated);
+            var expr = Build(ref env, lambdaExpr.Expression);
 
             foreach (var x in lambdaExpr.Parameters.Flatten(GenWildcard).Reverse())
             {
@@ -349,33 +362,33 @@ namespace Fux.Building.Typing
             return expr;
         }
 
-        private W.Expr Matcher(ref W.Environment env, A.Expr.Matcher matcher, bool investigated)
+        private W.Expr Matcher(ref W.Environment env, A.Expr.Matcher matcher)
         {
-            if (investigated)
+            if (Investigated)
             {
                 Assert(true);
             }
 
-            var expr = Build(ref env, matcher.Expression, investigated);
+            var expr = Build(ref env, matcher.Expression);
             var abstractions = new List<W.Expr.Case>();
             foreach (var caseExpr in matcher.Cases)
             {
-                var abstraction = BuildCaseExpr(ref env, caseExpr, investigated);
+                var abstraction = BuildCaseExpr(ref env, caseExpr);
                 abstractions.Add(abstraction);
             }
 
             return new W.Expr.Matcher(expr, abstractions.ToArray());
         }
 
-        private W.Expr.Case BuildCaseExpr(ref W.Environment env, A.Expr.Case caseExpr, bool investigated)
+        private W.Expr.Case BuildCaseExpr(ref W.Environment env, A.Expr.Case caseExpr)
         {
-            if (investigated)
+            if (Investigated)
             {
                 Assert(true);
             }
 
-            var expr = Build(ref env, caseExpr.Expression, investigated);
-            var pttn = Build(ref env, caseExpr.Pattern, investigated);
+            var expr = Build(ref env, caseExpr.Expression);
+            var pttn = Build(ref env, caseExpr.Pattern);
 
             foreach (var x in caseExpr.Pattern.Flatten(GenWildcard).Reverse())
             {
@@ -383,24 +396,24 @@ namespace Fux.Building.Typing
                 var type = env.Generator.GetNext();
                 env = env.Insert(var, new W.Polytype(type));
 
-                expr = new W.Expr.Lambda(var, expr);
+                expr = new W.Expr.Usage(new W.Expr.Lambda(var, expr), new W.Expr.Variable(var));
             }
 
             return new W.Expr.Case(pttn, expr);
         }
 
-        private W.Expr BuildLetExpr(ref W.Environment env, A.Expr.Let letExpr, bool investigated)
+        private W.Expr BuildLetExpr(ref W.Environment env, A.Expr.Let letExpr)
         {
-            if (investigated)
+            if (Investigated)
             {
                 Assert(true);
             }
 
-            W.Expr inExpr = Build(ref env, letExpr.InExpression, investigated);
+            W.Expr inExpr = Build(ref env, letExpr.InExpression);
 
             foreach (var let in letExpr.LetDecls.Reverse())
             {
-                var (name, expr) = BuildLet(ref env, let, investigated);
+                var (name, expr) = BuildLet(ref env, let);
 
                 inExpr = new W.Expr.Let(name, expr, inExpr);
             }
@@ -408,14 +421,14 @@ namespace Fux.Building.Typing
             return inExpr;
         }
 
-        private (W.TermVariable name, W.Expr expr) BuildLet(ref W.Environment env, A.Decl let, bool investigated)
+        private (W.TermVariable name, W.Expr expr) BuildLet(ref W.Environment env, A.Decl let)
         {
             switch (let)
             {
-                case A.VarDecl var when var.Parameters.Count == 0:
+                case A.Decl.Var var when var.Parameters.Count == 0:
                     {
                         var name = new W.TermVariable(var.Name.Text);
-                        var expr = Build(ref env, var.Expression, investigated);
+                        var expr = Build(ref env, var.Expression);
 
                         return (name, expr);
                     }

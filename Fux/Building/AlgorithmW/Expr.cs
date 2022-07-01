@@ -62,7 +62,7 @@
             public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
         }
 
-        public sealed record Native(A.NativeDecl Nat) : Expr
+        public sealed record Native(A.Decl.Native Nat) : Expr
         {
             public override string ToString() => $"(native {Nat})";
         }

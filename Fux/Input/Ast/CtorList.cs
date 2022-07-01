@@ -2,14 +2,14 @@
 
 namespace Fux.Input.Ast
 {
-    public sealed class ConstructorList : ListOf<Constructor>
+    public sealed class CtorList : ListOf<Decl.Constructor>
     {
-        public ConstructorList(IEnumerable<Constructor> items)
+        public CtorList(IEnumerable<Decl.Constructor> items)
             : base(items)
         {
         }
 
-        public ConstructorList(params Constructor[] items)
+        public CtorList(params Decl.Constructor[] items)
             : this(items.AsEnumerable())
         {
         }

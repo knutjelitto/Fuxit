@@ -107,7 +107,7 @@ namespace Fux.Input
             var expression = parser(this);
             var next = Tokens.Start + Offset;
 
-            expression.Module = Module;
+            expression.InModule = Module;
             expression.Span = new Tokens(Tokens.Toks, start, next);
 
             return expression;

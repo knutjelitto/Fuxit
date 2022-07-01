@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 
 #pragma warning disable CA1822 // Mark members as static
+#pragma warning disable IDE0066 // Convert switch statement to expression
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
 
 namespace Fux.Building.AlgorithmW
 {
@@ -206,6 +208,11 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Matcher({ } expr, { } cases):
                     {
+                        if (investigated)
+                        {
+                            Assert(true);
+                        }
+
                         var (s1, t1) = InferType(expr, env, investigated);
 
                         Type? type = null;
@@ -240,7 +247,6 @@ namespace Fux.Building.AlgorithmW
                         Assert(type != null);
 
                         return (s1, type);
-                        break;
                     }
 
                 case Expr.Case({ } pattern, { } expr):
@@ -256,8 +262,6 @@ namespace Fux.Building.AlgorithmW
                         var s3 = MostGeneralUnifier(t1, t2);
 
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), new Type.List(ApplySubstitution(t1, s3)));
-
-                        break;
                     }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
@@ -397,7 +401,7 @@ namespace Fux.Building.AlgorithmW
                         return Substitution.Empty();
                     }
 
-                case (Type.Primitive p1, Type.Primitive p2) when (p1.Name == p2.Name):
+                case (Type.Primitive p1, Type.Primitive p2) when p1.Name == p2.Name:
                     {
                         return Substitution.Empty();
                     }
@@ -428,20 +432,20 @@ namespace Fux.Building.AlgorithmW
                         {
                             if (v1.TypeVar.ID > v2.TypeVar.ID)
                             {
-                                return new Substitution(v1.TypeVar, typ2);
+                                return Substitution.Solo(v1.TypeVar, typ2);
                             }
                             else
                             {
-                                return new Substitution(v2.TypeVar, typ1);
+                                return Substitution.Solo(v2.TypeVar, typ1);
                             }
                         }
                         else if (typ2 is Type.Variable v3)
                         {
-                            return new Substitution(v3.TypeVar, typ1);
+                            return Substitution.Solo(v3.TypeVar, typ1);
                         }
                         else if (typ1 is Type.Variable v4)
                         {
-                            return new Substitution(v4.TypeVar, typ2);
+                            return Substitution.Solo(v4.TypeVar, typ2);
                         }
                         break;
                     }
@@ -480,7 +484,7 @@ namespace Fux.Building.AlgorithmW
                 throw new WError($"occur check fails: {typeVar} vs {type}");
             }
 
-            var subst = Substitution.Empty().Insert(typeVar, type);
+            var subst = Substitution.Solo(typeVar, type);
             return subst;
         }
 

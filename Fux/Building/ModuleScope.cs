@@ -4,14 +4,14 @@ namespace Fux.Building
 {
     public sealed class ModuleScope : Scope
     {
-        private readonly Dictionary<A.Identifier, A.ImportDecl> imports = new();
-        private readonly List<A.InfixDecl> infixes = new();
-        private readonly Dictionary<A.Identifier, A.InfixDecl> infixesIndex = new();
-        private readonly Dictionary<A.Identifier, A.TypeDecl> types = new();
-        private readonly Dictionary<A.Identifier, A.AliasDecl> aliases = new();
-        private readonly Dictionary<A.Identifier, A.Constructor> constructors = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Import> imports = new();
+        private readonly List<A.Decl.Infix> infixes = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Infix> infixesIndex = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Custom> types = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Alias> aliases = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Constructor> constructors = new();
         private readonly Dictionary<A.Identifier, Module> modules = new();
-        private readonly Dictionary<A.Identifier, A.NativeDecl> natives = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Native> natives = new();
 
         public Module Module { get; }
 
@@ -20,7 +20,7 @@ namespace Fux.Building
             Module = module;
         }
 
-        public void AddImport(A.ImportDecl import)
+        public void AddImport(A.Decl.Import import)
         {
             var name = import.Name.MultiUpper();
 
@@ -29,7 +29,7 @@ namespace Fux.Building
             imports.Add(name, import);
         }
 
-        public void AddInfix(A.InfixDecl decl)
+        public void AddInfix(A.Decl.Infix decl)
         {
             var name = decl.Name.SingleOp();
 
@@ -39,7 +39,7 @@ namespace Fux.Building
             infixesIndex.Add(name, decl);
         }
 
-        public void AddType(A.TypeDecl decl)
+        public void AddType(A.Decl.Custom decl)
         {
             var name = decl.Name.SingleUpper();
 
@@ -48,7 +48,7 @@ namespace Fux.Building
             types.Add(name, decl);
         }
 
-        public void AddAlias(A.AliasDecl decl)
+        public void AddAlias(A.Decl.Alias decl)
         {
             var name = decl.Name.SingleUpper();
 
@@ -57,7 +57,7 @@ namespace Fux.Building
             aliases.Add(name, decl);
         }
 
-        public void AddConstructor(A.Constructor constructor)
+        public void AddConstructor(A.Decl.Constructor constructor)
         {
             var name = constructor.Name.SingleUpper();
 
@@ -72,7 +72,7 @@ namespace Fux.Building
             modules.Add(name, module);
         }
 
-        public void AddNative(A.NativeDecl decl)
+        public void AddNative(A.Decl.Native decl)
         {
             var name = decl.Name.SingleLower();
 
@@ -81,23 +81,23 @@ namespace Fux.Building
             natives.Add(name, decl);
         }
 
-        public bool ImportAddImport(A.ImportDecl import)
+        public bool ImportAddImport(A.Decl.Import import)
         {
             return imports.TryAdd(import.Name.MultiUpper(), import);
         }
 
-        public bool ImportAddAlias(A.AliasDecl decl)
+        public bool ImportAddAlias(A.Decl.Alias decl)
         {
             return aliases.TryAdd(decl.Name.SingleUpper(), decl);
         }
 
 
-        public bool ImportAddType(A.TypeDecl decl)
+        public bool ImportAddType(A.Decl.Custom decl)
         {
             return types.TryAdd(decl.Name.SingleUpper(), decl);
         }
 
-        public bool ImportAddInfix(A.InfixDecl decl)
+        public bool ImportAddInfix(A.Decl.Infix decl)
         {
             var name = decl.Name.SingleOp();
 
@@ -110,7 +110,7 @@ namespace Fux.Building
             return false;
         }
 
-        public bool ImportAddConstructor(A.Constructor constructor)
+        public bool ImportAddConstructor(A.Decl.Constructor constructor)
         {
             return constructors.TryAdd(constructor.Name.SingleUpper(), constructor);
         }
@@ -120,12 +120,12 @@ namespace Fux.Building
             return modules.TryAdd(name, module);
         }
 
-        public bool LookupImport(A.Identifier identifier, [MaybeNullWhen(false)] out A.ImportDecl import)
+        public bool LookupImport(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Import import)
         {
             return imports.TryGetValue(identifier.MultiUpper(), out import);
         }
 
-        public bool LookupImportAlias(A.Identifier alias, [MaybeNullWhen(false)] out A.ImportDecl import)
+        public bool LookupImportAlias(A.Identifier alias, [MaybeNullWhen(false)] out A.Decl.Import import)
         {
             foreach (var maybe in imports.Values)
             {
@@ -140,27 +140,27 @@ namespace Fux.Building
             return false;
         }
 
-        public bool LookupInfix(A.Identifier identifier, [MaybeNullWhen(false)] out A.InfixDecl infix)
+        public bool LookupInfix(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Infix infix)
         {
             return infixesIndex.TryGetValue(identifier.SingleOp(), out infix);
         }
 
-        public bool LookupType(A.Identifier identifier, [MaybeNullWhen(false)]out A.TypeDecl type)
+        public bool LookupType(A.Identifier identifier, [MaybeNullWhen(false)]out A.Decl.Custom type)
         {
             return types.TryGetValue(identifier.SingleUpper(), out type);
         }
 
-        public bool LookupAlias(A.Identifier identifier, [MaybeNullWhen(false)] out A.AliasDecl alias)
+        public bool LookupAlias(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Alias alias)
         {
             return aliases.TryGetValue(identifier.SingleUpper(), out alias);
         }
 
-        public bool LookupConstructor(A.Identifier identifier, [MaybeNullWhen(false)] out A.Constructor constructor)
+        public bool LookupConstructor(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Constructor constructor)
         {
             return constructors.TryGetValue(identifier.SingleUpper(), out constructor);
         }
 
-        public bool LookupNative(A.Identifier identifier, [MaybeNullWhen(false)] out A.NativeDecl native)
+        public bool LookupNative(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Native native)
         {
             return natives.TryGetValue(identifier.SingleLower(), out native);
         }
@@ -213,8 +213,8 @@ namespace Fux.Building
                         if (!importModule.Scope.LookupNative(memberName, out var native))
                         {
                             Assert(importName.Text.StartsWith("Elm.Kernel."));
-                            native = new A.NativeDecl(importName, memberName);
-                            Collector.Instance.NativeDecl.Add(native);
+                            native = new A.Decl.Native(importName, memberName);
+                            Collector.Instance.Native.Add(native);
                             importModule.Scope.AddNative(native);
                         }
 
@@ -243,21 +243,21 @@ namespace Fux.Building
 
                 if (LookupImport(importName, out var import))
                 {
-                    Assert(import.Module != null);
+                    Assert(import.InModule != null);
 
-                    yield return import.Module;
+                    yield return import.InModule;
                 }
 
                 if (LookupImportAlias(importName, out import))
                 {
-                    Assert(import.Module != null);
+                    Assert(import.InModule != null);
 
-                    yield return import.Module;
+                    yield return import.InModule;
                 }
 
                 foreach (var foreignImport in imports.Values)
                 {
-                    if (foreignImport.Module!.Scope.LookupModule(importName, out var foreign))
+                    if (foreignImport.InModule!.Scope.LookupModule(importName, out var foreign))
                     {
                         yield return foreign;
                     }

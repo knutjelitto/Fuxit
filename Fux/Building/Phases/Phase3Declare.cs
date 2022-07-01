@@ -95,22 +95,22 @@ namespace Fux.Building.Phases
                 {
                     switch (declaration)
                     {
-                        case A.ImportDecl import:
+                        case A.Decl.Import import:
                             Import(module.Scope, import);
                             break;
-                        case A.InfixDecl infix:
+                        case A.Decl.Infix infix:
                             Infix(module.Scope, infix);
                             break;
-                        case A.TypeDecl type:
+                        case A.Decl.Custom type:
                             Type(module.Scope, type);
                             break;
-                        case A.AliasDecl alias:
+                        case A.Decl.Alias alias:
                             Alias(module.Scope, alias);
                             break;
-                        case A.VarDecl varDecl:
+                        case A.Decl.Var varDecl:
                             VarDecl(module.Scope, varDecl);
                             break;
-                        case A.TypeAnnotation annotation:
+                        case A.Decl.TypeAnnotation annotation:
                             TypeAnnotation(module.Scope, annotation);
                             break;
                         default:
@@ -121,23 +121,23 @@ namespace Fux.Building.Phases
                 }
             }
 
-            private void TypeAnnotation(Scope scope, A.TypeAnnotation annotation)
+            private void TypeAnnotation(Scope scope, A.Decl.TypeAnnotation annotation)
             {
-                Collector.DeclareAnnotation.Add(annotation);
+                Collector.Annotation.Add(annotation);
 
                 Declarations.Add(annotation);
 
                 scope.AddHint(annotation);
             }
 
-            private void VarDecl(Scope scope, A.VarDecl var)
+            private void VarDecl(Scope scope, A.Decl.Var var)
             {
                 if (var.Name.Text == "fromPolar")
                 {
                     Assert(true);
                 }
 
-                Collector.DeclareVar.Add(var);
+                Collector.Var.Add(var);
 
                 Declarations.Add(var);
 
@@ -165,7 +165,7 @@ namespace Fux.Building.Phases
                 ScopeExpr(var.Scope, var.Expression);
             }
 
-            private void Import(ModuleScope scope, A.ImportDecl import)
+            private void Import(ModuleScope scope, A.Decl.Import import)
             {
                 Collector.Import.Add(import);
 
@@ -174,9 +174,9 @@ namespace Fux.Building.Phases
                 scope.ImportAddImport(import);
             }
 
-            private void Infix(ModuleScope scope, A.InfixDecl infix)
+            private void Infix(ModuleScope scope, A.Decl.Infix infix)
             {
-                Collector.DeclareInfix.Add(infix);
+                Collector.Infix.Add(infix);
 
                 Declarations.Add(infix);
 
@@ -185,9 +185,9 @@ namespace Fux.Building.Phases
                 ScopeExpr(scope, infix.Expression);
             }
 
-            private void Type(ModuleScope scope, A.TypeDecl type)
+            private void Type(ModuleScope scope, A.Decl.Custom type)
             {
-                Collector.DeclareType.Add(type);
+                Collector.Custom.Add(type);
 
                 Declarations.Add(type);
 
@@ -206,9 +206,9 @@ namespace Fux.Building.Phases
                 }
             }
 
-            private void Alias(ModuleScope scope, A.AliasDecl alias)
+            private void Alias(ModuleScope scope, A.Decl.Alias alias)
             {
-                Collector.DeclareAlias.Add(alias);
+                Collector.Alias.Add(alias);
 
                 Declarations.Add(alias);
 
@@ -217,7 +217,7 @@ namespace Fux.Building.Phases
 
             private void ScopeExpr(Scope scope, A.Expr expression)
             {
-                Assert(expression.Module != null);
+                Assert(expression.InModule != null);
 
                 switch (expression)
                 {
@@ -325,14 +325,14 @@ namespace Fux.Building.Phases
 
             private void ScopeLet(A.Expr.Let letExr)
             {
-                var hints = new Dictionary<A.Identifier, A.TypeAnnotation>();
+                var hints = new Dictionary<A.Identifier, A.Decl.TypeAnnotation>();
                 Assert(letExr.Scope.HintsAreEmpty);
 
                 foreach (var expr in letExr.LetDecls)
                 {
                     switch (expr)
                     {
-                        case A.VarDecl var:
+                        case A.Decl.Var var:
                             {
                                 var.Scope.Parent = letExr.Scope;
 
@@ -375,7 +375,7 @@ namespace Fux.Building.Phases
                                 ScopeExpr(assign.Scope, assign.Expression);
                             }
                             break;
-                        case A.TypeAnnotation annotation:
+                        case A.Decl.TypeAnnotation annotation:
                             {
                                 letExr.Scope.AddHint(annotation);
                             }

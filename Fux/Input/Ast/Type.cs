@@ -157,7 +157,7 @@
 
         public sealed class UnionType : Type
         {
-            public UnionType(Identifier name, TypeParameterList parameters, ConstructorList constructors)
+            public UnionType(Identifier name, TypeParameterList parameters, CtorList constructors)
             {
                 Name = name;
                 Parameters = parameters;
@@ -166,7 +166,7 @@
 
             public Identifier Name { get; }
             public TypeParameterList Parameters { get; }
-            public ConstructorList Constructors { get; }
+            public CtorList Constructors { get; }
         }
 
         public class Union : Type

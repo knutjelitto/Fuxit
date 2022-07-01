@@ -8,14 +8,14 @@
 
         public int NumberOfLines = 0;
 
-        public List<A.ModuleDecl> Module { get; } = new();
-        public List<A.ImportDecl> Import { get; } = new();
-        public List<A.TypeDecl> DeclareType { get; } = new();
-        public List<A.AliasDecl> DeclareAlias { get; } = new();
-        public List<A.InfixDecl> DeclareInfix { get; } = new();
-        public List<A.VarDecl> DeclareVar { get; } = new();
-        public List<A.TypeAnnotation> DeclareAnnotation { get; } = new();
-        public List<A.NativeDecl> NativeDecl { get; } = new();
+        public List<A.Decl.Module> Module { get; } = new();
+        public List<A.Decl.Import> Import { get; } = new();
+        public List<A.Decl.Custom> Custom { get; } = new();
+        public List<A.Decl.Alias> Alias { get; } = new();
+        public List<A.Decl.Infix> Infix { get; } = new();
+        public List<A.Decl.Var> Var { get; } = new();
+        public List<A.Decl.TypeAnnotation> Annotation { get; } = new();
+        public List<A.Decl.Native> Native { get; } = new();
         public List<A.Expr> VarPattern { get; } = new();
         public List<A.Expr> LetPattern { get; } = new();
         public List<A.Expr> MatchPattern { get; } = new();
@@ -34,11 +34,11 @@
 
             Write("all-module.text", Module);
             Write("all-import.text", Import);
-            WriteCompact("all-decl-type.text", DeclareType, writePP);
-            Write("all-decl-alias.text", DeclareAlias);
-            Write("all-decl-infix.text", DeclareInfix);
-            WriteCompact("all-decl-var.text", DeclareVar, writeStr);
-            WriteCompact("all-decl-hint.text", DeclareAnnotation, writeStr);
+            WriteCompact("all-decl-type.text", Custom, writePP);
+            Write("all-decl-alias.text", Alias);
+            Write("all-decl-infix.text", Infix);
+            WriteCompact("all-decl-var.text", Var, writeStr);
+            WriteCompact("all-decl-hint.text", Annotation, writeStr);
             WriteNatives("all-native.text");
 
             WriteVarPatterns("all-pattern-var.text");
@@ -47,7 +47,7 @@
 
             void WriteNatives(string name)
             {
-                WriteAll(name, StringsFrom(NativeDecl));
+                WriteAll(name, StringsFrom(Native));
             }
 
             void WriteVarPatterns(string name)

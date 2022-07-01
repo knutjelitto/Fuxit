@@ -25,7 +25,7 @@ namespace Fux.Building.Typing
         public Module Module { get; }
         public W.Pretty Pretty { get; }
 
-        public void TypeVar(A.VarDecl var, int numero, bool investigated)
+        public void TypeVar(A.Decl.Var var, int numero, bool investigated)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace Fux.Building.Typing
             }
         }
 
-        private void Resolve(A.VarDecl var, bool investigated)
+        private void Resolve(A.Decl.Var var, bool investigated)
         {
             if (var.Name.Text == "radians")
             {

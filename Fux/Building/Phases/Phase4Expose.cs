@@ -1,8 +1,4 @@
 ﻿#pragma warning disable CA1822 // Mark members as static
-#pragma warning disable IDE0060 // Remove unused parameter
-
-using Fux.Input.Ast;
-using static Fux.Input.Ast.Type;
 
 namespace Fux.Building.Phases
 {
@@ -54,14 +50,14 @@ namespace Fux.Building.Phases
             }
         }
 
-        private void Exposing(Module module, Exposing exposing)
+        private void Exposing(Module module, A.Exposing exposing)
         {
             switch (exposing)
             {
-                case ExposingAll:
+                case A.ExposingAll:
                     ExposeAll(module);
                     break;
-                case ExposingSome some:
+                case A.ExposingSome some:
                     foreach (var item in some.Exposed)
                     {
                         module.Exposed.Add(Exposed(module, item));
@@ -79,8 +75,8 @@ namespace Fux.Building.Phases
             {
                 switch (element)
                 {
-                    case TypeDecl type:
-                        var exposedType = new Exposed.Type(type.Name, true);
+                    case A.Decl.Custom type:
+                        var exposedType = new A.Exposed.Type(type.Name, true);
                         foreach (var constructor in type.Constructors)
                         {
                             if (module.Scope.LookupConstructor(constructor.Name, out var ctor))
@@ -90,16 +86,16 @@ namespace Fux.Building.Phases
                         }
                         module.Exposed.Add(exposedType);
                         break;
-                    case AliasDecl alias:
-                        var exposedAlias = new Exposed.Type(alias.Name, false);
+                    case A.Decl.Alias alias:
+                        var exposedAlias = new A.Exposed.Type(alias.Name, false);
                         module.Exposed.Add(exposedAlias);
                         break;
-                    case VarDecl var:
-                        var exposedVar = new Exposed.Var(var.Name);
+                    case A.Decl.Var var:
+                        var exposedVar = new A.Exposed.Var(var.Name);
                         module.Exposed.Add(exposedVar);
                         break;
-                    case InfixDecl infix:
-                        var exposedInfix = new Exposed.Var(infix.Name);
+                    case A.Decl.Infix infix:
+                        var exposedInfix = new A.Exposed.Var(infix.Name);
                         module.Exposed.Add(exposedInfix);
                         break;
                     default:
@@ -108,11 +104,11 @@ namespace Fux.Building.Phases
             }
         }
 
-        private Exposed Exposed(Module module, Exposed exposed)
+        private A.Exposed Exposed(Module module, A.Exposed exposed)
         {
             switch (exposed)
             {
-                case Exposed.Type exposedType:
+                case A.Exposed.Type exposedType:
                     if (module.Scope.LookupType(exposed.Name, out var type))
                     {
                         if (exposedType.Inclusive)
@@ -148,7 +144,7 @@ namespace Fux.Building.Phases
                         Assert(false);
                         throw new NotImplementedException();
                     }
-                case Exposed.Var exposedVar:
+                case A.Exposed.Var exposedVar:
                     if (module.Scope.LookupVar(exposedVar.Name, out _))
                     {
                         return exposed;
