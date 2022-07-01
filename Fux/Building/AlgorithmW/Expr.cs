@@ -8,12 +8,12 @@
             public override string ToString() => Term;
         }
 
-        public sealed record Application(Expr Exp1, Expr Exp2) : Expr
+        public sealed record Usage(Expr Exp1, Expr Exp2) : Expr
         {
             public override string ToString() => $"(apply {Exp1} {Exp2})";
         }
 
-        public sealed record Abstraction(TermVariable Term, Expr Exp) : Expr
+        public sealed record Lambda(TermVariable Term, Expr Exp) : Expr
         {
             public override string ToString() => $"({Term} => {Exp})";
         }
@@ -57,6 +57,11 @@
             public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
         }
 
+        public sealed record Decons(Expr First, Expr Rest) : List
+        {
+            public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
+        }
+
         public sealed record Native(A.NativeDecl Nat) : Expr
         {
             public override string ToString() => $"(native {Nat})";
@@ -67,7 +72,7 @@
             public override string ToString() => $"(if {Cond} then {Then} else {Else})";
         }
 
-        public sealed record CaseMatch(Expr Expr, IReadOnlyList<Expr> Cases) : Expr
+        public sealed record Matcher(Expr Expr, IReadOnlyList<Expr.Case> Cases) : Expr
         {
             public override string ToString()
             {
@@ -75,7 +80,7 @@
             }
         }
 
-        public sealed record Case(Expr Pattern, Expr Expr)
+        public sealed record Case(Expr Pattern, Expr Expr) : Expr
         {
             public override string ToString()
             {
@@ -123,7 +128,7 @@
 
         public abstract record Sugar : Expr
         {
-            public sealed new record Application(IReadOnlyList<Expr> Exprs) : Sugar
+            public sealed record Application(IReadOnlyList<Expr> Exprs) : Sugar
             {
                 public override string ToString() => $"($ {string.Join(" ", Exprs)})";
             }

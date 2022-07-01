@@ -16,7 +16,7 @@ namespace Fux.Building
 
         public static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)
         {
-            return pattern.Flatten(genWildcard, false);
+            return pattern.Flatten(genWildcard, false).ToList(); ;
         }
 
         private static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard, bool inner)

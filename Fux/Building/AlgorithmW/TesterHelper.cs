@@ -14,17 +14,17 @@ namespace Fux.Building.AlgorithmW
             return new Expr.Iff(cond, then, @else);
         }
 
-        public static Expr.Abstraction abs(string var, Expr e)
+        public static Expr.Lambda abs(string var, Expr e)
         {
-            return new Expr.Abstraction(var, e);
+            return new Expr.Lambda(var, e);
         }
 
-        public static Expr.Application app(Expr e1, Expr e2)
+        public static Expr.Usage app(Expr e1, Expr e2)
         {
-            return new Expr.Application(e1, e2);
+            return new Expr.Usage(e1, e2);
         }
 
-        public static Expr.Application app(Expr e1, Expr e2, Expr e3)
+        public static Expr.Usage app(Expr e1, Expr e2, Expr e3)
         {
             return app(app(e1, e2), e3);
         }

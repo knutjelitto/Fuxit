@@ -3,7 +3,7 @@
     /// <summary>
     /// A term variable is a variable referenced in an expression
     /// </summary>
-    public sealed class TermVariable
+    public sealed class TermVariable : IEquatable<TermVariable>
     {
         public TermVariable(string name)
         {
@@ -12,12 +12,12 @@
 
         public string Name { get; }
 
-
         public static implicit operator string(TermVariable term) => term.Name;
         public static implicit operator TermVariable(string s) => new(s);
 
-        public override string ToString() => Name;
-        public override bool Equals(object? obj) => obj is TermVariable other && other.Name == Name;
+        public bool Equals(TermVariable? other) => other != null && other.Name == Name;
+        public override bool Equals(object? obj) => Equals(obj as TermVariable);
         public override int GetHashCode() => Name.GetHashCode();
+        public override string ToString() => Name;
     }
 }

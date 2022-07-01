@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    public sealed class Eof : Declaration.DeclImpl
+    public sealed class Eof : Decl.DeclImpl
     {
         public Eof(Token token)
         {

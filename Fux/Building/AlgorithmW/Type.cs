@@ -11,7 +11,10 @@ namespace Fux.Building.AlgorithmW
 
         public sealed record Function(Type InType, Type OutType) : Type
         {
-            public override string ToString() => $"({InType} → {OutType})";
+            public override string ToString()
+            {
+                return $"({InType} → {OutType})";
+            }
         }
 
         public abstract record Tuple(IReadOnlyList<Type> Types) : Type;

@@ -2,20 +2,20 @@
 
 namespace Fux.Input.Ast
 {
-    public interface NamedDeclaration : Declaration
+    public interface NamedDecl : Decl
     {
         Identifier Name { get; }
         Identifier? Alias { get; set; }
 
     }
 
-    public interface Declaration : Node
+    public interface Decl : Node
     {
-        public abstract class DeclImpl : NodeImpl, Declaration
+        public abstract class DeclImpl : NodeImpl, Decl
         {
         }
 
-        public abstract class NamedDeclImpl : NodeImpl, NamedDeclaration
+        public abstract class NamedDeclImpl : NodeImpl, NamedDecl
         {
             protected NamedDeclImpl(Identifier name)
             {
@@ -27,7 +27,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class ModuleDecl : Declaration.NamedDeclImpl
+    public sealed class ModuleDecl : Decl.NamedDeclImpl
     {
         public ModuleDecl(Identifier name, bool isEffect, IEnumerable<VarDecl> where, Exposing? exposing)
             : base(name)
@@ -72,7 +72,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class VarDecl : Declaration.NamedDeclImpl
+    public sealed class VarDecl : Decl.NamedDeclImpl
     {
         public VarDecl(Identifier name, Parameters parameters, Expr expression)
             : base(name)
@@ -115,7 +115,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class TypeDecl : Declaration.NamedDeclImpl
+    public sealed class TypeDecl : Decl.NamedDeclImpl
     {
         public TypeDecl(Identifier name, TypeParameterList parameters, ConstructorList constructors)
             : base(name)
@@ -162,7 +162,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class AliasDecl : Declaration.NamedDeclImpl
+    public sealed class AliasDecl : Decl.NamedDeclImpl
     {
         public AliasDecl(Identifier name, TypeParameterList parameters, Type declaration)
             : base(name)
@@ -185,7 +185,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class ImportDecl : Declaration.NamedDeclImpl
+    public sealed class ImportDecl : Decl.NamedDeclImpl
     {
         public ImportDecl(Identifier name, Identifier? alias, Exposing? exposing)
             : base(name)
@@ -219,7 +219,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class InfixDecl : Declaration.NamedDeclImpl
+    public sealed class InfixDecl : Decl.NamedDeclImpl
     {
         public InfixDecl(InfixAssoc assoc, InfixPower power, Identifier op, Identifier expression)
             : base(op)
@@ -245,7 +245,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class NativeDecl : Declaration.DeclImpl
+    public sealed class NativeDecl : Decl.DeclImpl
     {
         public NativeDecl(Identifier moduleName, Identifier name)
         {
@@ -268,7 +268,7 @@ namespace Fux.Input.Ast
             writer.Write($"{ModuleName}.{Name} : {type}");
         }
     }
-    public sealed class TypeAnnotation : Declaration.NamedDeclImpl
+    public sealed class TypeAnnotation : Decl.NamedDeclImpl
     {
         public TypeAnnotation(Identifier name, Type type)
             : base(name.SingleLower())
@@ -291,7 +291,7 @@ namespace Fux.Input.Ast
         }
     }
 
-    public sealed class Constructor : Declaration.NamedDeclImpl
+    public sealed class Constructor : Decl.NamedDeclImpl
     {
         public Constructor(Identifier name, TypeArgumentList arguments)
             : base(name)
@@ -318,7 +318,7 @@ namespace Fux.Input.Ast
     }
 
 
-    public sealed class TypeParameter : Declaration.NamedDeclImpl
+    public sealed class TypeParameter : Decl.NamedDeclImpl
     {
         public TypeParameter(Identifier name)
             : base(name.SingleLower())

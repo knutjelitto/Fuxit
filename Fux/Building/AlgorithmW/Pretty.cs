@@ -42,10 +42,27 @@ namespace Fux.Building.AlgorithmW
                         WriteLine(Sugar(expr.Exp2));
                     });
                     break;
-                case Expr.Application expr:
+                case Expr.Matcher expr:
+                    WriteLine($"{Lex.KwCase}");
+                    Indent(() => Print(expr.Expr));
+                    WriteLine($"{Lex.KwOf}");
+                    Indent(() =>
+                    {
+                        foreach (var lambda in expr.Cases)
+                        {
+                            Print(lambda);
+                        }
+                    });
+                    break;
+                case Expr.Case cheese:
+                    Write(cheese.Pattern);
+                    Write(" -> ");
+                    Print(cheese.Expr);
+                    break;
+                case Expr.Usage expr:
                     Print(SugarApp(expr));
                     break;
-                case Expr.Abstraction expr:
+                case Expr.Lambda expr:
                     Write($"{expr.Term} => ");
                     Print(expr.Exp);
                     break;
@@ -78,20 +95,20 @@ namespace Fux.Building.AlgorithmW
         {
             switch (expr)
             {
-                case Expr.Application app:
+                case Expr.Usage app:
                     return SugarApp(app);
                 default:
                     return expr;
             }
         }
 
-        private Expr.Sugar.Application SugarApp(Expr.Application app)
+        private Expr.Sugar.Application SugarApp(Expr.Usage app)
         {
             return new Expr.Sugar.Application(multi(app).ToArray());
 
-            IEnumerable<Expr> multi(Expr.Application expr)
+            IEnumerable<Expr> multi(Expr.Usage expr)
             {
-                if (expr.Exp1 is Expr.Application app)
+                if (expr.Exp1 is Expr.Usage app)
                 {
                     foreach (var inner in multi(app).ToList())
                     {

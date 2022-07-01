@@ -58,19 +58,17 @@ namespace Fux.Building.Typing
             }
             catch (Exception any)
             {
-                Writer.WriteLine("====================================================================================================");
                 Writer.Indent(() =>
                 {
+                    Writer.WriteLine("====================================================================================================");
+                    Writer.WriteLine($"{any.Message}");
+                    Writer.WriteLine();
+
                     var lines = any.StackTrace!.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-                    Writer.WriteLine($"{any.Message}");
                     foreach (var line in lines)
                     {
                         Writer.WriteLine($"{line}");
-                        if (line.LastIndexOf(":line ") > 0)
-                        {
-                            break;
-                        }
                     }
                 });
                 Writer.WriteLine();
@@ -85,26 +83,26 @@ namespace Fux.Building.Typing
             }
 
             var inferrer = new W.Inferrer();
-            var gamma = inferrer.GetEmptyEnvironment();
+            var env = inferrer.GetEmptyEnvironment();
 
             Assert(var.Type != null);
             Assert(var.Parameters.Count >= 0);
 
-            var varType = typeBuilder.Build(gamma, var.Type);
+            var varType = typeBuilder.Build(env, var.Type);
 
             var variable = new W.Expr.Variable(var.Name);
-            gamma = gamma.Insert(variable.Term, varType);
+            env = env.Insert(variable.Term, varType);
 
-            var varExpr = exprBuilder.Build(ref gamma, var.Expression.Resolved, investigated);
+            var varExpr = exprBuilder.Build(ref env, var.Expression.Resolved, investigated);
 
-            var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref gamma, investigated);
+            var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
 
             var def = new W.Expr.Def(variable, wexpr);
             var unify = new W.Expr.Unify(wtype, wexpr);
 
             Writer.Indent(() =>
             {
-                Resolve(inferrer, gamma, unify, investigated);
+                Resolve(inferrer, env, unify, investigated);
             });
         }
 

@@ -23,9 +23,9 @@ namespace Fux.Building.AlgorithmW
 
         public Environment GetDefaultEnvironment(TypeVarGenerator typeVarGenerator)
         {
-            var number1 = typeVarGenerator.GetNext();
-            var number2 = typeVarGenerator.GetNext();
-            var number3 = typeVarGenerator.GetNext();
+            var number1 = typeVarGenerator.GetNext("number");
+            var number2 = typeVarGenerator.GetNext("number");
+            var number3 = typeVarGenerator.GetNext("number");
 
             return Environment.Initial(typeVarGenerator,
 
@@ -158,7 +158,7 @@ namespace Fux.Building.AlgorithmW
                 // * Inserting a new type variable for the argument.
                 // * Inferring the type of the expression in the new environment to define the type of the expression.
                 // * Applying the resulting substitution to the argument to define the type of the argument.
-                case Expr.Abstraction({ } term, { } exp):
+                case Expr.Lambda({ } term, { } exp):
                     {
                         var varType = env.Generator.GetNext();
                         var nenv = env.Remove(term).Insert(term, new Polytype(varType));
@@ -173,7 +173,7 @@ namespace Fux.Building.AlgorithmW
                 // argument type to a new type variable. This combines the previously known type of the
                 // function and the type as it is now being used.
                 // * Applying the unifier to the new type variable.
-                case Expr.Application({ } callee, { } argument):
+                case Expr.Usage({ } callee, { } argument):
                     {
                         var (s1, t1) = InferType(callee, env, investigated);
                         var (s2, t2) = InferType(argument, ApplySubstitution(env, s1), investigated);
@@ -202,6 +202,62 @@ namespace Fux.Building.AlgorithmW
                         var s3 = MostGeneralUnifier(restType.Type, firstType);
 
                         return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(restType, s3));
+                    }
+
+                case Expr.Matcher({ } expr, { } cases):
+                    {
+                        var (s1, t1) = InferType(expr, env, investigated);
+
+                        Type? type = null;
+
+                        foreach (var cheese in cases)
+                        {
+                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(env, s1), investigated);
+
+                            var s3 = MostGeneralUnifier(t1, t2);
+
+                            t1 = ApplySubstitution(t1, s3);
+                            t2 = ApplySubstitution(t1, s3);
+
+                            s1 = ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1));
+
+                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(env, s1), investigated);
+
+                            s1 = ComposeSubstitutions(s4, s1);
+
+                            if (type != null)
+                            {
+                                var s5 = MostGeneralUnifier(type, t4);
+                                type = ApplySubstitution(t4, s5);
+                                s1 = ComposeSubstitutions(s5, s1);
+                            }
+                            else
+                            {
+                                type = ApplySubstitution(t4, s1);
+                            }
+                        }
+
+                        Assert(type != null);
+
+                        return (s1, type);
+                        break;
+                    }
+
+                case Expr.Case({ } pattern, { } expr):
+                    {
+                        break;
+                    }
+
+                case Expr.Decons({ } first, { } rest):
+                    {
+                        var (s1, t1) = InferType(first, env, investigated);
+                        var (s2, t2) = InferType(first, ApplySubstitution(env, s1), investigated);
+
+                        var s3 = MostGeneralUnifier(t1, t2);
+
+                        return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), new Type.List(ApplySubstitution(t1, s3)));
+
+                        break;
                     }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");

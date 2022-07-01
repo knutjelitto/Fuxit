@@ -24,6 +24,10 @@ namespace Fux.Building.Typing
 
         private W.Type Resolve(W.Environment env, A.Type type)
         {
+            if (type.ToString() == "a")
+            {
+                Assert(true);
+            }
             switch (type.Resolved)
             {
                 case A.Type.Function function:
@@ -88,7 +92,7 @@ namespace Fux.Building.Typing
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
-                    typeVar = env.Generator.GetNext().TypeVar;
+                    typeVar = env.Generator.GetNext(text).TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
                 }

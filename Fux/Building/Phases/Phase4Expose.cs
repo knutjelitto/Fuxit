@@ -80,7 +80,7 @@ namespace Fux.Building.Phases
                 switch (element)
                 {
                     case TypeDecl type:
-                        var exposedType = new ExposedType(type.Name, true);
+                        var exposedType = new Exposed.Type(type.Name, true);
                         foreach (var constructor in type.Constructors)
                         {
                             if (module.Scope.LookupConstructor(constructor.Name, out var ctor))
@@ -91,15 +91,15 @@ namespace Fux.Building.Phases
                         module.Exposed.Add(exposedType);
                         break;
                     case AliasDecl alias:
-                        var exposedAlias = new ExposedType(alias.Name, false);
+                        var exposedAlias = new Exposed.Type(alias.Name, false);
                         module.Exposed.Add(exposedAlias);
                         break;
                     case VarDecl var:
-                        var exposedVar = new ExposedVar(var.Name);
+                        var exposedVar = new Exposed.Var(var.Name);
                         module.Exposed.Add(exposedVar);
                         break;
                     case InfixDecl infix:
-                        var exposedInfix = new ExposedVar(infix.Name);
+                        var exposedInfix = new Exposed.Var(infix.Name);
                         module.Exposed.Add(exposedInfix);
                         break;
                     default:
@@ -112,7 +112,7 @@ namespace Fux.Building.Phases
         {
             switch (exposed)
             {
-                case ExposedType exposedType:
+                case Exposed.Type exposedType:
                     if (module.Scope.LookupType(exposed.Name, out var type))
                     {
                         if (exposedType.Inclusive)
@@ -148,7 +148,7 @@ namespace Fux.Building.Phases
                         Assert(false);
                         throw new NotImplementedException();
                     }
-                case ExposedVar exposedVar:
+                case Exposed.Var exposedVar:
                     if (module.Scope.LookupVar(exposedVar.Name, out _))
                     {
                         return exposed;

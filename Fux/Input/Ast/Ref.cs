@@ -2,12 +2,12 @@
 {
     public abstract class Ref : Expr.ExprImpl
     {
-        public Ref(Declaration decl)
+        public Ref(Decl decl)
         {
             Declaration = decl;
         }
 
-        public Declaration Declaration { get; }
+        public Decl Declaration { get; }
 
         public override void PP(Writer writer)
         {
@@ -15,7 +15,7 @@
         }
 
         public abstract class RefImpl<T> : Ref
-            where T : Declaration
+            where T : Decl
         {
             public RefImpl(T declaration)
                 : base(declaration)

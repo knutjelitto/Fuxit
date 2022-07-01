@@ -8,47 +8,48 @@
         }
 
         public Identifier Name { get; }
-    }
 
-    public sealed class ExposedType : Exposed
-    {
-        public ExposedType(Identifier name, bool inclusive)
-            : base(name)
+
+        public sealed class Type : Exposed
         {
-            Assert(name.IsSingleUpper);
-            Inclusive = inclusive;
-        }
-
-        public bool Inclusive { get; }
-
-        public void Add(Constructor ctor)
-        {
-            ((List<Constructor>)Ctors).Add(ctor);
-        }
-
-        public IReadOnlyList<Constructor> Ctors { get; } = new List<Constructor>();
-
-        public override string ToString()
-        {
-            if (Inclusive)
+            public Type(Identifier name, bool inclusive)
+                : base(name)
             {
-                return $"{Name}{Lex.Weak.ExposeAll}";
+                Assert(name.IsSingleUpper);
+                Inclusive = inclusive;
             }
-            return $"{Name}";
-        }
-    }
 
-    public sealed class ExposedVar : Exposed
-    {
-        public ExposedVar(Identifier name)
-            : base(name)
-        {
-            Assert(name.IsSingleLower || name.IsSingleOp);
+            public bool Inclusive { get; }
+
+            public void Add(Constructor ctor)
+            {
+                ((List<Constructor>)Ctors).Add(ctor);
+            }
+
+            public IReadOnlyList<Constructor> Ctors { get; } = new List<Constructor>();
+
+            public override string ToString()
+            {
+                if (Inclusive)
+                {
+                    return $"{Name}{Lex.Weak.ExposeAll}";
+                }
+                return $"{Name}";
+            }
         }
 
-        public override string ToString()
+        public sealed class Var : Exposed
         {
-            return $"{Name}";
+            public Var(Identifier name)
+                : base(name)
+            {
+                Assert(name.IsSingleLower || name.IsSingleOp);
+            }
+
+            public override string ToString()
+            {
+                return $"{Name}";
+            }
         }
     }
 }

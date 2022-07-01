@@ -56,29 +56,9 @@ namespace Fux.Building.Typing
                     switch (parameterType)
                     {
                         case W.Type.Variable:
-                            {
-                                var term = new W.TermVariable(parameterName.Text);
-                                env = env.Insert(term, new W.Polytype(parameterType));
-                                break;
-                            }
                         case W.Type.Primitive:
-                            {
-                                var term = new W.TermVariable(parameterName.Text);
-                                env = env.Insert(term, new W.Polytype(parameterType));
-                                break;
-                            }
                         case W.Type.Function:
-                            {
-                                var term = new W.TermVariable(parameterName.Text);
-                                env = env.Insert(term, new W.Polytype(parameterType));
-                                break;
-                            }
                         case W.Type.Concrete:
-                            {
-                                var term = new W.TermVariable(parameterName.Text);
-                                env = env.Insert(term, new W.Polytype(parameterType));
-                                break;
-                            }
                         case W.Type.Primitive.List:
                             {
                                 var term = new W.TermVariable(parameterName.Text);

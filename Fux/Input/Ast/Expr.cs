@@ -160,25 +160,19 @@ namespace Fux.Input.Ast
         }
         public sealed class Lambda : ExprImpl
         {
-            public Lambda(Pattern parameters, Expr expr, bool inCase)
+            public Lambda(Pattern parameters, Expr expr)
             {
                 Parameters = parameters;
                 Expression = expr;
-                InCase = inCase;
             }
 
             public Pattern Parameters { get; }
             public Expr Expression { get; }
-            public bool InCase { get; }
 
             public LetScope Scope { get; } = new();
 
             public override string ToString()
             {
-                if (InCase)
-                {
-                    return Protected($"{Parameters} {Lex.Arrow} {Expression}");
-                }
                 return Protected($"{Lex.Lambda}{Parameters} {Lex.Arrow} {Expression}");
             }
 
@@ -187,15 +181,44 @@ namespace Fux.Input.Ast
                 writer.Write(ToString());
             }
         }
+
+        public sealed class Case : Expr.ExprImpl
+        {
+            public Case(Pattern pattern, Expr expression)
+            {
+                Pattern = pattern;
+                Expression = expression;
+
+                Collector.Instance.MatchPattern.Add(Pattern);
+            }
+
+            public Pattern Pattern { get; }
+            public Expr Expression { get; }
+
+            public LetScope Scope { get; } = new();
+
+            public override string ToString()
+            {
+                return $"{Pattern} {Lex.Arrow} {Expression}";
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write($"{Pattern} {Lex.Arrow} ");
+                Expression.PP(writer);
+                writer.EndLine();
+            }
+        }
+
         public sealed class Let : ExprImpl
         {
-            public Let(List<Declaration> letExpressions, Expr inExpression)
+            public Let(List<Decl> letExpressions, Expr inExpression)
             {
                 LetDecls = letExpressions.ToArray();
                 InExpression = inExpression;
             }
 
-            public IReadOnlyList<Declaration> LetDecls { get; }
+            public IReadOnlyList<Decl> LetDecls { get; }
             public Expr InExpression { get; }
 
             public LetScope Scope { get; set; } = new();
@@ -276,16 +299,16 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class CaseMatch : ExprImpl
+        public sealed class Matcher : ExprImpl
         {
-            public CaseMatch(Expr expression, List<Lambda> cases)
+            public Matcher(Expr expression, List<Case> cases)
             {
                 Expression = expression;
                 Cases = cases.ToArray();
             }
 
             public Expr Expression { get; }
-            public IReadOnlyList<Lambda> Cases { get; }
+            public IReadOnlyList<Case> Cases { get; }
 
             public override string ToString()
             {

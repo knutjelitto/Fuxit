@@ -87,7 +87,7 @@
             }
 
             void Write<T>(string name, IEnumerable<T> expressions)
-                where T : A.Declaration
+                where T : A.Decl
             {
                 using (var writer = name.Writer())
                 {
@@ -110,7 +110,7 @@
                 }
             }
 
-            void writePP(Writer writer, A.Declaration expr)
+            void writePP(Writer writer, A.Decl expr)
             {
                 expr.PP(writer);
                 if (writer.LinePending)
@@ -119,12 +119,12 @@
                 }
             }
 
-            void writeStr(Writer writer, A.Declaration expr)
+            void writeStr(Writer writer, A.Decl expr)
             {
                 writer.WriteLine($"{expr}");
             }
 
-            void WriteCompact(string name, IEnumerable<A.Declaration> expressions, Action<Writer, A.Declaration> write)
+            void WriteCompact(string name, IEnumerable<A.Decl> expressions, Action<Writer, A.Decl> write)
             {
                 using (var writer = name.Writer())
                 {

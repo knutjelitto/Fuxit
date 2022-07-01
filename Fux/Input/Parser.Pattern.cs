@@ -8,6 +8,7 @@
         }
 
         public Parser Parser { get; }
+        public ExprParser Expr => Parser.Expr;
 
         public A.Pattern Lambda(Cursor cursor)
         {
@@ -105,19 +106,19 @@
             }
             else if (cursor.Is(Lex.Integer))
             {
-                return new A.Pattern.Literal.Integer(Parser.IntegerLiteral(cursor));
+                return new A.Pattern.Literal.Integer(Expr.IntegerLiteral(cursor));
             }
             else if (cursor.Is(Lex.Float))
             {
-                return new A.Pattern.Literal.Float(Parser.FloatLiteral(cursor));
+                return new A.Pattern.Literal.Float(Expr.FloatLiteral(cursor));
             }
             else if (cursor.Is(Lex.String))
             {
-                return new A.Pattern.Literal.String(Parser.StringLiteral(cursor));
+                return new A.Pattern.Literal.String(Expr.StringLiteral(cursor));
             }
             else if (cursor.Is(Lex.Char))
             {
-                return new A.Pattern.Literal.Char(Parser.CharLiteral(cursor));
+                return new A.Pattern.Literal.Char(Expr.CharLiteral(cursor));
             }
             else
             {

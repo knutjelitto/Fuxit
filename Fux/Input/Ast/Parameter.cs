@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace Fux.Input.Ast
 {
-    public sealed class ParameterDecl : Declaration.DeclImpl
+    public sealed class ParameterDecl : Decl.DeclImpl
     {
         public ParameterDecl(Expr expression)
         {
             Expression = expression;
+        }
+
+        public ParameterDecl(Identifier identifier)
+        {
+            Expression = identifier;
         }
 
         public Expr Expression { get; }

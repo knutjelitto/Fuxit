@@ -2,7 +2,6 @@
 
 namespace Fux.Building
 {
-
     public interface INode
     {
         TypeNode FindType(Dictionary<string, TypeNode> Environment, List<TypeNode> NonGeneric);

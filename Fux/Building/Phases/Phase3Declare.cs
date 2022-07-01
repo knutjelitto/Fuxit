@@ -8,7 +8,7 @@ namespace Fux.Building.Phases
 {
     public sealed class Phase3Declare : Phase
     {
-        private readonly List<A.Declaration> declarations = new();
+        private readonly List<A.Decl> declarations = new();
 
         public Phase3Declare(Ambience ambience, Package package)
             : base("declare", ambience, package)
@@ -43,7 +43,7 @@ namespace Fux.Building.Phases
 
         private class Maker : Phase
         {
-            public Maker(Ambience ambience, Package package, Module module, List<A.Declaration> delcarations)
+            public Maker(Ambience ambience, Package package, Module module, List<A.Decl> delcarations)
                 : base("resolve", ambience, package)
             {
                 Assert(module.Ast != null);
@@ -53,7 +53,7 @@ namespace Fux.Building.Phases
             }
 
             public Module Module { get; }
-            public List<A.Declaration> Declarations { get; }
+            public List<A.Decl> Declarations { get; }
 
             public override void Make()
             {
@@ -91,7 +91,7 @@ namespace Fux.Building.Phases
                     Assert(module.Scope.HintsAreEmpty);
                 }
 
-                void Declare(A.Declaration declaration)
+                void Declare(A.Decl declaration)
                 {
                     switch (declaration)
                     {
@@ -231,7 +231,7 @@ namespace Fux.Building.Phases
                         ScopeExpr(scope, iff.IfTrue);
                         ScopeExpr(scope, iff.IfFalse);
                         break;
-                    case A.Expr.CaseMatch match:
+                    case A.Expr.Matcher match:
                         ScopeExpr(scope, match.Expression);
                         foreach (var matchCase in match.Cases)
                         {
@@ -239,7 +239,7 @@ namespace Fux.Building.Phases
                             Assert(matchCase.Scope.Parent != null);
                         }
                         break;
-                    case A.Case matchCase:
+                    case A.Expr.Case matchCase:
                         Assert(matchCase.Scope.Parent == null);
                         matchCase.Scope.Parent = scope;
                         if (matchCase.Pattern is A.Pattern pattern)
@@ -571,7 +571,7 @@ namespace Fux.Building.Phases
                 {
                     foreach (var declaration in declarations)
                     {
-                        var name = declaration is A.NamedDeclaration named ? named.Name.Text : "<no-name>";
+                        var name = declaration is A.NamedDecl named ? named.Name.Text : "<no-name>";
                         writer.Write($"{declaration.GetType().Name} - {name}");
                         writer.WriteLine();
                         writer.Indent(() =>

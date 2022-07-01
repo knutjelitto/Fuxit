@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿#pragma warning disable IDE0017 // Simplify object initialization
 
 namespace Fux.Building
 {
@@ -44,7 +40,7 @@ namespace Fux.Building
 
             var listId = A.Identifier.Artificial(module, Lex.Primitive.List);
 
-            return new A.ExposingSome(new A.ExposedType(listId, true));
+            return new A.ExposingSome(new A.Exposed.Type(listId, true));
         }
     }
 }
