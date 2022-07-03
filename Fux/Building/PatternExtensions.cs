@@ -4,14 +4,14 @@ namespace Fux.Building
 {
     public static class PatternExtensions
     {
-        public static IEnumerable<A.ParameterDecl> ExtractNamedParameters(this A.Pattern pattern)
+        public static IEnumerable<A.Decl.Parameter> ExtractNamedParameters(this A.Pattern pattern)
         {
-            return pattern.Flatten().Select(id => new A.ParameterDecl(id));
+            return pattern.Flatten().Select(id => new A.Decl.Parameter(id));
         }
 
-        public static IEnumerable<A.ParameterDecl> ExractMatchNames(this A.Pattern matchPattern)
+        public static IEnumerable<A.Decl.Parameter> ExractMatchNames(this A.Pattern matchPattern)
 {
-            return matchPattern.Flatten(null, true).Select(name => new A.ParameterDecl(name));
+            return matchPattern.Flatten(null, true).Select(name => new A.Decl.Parameter(name));
         }
 
         public static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)

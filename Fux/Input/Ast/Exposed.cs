@@ -21,12 +21,12 @@
 
             public bool Inclusive { get; }
 
-            public void Add(Decl.Constructor ctor)
+            public void Add(Decl.Ctor ctor)
             {
-                ((List<Decl.Constructor>)Ctors).Add(ctor);
+                ((List<Decl.Ctor>)Ctors).Add(ctor);
             }
 
-            public IReadOnlyList<Decl.Constructor> Ctors { get; } = new List<Decl.Constructor>();
+            public IReadOnlyList<Decl.Ctor> Ctors { get; } = new List<Decl.Ctor>();
 
             public override string ToString()
             {

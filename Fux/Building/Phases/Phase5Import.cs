@@ -132,7 +132,7 @@ namespace Fux.Building.Phases
 
                         if (inclusive)
                         {
-                            foreach (var ctor in type.Constructors)
+                            foreach (var ctor in type.Ctors)
                             {
                                 module.Scope.ImportAddConstructor(ctor);
                             }

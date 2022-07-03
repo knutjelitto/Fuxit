@@ -9,7 +9,7 @@ namespace Fux.Building
         private readonly Dictionary<A.Identifier, A.Decl.Infix> infixesIndex = new();
         private readonly Dictionary<A.Identifier, A.Decl.Custom> types = new();
         private readonly Dictionary<A.Identifier, A.Decl.Alias> aliases = new();
-        private readonly Dictionary<A.Identifier, A.Decl.Constructor> constructors = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Ctor> constructors = new();
         private readonly Dictionary<A.Identifier, Module> modules = new();
         private readonly Dictionary<A.Identifier, A.Decl.Native> natives = new();
 
@@ -57,7 +57,7 @@ namespace Fux.Building
             aliases.Add(name, decl);
         }
 
-        public void AddConstructor(A.Decl.Constructor constructor)
+        public void AddConstructor(A.Decl.Ctor constructor)
         {
             var name = constructor.Name.SingleUpper();
 
@@ -110,7 +110,7 @@ namespace Fux.Building
             return false;
         }
 
-        public bool ImportAddConstructor(A.Decl.Constructor constructor)
+        public bool ImportAddConstructor(A.Decl.Ctor constructor)
         {
             return constructors.TryAdd(constructor.Name.SingleUpper(), constructor);
         }
@@ -155,7 +155,7 @@ namespace Fux.Building
             return aliases.TryGetValue(identifier.SingleUpper(), out alias);
         }
 
-        public bool LookupConstructor(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Constructor constructor)
+        public bool LookupConstructor(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Ctor constructor)
         {
             return constructors.TryGetValue(identifier.SingleUpper(), out constructor);
         }

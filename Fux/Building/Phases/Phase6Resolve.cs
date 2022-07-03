@@ -72,7 +72,7 @@ namespace Fux.Building.Phases
                     case A.Decl.Var var:
                         ResolveVar(var);
                         break;
-                    case A.LetAssign let:
+                    case A.Decl.LetAssign let:
                         ResolveLet(let);
                         break;
                     case A.Decl.TypeAnnotation annotation:
@@ -92,13 +92,14 @@ namespace Fux.Building.Phases
                 ResolveExpr(Module.Scope, infix.Expression);
             }
 
-            private void ResolveLet(A.LetAssign var)
+            private void ResolveLet(A.Decl.LetAssign var)
             {
                 ResolveExpr(var.Scope, var.Expression);
             }
 
             private void ResolveVar(A.Decl.Var var)
             {
+                //Assert(var.Type != null);
                 ResolveExpr(var.Scope, var.Expression);
             }
 
@@ -197,12 +198,12 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Type.UnionType:
+                    case A.Type.Custom:
                         {
                             break;
                         }
 
-                    case A.Type.Union union:
+                    case A.Type.Ctor union:
                         {
                             if (scope.Resolve(union.Name, out var resolved))
                             {
@@ -284,7 +285,7 @@ namespace Fux.Building.Phases
                                     expression.Resolved = new A.Ref.Var(var);
                                     break;
                                 }
-                                else if (resolved is A.ParameterDecl parameter)
+                                else if (resolved is A.Decl.Parameter parameter)
                                 {
                                     expression.Resolved = new A.Ref.Parameter(parameter);
                                     break;
@@ -299,7 +300,7 @@ namespace Fux.Building.Phases
                                     expression.Resolved = new A.Ref.Infix(infix);
                                     break;
                                 }
-                                else if (resolved is A.Decl.Constructor ctor)
+                                else if (resolved is A.Decl.Ctor ctor)
                                 {
                                     if (ctor.Name.Text == "Just")
                                     {

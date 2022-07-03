@@ -42,6 +42,14 @@ namespace Fux.Building.AlgorithmW
 
         public sealed record Concrete(string Name, IReadOnlyList<Type> Arguments) : Type
         {
+            public Concrete(string Name) : this(Name, Array.Empty<Type>())
+            {
+                if (Name == "Bool")
+                {
+                    Assert(false);
+                }
+            }
+
             public override string ToString() => $"{Name}{arguments}";
 
             private string arguments

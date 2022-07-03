@@ -1,4 +1,6 @@
-﻿using W = Fux.Building.AlgorithmW;
+﻿using Fux.Input.Ast;
+
+using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Typing
 {
@@ -87,9 +89,19 @@ namespace Fux.Building.Typing
 
                                 case A.Ref.Ctor ctorRef:
                                     {
+                                        if (Investigated)
+                                        {
+                                            Assert(true);
+                                        }
+
                                         var ctor = ctorRef.Decl;
 
                                         var variable = new W.Expr.Variable(ctor.Name);
+
+                                        var type = typeBuilder.Build(env, ctor.Type);
+
+                                        env = env.Insert(variable.Term, type);
+
                                         return variable;
                                     }
 
@@ -131,14 +143,20 @@ namespace Fux.Building.Typing
                     }
 
                 case A.Expr.Literal.Integer literal:
-                    return new W.Expr.Literal.Integer(literal.Value);
+                    {
+                        return new W.Expr.Literal.Integer(literal.Value);
+                    }
 
                 case A.Expr.Literal.String literal:
-                    return new W.Expr.Literal.String(literal.Value);
+                    {
+                        return new W.Expr.Literal.String(literal.Value);
+                    }
 
                 case A.OpChain chain:
-                    Assert(chain.Resolved is A.Expr.Infix);
-                    return Build(ref env, chain.Resolved);
+                    {
+                        Assert(chain.Resolved is A.Expr.Infix);
+                        return Build(ref env, chain.Resolved);
+                    }
 
                 case A.Expr.Infix infix:
                     {
@@ -149,6 +167,12 @@ namespace Fux.Building.Typing
                         var arg2 = Build(ref env, infix.Rhs.Resolved);
 
                         return new W.Expr.Usage(new W.Expr.Usage(op, arg1), arg2);
+                    }
+
+                case A.Ref.Ctor ctorRef:
+                    {
+                        Assert(false);
+                        break;
                     }
 
                 case A.Ref.Var varRef:
@@ -192,7 +216,7 @@ namespace Fux.Building.Typing
 
                 case A.Expr.Matcher caseMatch:
                     {
-                        return Matcher(ref env, caseMatch);
+                        return BuildMatcher(ref env, caseMatch);
                     }
 
                 case A.Expr.Case cheese:
@@ -214,9 +238,9 @@ namespace Fux.Building.Typing
                     {
                         var id = GenWildcard();
 
-                        var variable = new W.Expr.Variable(id.Text);
+                        var wildcard = new W.Expr.Wildcard(id.Text);
 
-                        return variable;
+                        return wildcard;
                     }
 
                 case A.Pattern.List list:
@@ -278,10 +302,6 @@ namespace Fux.Building.Typing
                     {
                         Assert(ctorPattern.Name.Resolved is A.Ref.Ctor);
 
-                        if (ctorPattern.Name.Resolved is A.Ref.Ctor ctorRef)
-                        {
-                        }
-
                         var first = Build(ref env, ctorPattern.Name);
 
                         if (ctorPattern.Arguments.Count == 0)
@@ -305,6 +325,18 @@ namespace Fux.Building.Typing
                             }
                         }
                     }
+
+                case A.Pattern.Tuple2 tuple2:
+                    {
+                        return new W.Expr.Tuple2(Build(ref env, tuple2.Pattern1), Build(ref env, tuple2.Pattern2));
+                    }
+
+                case A.Pattern.Literal.Integer integer:
+                    {
+                        // TODO: value
+                        return new W.Expr.Literal.Integer(0);
+                    }
+            
                 default:
                     Assert(false);
                     break;
@@ -362,7 +394,7 @@ namespace Fux.Building.Typing
             return expr;
         }
 
-        private W.Expr Matcher(ref W.Environment env, A.Expr.Matcher matcher)
+        private W.Expr BuildMatcher(ref W.Environment env, A.Expr.Matcher matcher)
         {
             if (Investigated)
             {
@@ -390,7 +422,7 @@ namespace Fux.Building.Typing
             var expr = Build(ref env, caseExpr.Expression);
             var pttn = Build(ref env, caseExpr.Pattern);
 
-            foreach (var x in caseExpr.Pattern.Flatten(GenWildcard).Reverse())
+            foreach (var x in caseExpr.Pattern.Flatten().Reverse())
             {
                 var var = new W.TermVariable(x.Text);
                 var type = env.Generator.GetNext();
@@ -432,11 +464,31 @@ namespace Fux.Building.Typing
 
                         return (name, expr);
                     }
+                case A.Decl.Var var:
+                    {
+                        var name = new W.TermVariable(var.Name.Text);
+                        var expr = Build(ref env, var.Expression);
+
+                        foreach (var parameter in var.Parameters.Reverse())
+                        {
+                            if (parameter.Expression is A.Pattern pattern)
+                            {
+                                foreach (var identifier in pattern.Flatten())
+                                {
+                                    var term = new W.TermVariable(identifier.Text);
+
+                                    expr = new W.Expr.Lambda(term, expr);
+                                }
+                            }
+                        }
+
+                        return (name, expr);
+                    }
                 default:
                     break;
             }
 
-            Assert(false);
+            Assert(true);
             throw NotImplemented(let);
         }
 

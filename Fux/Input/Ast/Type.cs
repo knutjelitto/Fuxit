@@ -155,23 +155,21 @@
             }
         }
 
-        public sealed class UnionType : Type
+        public sealed class Custom : Type
         {
-            public UnionType(Identifier name, TypeParameterList parameters, CtorList constructors)
+            public Custom(Identifier name, Decl.TypeParameterList parameters)
             {
                 Name = name;
                 Parameters = parameters;
-                Constructors = constructors;
             }
 
             public Identifier Name { get; }
-            public TypeParameterList Parameters { get; }
-            public CtorList Constructors { get; }
+            public Decl.TypeParameterList Parameters { get; }
         }
 
-        public class Union : Type
+        public class Ctor : Type
         {
-            public Union(Identifier name, TypeArgumentList arguments)
+            public Ctor(Identifier name, TypeArgumentList arguments)
             {
                 Name = name;
                 Arguments = arguments;
@@ -197,37 +195,9 @@
             }
         }
 
-        public sealed class Constructor : Expr.ExprImpl
+        public abstract class TypeClass : Type
         {
-            public Constructor(Identifier name, TypeArgumentList arguments)
-            {
-                Name = name;
-                Arguments = arguments;
-
-                Assert(Name.IsMultiUpper);
-            }
-
-            public Identifier Name { get; }
-            public TypeArgumentList Arguments { get; }
-
-            public override void PP(Writer writer)
-            {
-                writer.Write(ToString());
-            }
-
-            public override string ToString()
-            {
-                if (Arguments.Count == 0)
-                {
-                    return Protected($"{Name}");
-                }
-                return Protected($"{Name} {Arguments}");
-            }
-        }
-
-        public abstract class Special : Type
-        {
-            protected Special(Identifier identifier)
+            protected TypeClass(Identifier identifier)
             {
                 Identifier = identifier;
             }
@@ -242,7 +212,7 @@
             }
         }
 
-        public sealed class NumberClass : Special
+        public sealed class NumberClass : TypeClass
         {
             public NumberClass(Identifier identifier)
                 : base(identifier)
@@ -251,7 +221,7 @@
             }
         }
 
-        public sealed class AppendableClass : Special
+        public sealed class AppendableClass : TypeClass
         {
             public AppendableClass(Identifier identifier)
                 : base(identifier)
@@ -260,7 +230,7 @@
             }
         }
 
-        public sealed class ComparableClass : Special
+        public sealed class ComparableClass : TypeClass
         {
             public ComparableClass(Identifier identifier)
                 : base(identifier)

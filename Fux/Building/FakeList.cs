@@ -14,22 +14,24 @@ namespace Fux.Building
             paraId.InModule = module;
             var para = new A.Decl.TypeParameter(paraId);
             para.InModule = module;
-            var paras = new A.TypeParameterList(para);
+            var paras = new A.Decl.TypeParameterList(para);
             paras.InModule = module;
-            var parameters = new A.TypeParameterList(new A.Decl.TypeParameter(paraId));
+            var parameters = new A.Decl.TypeParameterList(new A.Decl.TypeParameter(paraId));
             parameters.InModule = module;
 
             var arg = new A.Type.Parameter(paraId);
             arg.InModule = module;
             var args = new A.TypeArgumentList(arg);
             args.InModule = module;
-            var ctor = new A.Decl.Constructor(listId, args);
+
+            var type = new A.Decl.Custom(listId, parameters);
+            type.InModule = module;
+
+            var ctor = new A.Decl.Ctor(type, listId, args);
             ctor.InModule = module;
             var ctors = new A.CtorList(ctor);
             ctors.InModule = module;
 
-            var type = new A.Decl.Custom(listId, parameters, ctors);
-            type.InModule = module;
 
             return type;
         }

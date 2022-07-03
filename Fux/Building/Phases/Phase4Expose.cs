@@ -77,7 +77,7 @@ namespace Fux.Building.Phases
                 {
                     case A.Decl.Custom type:
                         var exposedType = new A.Exposed.Type(type.Name, true);
-                        foreach (var constructor in type.Constructors)
+                        foreach (var constructor in type.Ctors)
                         {
                             if (module.Scope.LookupConstructor(constructor.Name, out var ctor))
                             {
@@ -113,7 +113,7 @@ namespace Fux.Building.Phases
                     {
                         if (exposedType.Inclusive)
                         {
-                            foreach (var constructor in type.Constructors)
+                            foreach (var constructor in type.Ctors)
                             {
                                 if (module.Scope.LookupConstructor(constructor.Name, out var ctor))
                                 {

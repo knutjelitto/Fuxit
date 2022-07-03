@@ -260,17 +260,48 @@ namespace Fux.Input.Ast
                 return $"{Name}";
             }
         }
-
-        public sealed class Constructor : NamedDeclImpl
+        public sealed class TypeParameterList : ListOf<TypeParameter>
         {
-            public Constructor(Identifier name, TypeArgumentList arguments)
+            public TypeParameterList(IEnumerable<TypeParameter> items)
+                : base(items)
+            {
+                Assert(this.All(p => p.Name.IsSingleLower));
+            }
+
+            public TypeParameterList(params TypeParameter[] items)
+                : this(items.AsEnumerable())
+            {
+            }
+
+            public override string ToString()
+            {
+                return string.Join(" ", this);
+            }
+        }
+
+        public sealed class Ctor : NamedDeclImpl
+        {
+            public Ctor(Custom custom, Identifier name, TypeArgumentList arguments)
                 : base(name)
             {
                 Assert(name.IsMultiUpper);
 
+                Custom = custom;
                 Arguments = arguments;
+
+                Type type = custom.Type;
+
+                for (var i = arguments.Count - 1;  i >= 0; i--)
+                {
+                    type = new Type.Function(arguments[i], type);
+                }
+
+                Type = type;
             }
+
+            public Custom Custom { get; }
             public TypeArgumentList Arguments { get; }
+            public Type Type { get; }
 
             public override void PP(Writer writer)
             {
@@ -289,33 +320,33 @@ namespace Fux.Input.Ast
 
         public sealed class Custom : NamedDeclImpl
         {
-            public Custom(Identifier name, TypeParameterList parameters, CtorList constructors)
+            public Custom(Identifier name, TypeParameterList parameters)
                 : base(name)
             {
                 Parameters = parameters;
-                Constructors = constructors;
+                Ctors = new CtorList();
 
-                Type = new Type.UnionType(Name, parameters, constructors);
+                Type = new Type.Custom(Name, parameters);
             }
 
             public TypeParameterList Parameters { get; }
-            public CtorList Constructors { get; }
+            public CtorList Ctors { get; }
             public TypeScope Scope { get; } = new();
 
-            public Type.UnionType Type { get; }
+            public Type.Custom Type { get; }
 
             public override string ToString()
             {
                 var parameters = Parameters.Count == 0 ? "" : $" {Parameters}";
-                return $"{Lex.KwType} {Name}{parameters} = {Constructors}";
+                return $"{Lex.KwType} {Name}{parameters} = {Ctors}";
             }
 
             public override void PP(Writer writer)
             {
                 var parameters = Parameters.Count > 0 ? $" {string.Join(' ', Parameters)}" : "";
-                if (Constructors.Count == 1)
+                if (Ctors.Count == 1)
                 {
-                    writer.WriteLine($"type {Name}{parameters} = {Constructors[0]}");
+                    writer.WriteLine($"type {Name}{parameters} = {Ctors[0]}");
                 }
                 else
                 {
@@ -323,7 +354,7 @@ namespace Fux.Input.Ast
                     writer.Indent(() =>
                     {
                         var prefix = "= ";
-                        foreach (var ctor in Constructors)
+                        foreach (var ctor in Ctors)
                         {
                             writer.Write(prefix);
                             prefix = "| ";
@@ -334,5 +365,58 @@ namespace Fux.Input.Ast
             }
         }
 
+        public sealed class LetAssign : DeclImpl
+        {
+            public LetAssign(Pattern pattern, Expr expression)
+            {
+                Assert(pattern is not Pattern.LowerId);
+
+                Pattern = pattern;
+                Expression = expression;
+
+                Collector.Instance.LetPattern.Add(pattern);
+            }
+
+            public Pattern Pattern { get; }
+            public Expr Expression { get; }
+            public LetScope Scope { get; } = new();
+
+            public override string ToString()
+            {
+                return $"{Pattern} {Lex.Assign} {Expression}";
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write($"{Pattern} {Lex.Assign} ");
+                Expression.PP(writer);
+                writer.EndLine();
+            }
+        }
+
+        public sealed class Parameter : Decl.DeclImpl
+        {
+            public Parameter(Expr expression)
+            {
+                Expression = expression;
+            }
+
+            public Parameter(Identifier identifier)
+            {
+                Expression = identifier;
+            }
+
+            public Expr Expression { get; }
+
+            public override string ToString()
+            {
+                return $"{Expression}";
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write(ToString());
+            }
+        }
     }
 }

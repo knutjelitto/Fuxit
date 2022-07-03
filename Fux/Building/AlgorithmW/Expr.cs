@@ -88,6 +88,14 @@
             }
         }
 
+        public sealed record Wildcard(string Text) : Expr
+        {
+            public override string ToString()
+            {
+                return $"{Text}";
+            }
+        }
+
         /// <summary>
         /// A literal value of some primitive
         /// </summary>

@@ -293,19 +293,22 @@ namespace Fux.Input
                 {
                     var def = Type(cursor);
 
-                    return new A.Decl.Alias(name, new A.TypeParameterList(parameterList), def);
+                    return new A.Decl.Alias(name, new A.Decl.TypeParameterList(parameterList), def);
                 }
 
-                var ctors = new List<A.Decl.Constructor>();
+                var custom = new A.Decl.Custom(name, new A.Decl.TypeParameterList(parameterList));
+                var ctors = new A.CtorList();
 
-                ctors.Add(Constructor(cursor));
+                ctors.Add(Constructor(custom, cursor));
 
                 while (cursor.SwallowIf(Lex.Bar))
                 {
-                    ctors.Add(Constructor(cursor));
+                    ctors.Add(Constructor(custom, cursor));
                 }
 
-                return new A.Decl.Custom(name, new A.TypeParameterList(parameterList), new A.CtorList(ctors));
+                Assert(custom.Ctors.Count >= 1);
+
+                return custom;
             });
         }
 
@@ -322,6 +325,11 @@ namespace Fux.Input
             return cursor.Scope(cursor =>
             {
                 var name = SingleLowerIdentifier(cursor);
+
+                if (name.Text == "concat")
+                {
+                    Assert(true);
+                }
 
                 cursor.Swallow(Lex.Colon);
 
@@ -352,71 +360,19 @@ namespace Fux.Input
                         var name = sign.Name.SingleLower();
                         var prms = sign.Parameters;
 
-                        var parameters = new A.Parameters(prms.Select(pattern => new A.ParameterDecl(pattern)));
+                        var parameters = new A.Parameters(prms.Select(pattern => new A.Decl.Parameter(pattern)));
 
                         return new A.Decl.Var(name, parameters, expression);
                     }
                     else
                     {
-                        return new A.LetAssign(pattern, expression);
+                        return new A.Decl.LetAssign(pattern, expression);
                     }
                 }
             });
         }
 
-
-        private A.Type TypeArgument(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                if (cursor.Is(Lex.LowerId))
-                {
-                    var name = Identifier(cursor).SingleLower();
-
-                    return new A.Type.Parameter(name);
-                }
-                else if (cursor.Is(Lex.UpperId))
-                {
-                    var name = Identifier(cursor).MultiUpper();
-
-                    return new A.Type.Concrete(name);
-                }
-                else if (cursor.Is(Lex.LParent))
-                {
-                    return Type(cursor);
-                }
-                else if (cursor.Is(Lex.LBrace))
-                {
-                    return Type(cursor);
-                }
-
-                Assert(false);
-                throw new NotImplementedException();
-            });
-        }
-
-        private A.Type Construction(Cursor cursor)
-        {
-            return cursor.Scope<A.Type>(cursor =>
-            {
-                var name = Identifier(cursor).MultiUpper();
-
-                var arguments = new A.TypeArgumentList();
-
-                do
-                {
-                    while (cursor.More() && !cursor.TerminatesSomething)
-                    {
-                        arguments.Add(TypeArgument(cursor));
-                    }
-                }
-                while (cursor.More() && !cursor.TerminatesSomething);
-
-                return new A.Type.Union(name, arguments);
-            });
-        }
-
-        private A.Decl.Constructor Constructor(Cursor cursor)
+        private A.Decl.Ctor Constructor(A.Decl.Custom custom, Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -437,7 +393,11 @@ namespace Fux.Input
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-                return new A.Decl.Constructor(name, new A.TypeArgumentList(arguments));
+                var ctor = new A.Decl.Ctor(custom, name, new A.TypeArgumentList(arguments));
+
+                custom.Ctors.Add(ctor);
+
+                return ctor;
             });
         }
 
@@ -488,149 +448,6 @@ namespace Fux.Input
                 Assert(cursor.Is(Lex.LowerId));
 
                 return new A.Identifier(cursor.Advance()).SingleLower();
-            });
-        }
-
-        private A.Type Type(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var type = BaseType(cursor);
-
-                if (cursor.SwallowIf(Lex.Arrow))
-                {
-                    type = new A.Type.Function(type, Type(cursor));
-                }
-
-                return type;
-            });
-        }
-
-        private A.Type BaseType(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                if (cursor.Is(Lex.LParent))
-                {
-                    cursor.Swallow(Lex.LParent);
-
-                    var types = new List<A.Type>();
-
-                    if (cursor.IsNot(Lex.RParent))
-                    {
-                        do
-                        {
-                            var type = Type(cursor);
-
-                            types.Add(type);
-                        }
-                        while (cursor.SwallowIf(Lex.Comma));
-                    }
-
-                    cursor.Swallow(Lex.RParent);
-
-                    if (types.Count == 0)
-                    {
-                        return new A.Type.Unit();
-                    }
-                    else if (types.Count == 1)
-                    {
-                        return types[0];
-                    }
-                    else if (types.Count == 2)
-                    {
-                        return new A.Type.Tuple2(types[0], types[1]);
-                    }
-                    else if (types.Count == 3)
-                    {
-                        return new A.Type.Tuple3(types[0], types[1], types[2]);
-                    }
-
-                    Assert(false);
-                    throw new NotImplementedException();
-                }
-                else if (cursor.Is(Lex.LBrace))
-                {
-                    return RecordType(cursor);
-                }
-                else if (cursor.Is(Lex.UpperId))
-                {
-                    return Construction(cursor);
-                }
-                else if (cursor.Is(Lex.LowerId))
-                {
-                    var name = Identifier(cursor).SingleLower();
-
-                    if (name.ToString() == "number")
-                    {
-                        return new A.Type.NumberClass(name);
-                    }
-
-                    if (name.ToString() == "appendable")
-                    {
-                        return new A.Type.AppendableClass(name);
-                    }
-
-                    if (name.ToString() == "comparable")
-                    {
-                        return new A.Type.ComparableClass(name);
-                    }
-
-                    return new A.Type.Parameter(name);
-                }
-
-                Assert(false);
-                throw new NotImplementedException();
-            });
-        }
-
-        private A.Type RecordType(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var left = cursor.Swallow(Lex.LBrace);
-
-                var fields = new List<A.FieldDefine>();
-
-                A.Type? baseType = null;
-
-                if (cursor.IsNot(Lex.RBrace))
-                {
-                    var state = cursor.State;
-
-                    baseType = Type(cursor);
-
-                    Assert(baseType is A.Type.Parameter);
-
-                    if (cursor.IsNot(Lex.Bar))
-                    {
-                        baseType = null;
-                        cursor.Reset(state);
-                    }
-                    else
-                    {
-                        cursor.Swallow(Lex.Bar);
-                    }
-
-                    do
-                    {
-                        fields.Add(Field(cursor));
-                    }
-                    while (cursor.SwallowIf(Lex.Comma));
-                }
-
-                cursor.Swallow(Lex.RBrace);
-
-                return new A.Type.Record(baseType, fields.Cast<A.FieldDefine>());
-
-                A.FieldDefine Field(Cursor cursor)
-                {
-                    var name = Identifier(cursor);
-                    cursor.Swallow(Lex.Colon);
-                    var type = Type(cursor);
-
-                    return new A.FieldDefine(name, type);
-                }
             });
         }
     }

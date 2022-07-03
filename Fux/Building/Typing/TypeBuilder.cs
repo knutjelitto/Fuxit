@@ -24,10 +24,6 @@ namespace Fux.Building.Typing
 
         private W.Type Resolve(W.Environment env, A.Type type)
         {
-            if (type.ToString() == "a")
-            {
-                Assert(true);
-            }
             switch (type.Resolved)
             {
                 case A.Type.Function function:
@@ -51,7 +47,7 @@ namespace Fux.Building.Typing
                 case A.Type.Parameter parameter:
                     return VarType(parameter.Text);
 
-                case A.Type.Primitive.Bool:
+                case A.Type.Primitive.Bool b:
                     return new W.Type.Bool();
 
                 case A.Type.Primitive.Int:
@@ -68,22 +64,52 @@ namespace Fux.Building.Typing
 
                 case A.Type.Concrete concrete:
                     {
-                        Assert(concrete.Name.Text != Lex.Primitive.Char);
-                        return new W.Type.Concrete(concrete.Name.Text, Array.Empty<W.Type>());
+                        switch (concrete.Name.Text)
+                        {
+                            case Lex.Primitive.Int:
+                                return new W.Type.Integer();
+                            case Lex.Primitive.Float:
+                                return new W.Type.Float();
+                            case Lex.Primitive.Bool:
+                                return new W.Type.Bool();
+                            case Lex.Primitive.String:
+                                return new W.Type.String();
+                            case Lex.Primitive.Char:
+                                return new W.Type.Char  ();
+                        }
+                        return new W.Type.Concrete(concrete.Name.Text);
                     }
 
                 case A.Type.Primitive.List list:
                     return new W.Type.List(Resolve(env, list.Argument));
 
-                case A.Type.Union union:
-                    if (union.Arguments.Count > 0)
+                case A.Type.Custom custom:
                     {
-                        var args = union.Arguments.Select(t => Resolve(env, t)).ToList();
-                        return new W.Type.Concrete(union.Name.Text, args.ToArray());
+                        switch (custom.Name.Text)
+                        {
+                            case Lex.Primitive.Int:
+                                return new W.Type.Integer();
+                            case Lex.Primitive.Float:
+                                return new W.Type.Float();
+                            case Lex.Primitive.Bool:
+                                return new W.Type.Bool();
+                            case Lex.Primitive.String:
+                                return new W.Type.String();
+                            case Lex.Primitive.Char:
+                                return new W.Type.Char();
+                        }
+
+                        var args = custom.Parameters.Select(t => VarType(t.Text)).ToList();
+                        return new W.Type.Concrete(custom.Name.Text, args.ToArray());
                     }
-                    else
+                case A.Type.Ctor ctor:
                     {
-                        return new W.Type.Concrete(union.Name.Text, Array.Empty<W.Type>());
+                        var args = ctor.Arguments.Select(t => Resolve(env, t)).ToList();
+                        if (args.Count > 0)
+                        {
+                            return new W.Type.Concrete(ctor.Name.Text, args.ToArray());
+                        }
+                        return new W.Type.Concrete(ctor.Name.Text);
                     }
             }
             throw new NotImplementedException($"type not implemented: '{type.Resolved.GetType().FullName}({type})'");

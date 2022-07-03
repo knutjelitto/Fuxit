@@ -25,9 +25,9 @@
             public T Decl => (T)Declaration;
         }
 
-        public sealed class Parameter : RefImpl<ParameterDecl>
+        public sealed class Parameter : RefImpl<Decl.Parameter>
         {
-            public Parameter(ParameterDecl decl) : base(decl) { }
+            public Parameter(Decl.Parameter decl) : base(decl) { }
         }
 
         public sealed class Var : RefImpl<Decl.Var>
@@ -35,9 +35,9 @@
             public Var(Decl.Var decl) : base(decl) { }
         }
 
-        public sealed class Ctor : RefImpl<Decl.Constructor>
+        public sealed class Ctor : RefImpl<Decl.Ctor>
         {
-            public Ctor(Decl.Constructor decl) : base(decl) { }
+            public Ctor(Decl.Ctor decl) : base(decl) { }
         }
 
         public sealed class Infix : RefImpl<Decl.Infix>

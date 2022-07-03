@@ -153,7 +153,7 @@ namespace Fux.Building.Phases
                     {
                         foreach (var identifier in pattern.Flatten())
                         {
-                            var.Scope.Add(new A.ParameterDecl(identifier));
+                            var.Scope.Add(new A.Decl.Parameter(identifier));
                         }
                     }
                     else
@@ -200,7 +200,7 @@ namespace Fux.Building.Phases
                     type.Scope.Add(parameter);
                 }
 
-                foreach (var constructor in type.Constructors)
+                foreach (var constructor in type.Ctors)
                 {
                     scope.AddConstructor(constructor);
                 }
@@ -361,7 +361,7 @@ namespace Fux.Building.Phases
                                 ScopeExpr(var.Scope, var.Expression);
                             }
                             break;
-                        case A.LetAssign assign:
+                        case A.Decl.LetAssign assign:
                             {
                                 assign.Scope.Parent = letExr.Scope;
 
@@ -402,13 +402,13 @@ namespace Fux.Building.Phases
                 ScopeExpr(lambda.Scope, lambda.Expression);
             }
 
-            private IEnumerable<A.ParameterDecl> ExplodePattern(A.Expr pattern)
+            private IEnumerable<A.Decl.Parameter> ExplodePattern(A.Expr pattern)
             {
                 switch (pattern)
                 {
                     case A.Pattern.LowerId identifier:
                         {
-                            yield return new A.ParameterDecl(identifier.Identifier);
+                            yield return new A.Decl.Parameter(identifier.Identifier);
                             break;
                         }
                     case A.Pattern.Tuple tuple:
@@ -483,7 +483,7 @@ namespace Fux.Building.Phases
 
                     case A.Identifier identifier when identifier.IsSingleLower:
                         {
-                            yield return new A.ParameterDecl(identifier);
+                            yield return new A.Decl.Parameter(identifier);
                             break;
                         }
                     case A.Expr.Sequence sequence:
@@ -558,7 +558,7 @@ namespace Fux.Building.Phases
 
                 if (pattern.Alias != null)
                 {
-                    yield return new A.ParameterDecl(pattern.Alias.SingleLower());
+                    yield return new A.Decl.Parameter(pattern.Alias.SingleLower());
                 }
             }
         }

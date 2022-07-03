@@ -4,9 +4,9 @@ namespace Fux.Building
 {
     public sealed class VarScope : Scope
     {
-        private readonly Dictionary<A.Identifier, A.ParameterDecl> parameters = new();
+        private readonly Dictionary<A.Identifier, A.Decl.Parameter> parameters = new();
 
-        public void Add(A.ParameterDecl parameter)
+        public void Add(A.Decl.Parameter parameter)
         {
             Assert(parameter.Expression is A.Identifier);
             var name = ((A.Identifier)parameter.Expression).SingleLower();
@@ -16,7 +16,7 @@ namespace Fux.Building
             parameters.Add(name, parameter);
         }
 
-        public bool LookupParameter(A.Identifier identifier, [MaybeNullWhen(false)] out A.ParameterDecl var)
+        public bool LookupParameter(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl.Parameter var)
         {
             return parameters.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }

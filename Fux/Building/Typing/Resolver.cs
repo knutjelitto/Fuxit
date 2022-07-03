@@ -97,12 +97,11 @@ namespace Fux.Building.Typing
 
             var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
 
-            var def = new W.Expr.Def(variable, wexpr);
-            var unify = new W.Expr.Unify(wtype, wexpr);
+            var expression = new W.Expr.Unify(wtype, wexpr);
 
             Writer.Indent(() =>
             {
-                Resolve(inferrer, env, unify, investigated);
+                Resolve(inferrer, env, expression, investigated);
             });
         }
 

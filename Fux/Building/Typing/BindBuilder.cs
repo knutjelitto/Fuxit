@@ -28,7 +28,7 @@ namespace Fux.Building.Typing
 
             var (types, result) = Flatten(type);
 
-            //Assert(parameters.Count <= types.Count);
+            Assert(parameters.Count <= types.Count);
 
             for (var p = parameters.Count - 1; p >= 0; --p)
             {
@@ -104,7 +104,7 @@ namespace Fux.Building.Typing
             return (result, type);
         }
 
-        private IEnumerable<A.Identifier> BindIdentifiers(A.ParameterDecl parameter)
+        private IEnumerable<A.Identifier> BindIdentifiers(A.Decl.Parameter parameter)
         {
             Assert(parameter.Expression is A.Pattern);
 
@@ -178,6 +178,20 @@ namespace Fux.Building.Typing
                         yield return ty;
                     }
                     foreach (var ty in BindTypes(tuple2Type.Type2))
+                    {
+                        yield return ty;
+                    }
+                    break;
+                case W.Type.Tuple3 tuple3Type:
+                    foreach (var ty in BindTypes(tuple3Type.Type1))
+                    {
+                        yield return ty;
+                    }
+                    foreach (var ty in BindTypes(tuple3Type.Type2))
+                    {
+                        yield return ty;
+                    }
+                    foreach (var ty in BindTypes(tuple3Type.Type3))
                     {
                         yield return ty;
                     }

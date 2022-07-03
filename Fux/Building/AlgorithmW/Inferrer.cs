@@ -85,6 +85,13 @@ namespace Fux.Building.AlgorithmW
                         return (Substitution.Empty(), type);
                     }
 
+                case Expr.Wildcard:
+                    {
+                        var type = (Type)env.Generator.GetNext();
+
+                        return (Substitution.Empty(), type);
+                    }
+
                 //
                 // Let (variable binding) is typed by:
                 // * Removing any existing type with the same name as the binding variable to prevent name clashes.
@@ -304,7 +311,7 @@ namespace Fux.Building.AlgorithmW
         }
 
         /// <summary>
-        ///  To apply a substitution, we just apply it to each polytype in the type environment.
+        /// To apply a substitution, we just apply it to each polytype in the type environment.
         /// </summary>
         private static Environment ApplySubstitution(Environment typeEnv, Substitution substitution)
         {
@@ -424,6 +431,10 @@ namespace Fux.Building.AlgorithmW
 
                 case (Type.List({ } typ1) c1, Type.List({ } typ2) c2):
                     {
+                        {
+                            return MostGeneralUnifier(typ1, typ2);
+                            break;
+                        }
                         if (typ1 == typ2)
                         {
                             return Substitution.Empty();
