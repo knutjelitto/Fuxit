@@ -6,7 +6,7 @@ namespace Fux.Building.AlgorithmW
     {
         public static Expr.Let let(string name, Expr e1, Expr e2)
         {
-            return new Expr.Let1(name, e1, e2);
+            return new Expr.Let(name, e1, e2);
         }
 
         public static Expr.Iff iff(Expr cond, Expr then, Expr @else)
@@ -19,12 +19,12 @@ namespace Fux.Building.AlgorithmW
             return new Expr.Lambda(var, e);
         }
 
-        public static Expr.Usage app(Expr e1, Expr e2)
+        public static Expr.Application app(Expr e1, Expr e2)
         {
-            return new Expr.Usage(e1, e2);
+            return new Expr.Application(e1, e2);
         }
 
-        public static Expr.Usage app(Expr e1, Expr e2, Expr e3)
+        public static Expr.Application app(Expr e1, Expr e2, Expr e3)
         {
             return app(app(e1, e2), e3);
         }

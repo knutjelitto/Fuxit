@@ -11,7 +11,7 @@
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{ToString()}");
+            writer.Write($"{Declaration}");
         }
 
         public abstract class RefImpl<T> : Ref
@@ -55,9 +55,9 @@
             public Alias(Decl.Alias decl) : base(decl) { }
         }
 
-        public sealed class Native : RefImpl<A.Decl.Native>
+        public sealed class Native : RefImpl<Decl.Native>
         {
-            public Native(A.Decl.Native decl) : base(decl) { }
+            public Native(Decl.Native decl) : base(decl) { }
         }
     }
 }

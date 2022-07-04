@@ -116,7 +116,8 @@ namespace Fux.Building.Typing
 
         private void Resolve(W.Inferrer inferrer, W.Environment env, W.Expr expression, bool investigated)
         {
-            Pretty.Print(expression);
+            Pretty.PP(expression);
+            Writer.EndLine();
             PrintEnv(env);
             Writer.WriteLine();
             var type = inferrer.Run(env, expression, investigated);

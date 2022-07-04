@@ -1,6 +1,4 @@
-﻿using Fux.Input.Ast;
-
-using W = Fux.Building.AlgorithmW;
+﻿using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Typing
 {
@@ -167,7 +165,7 @@ namespace Fux.Building.Typing
                         var arg1 = Build(ref env, infix.Lhs.Resolved);
                         var arg2 = Build(ref env, infix.Rhs.Resolved);
 
-                        return new W.Expr.Usage(new W.Expr.Usage(op, arg1), arg2);
+                        return new W.Expr.Application(new W.Expr.Application(op, arg1), arg2);
                     }
 
                 case A.Ref.Ctor ctorRef:
@@ -334,7 +332,7 @@ namespace Fux.Building.Typing
                             }
                             else
                             {
-                                return new W.Expr.Usage(first, apply(ref env,Build(ref env, ctorPattern.Arguments[index]), index - 1));
+                                return new W.Expr.Application(first, apply(ref env,Build(ref env, ctorPattern.Arguments[index]), index - 1));
                             }
                         }
                     }
@@ -344,10 +342,16 @@ namespace Fux.Building.Typing
                         return new W.Expr.Tuple2(Build(ref env, tuple2.Pattern1), Build(ref env, tuple2.Pattern2));
                     }
 
-                case A.Pattern.Literal.Integer integer:
+                case A.Pattern.Literal.Integer:
                     {
                         // TODO: value
                         return new W.Expr.Literal.Integer(0);
+                    }
+                case A.Pattern.WithAlias withAlias:
+                    {
+                        var x = Build(ref env, withAlias.Pattern);
+
+                        break;
                     }
             
                 default:
@@ -373,14 +377,14 @@ namespace Fux.Building.Typing
             {
                 if (index == 1)
                 {
-                    return new W.Expr.Usage(
+                    return new W.Expr.Application(
                         Build(ref env, seq[0]),
                         Build(ref env, seq[1]));
                 }
                 else
                 {
                     Assert(index > 1);
-                    return new W.Expr.Usage(
+                    return new W.Expr.Application(
                         Apply(ref env, seq, index - 1),
                         Build(ref env, seq[index]));
                 }
@@ -441,7 +445,7 @@ namespace Fux.Building.Typing
                 var type = env.Generator.GetNext();
                 env = env.Insert(var, new W.Polytype(type));
 
-                expr = new W.Expr.Usage(new W.Expr.Lambda(var, expr), new W.Expr.Variable(var));
+                expr = new W.Expr.Application(new W.Expr.Lambda(var, expr), new W.Expr.Variable(var));
             }
 
             return new W.Expr.Case(pttn, expr);
@@ -470,11 +474,17 @@ namespace Fux.Building.Typing
             {
                 case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple2 tuple2:
                     {
-                        var artifical = GenIdentifier();
+                        var name = new W.TermVariable(GenIdentifier().Text);
+                        var expr = Build(ref env, assign.Expression);
 
-                        Assert(assign.Pattern is A.Pattern.Tuple);
-                        Assert(false);
-                        break;
+                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().First().Text);
+                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().First().Text);
+
+                        var var = new W.Expr.Variable(name);
+                        var first = new W.Expr.Get1(var);
+                        var second = new W.Expr.Get2(var);
+
+                        return new W.Expr.Let(name, expr, new W.Expr.Let(name1, first, new W.Expr.Let(name2, second, inExpr)));
                     }
                 case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple3 tuple3:
                     {
@@ -489,7 +499,7 @@ namespace Fux.Building.Typing
                         var name = new W.TermVariable(var.Name.Text);
                         var expr = Build(ref env, var.Expression);
 
-                        return new W.Expr.Let1(name, expr, inExpr);
+                        return new W.Expr.Let(name, expr, inExpr);
                     }
                 case A.Decl.Var var:
                     {
@@ -509,7 +519,7 @@ namespace Fux.Building.Typing
                             }
                         }
 
-                        return new W.Expr.Let1(name, expr, inExpr);
+                        return new W.Expr.Let(name, expr, inExpr);
                     }
                 default:
                     break;

@@ -104,7 +104,7 @@ namespace Fux.Building.AlgorithmW
                 // * Inserting the generalized type to the binding variable in the new environment.
                 // * Applying the substution for the binding to the environment and inferring the type of the expression.
                 //
-                case Expr.Let1({ } term, { } expr1, { } expr2):
+                case Expr.Let({ } term, { } expr1, { } expr2):
                     {
                         var env1 = env.Remove(term);
                         var (s1, t1) = InferType(expr1, env);
@@ -186,7 +186,7 @@ namespace Fux.Building.AlgorithmW
                 // argument type to a new type variable. This combines the previously known type of the
                 // function and the type as it is now being used.
                 // * Applying the unifier to the new type variable.
-                case Expr.Usage({ } callee, { } argument):
+                case Expr.Application({ } callee, { } argument):
                     {
                         var (s1, t1) = InferType(callee, env);
                         var (s2, t2) = InferType(argument, ApplySubstitution(env, s1));

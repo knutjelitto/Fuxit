@@ -8,7 +8,7 @@
             public override string ToString() => Term;
         }
 
-        public sealed record Usage(Expr Exp1, Expr Exp2) : Expr
+        public sealed record Application(Expr Exp1, Expr Exp2) : Expr
         {
             public override string ToString() => $"(apply {Exp1} {Exp2})";
         }
@@ -28,21 +28,9 @@
             public override string ToString() => $"(def {Var} = {Expr})";
         }
 
-        public abstract record Let(Expr Exp1, Expr Exp2) : Expr;
-
-        public sealed record Let1(TermVariable Term, Expr Exp1, Expr Exp2) : Let(Exp1, Exp2)
+        public sealed record Let(TermVariable Term, Expr Expr1, Expr Expr2) : Expr
         {
-            public override string ToString() => $"(let {Term} = {Exp1} in {Exp2})";
-        }
-
-        public sealed record Let2(TermVariable Term1, TermVariable Term2, Expr Exp1, Expr Exp2) : Let(Exp1, Exp2)
-        {
-            public override string ToString() => $"(let ({Term1}, {Term2}) = {Exp1} in {Exp2})";
-        }
-
-        public sealed record Let3(TermVariable Term1, TermVariable Term2, TermVariable Term3, Expr Exp1, Expr Exp2) : Let(Exp1, Exp2)
-        {
-            public override string ToString() => $"(let ({Term1}, {Term2}, {Term3}) = {Exp1} in {Exp2})";
+            public override string ToString() => $"(let {Term} = {Expr1} in {Expr2})";
         }
 
         public abstract record Tuple(IReadOnlyList<Expr> Exprs) : Expr;
@@ -55,6 +43,21 @@
         public sealed record Tuple3(Expr Expr1, Expr Expr2, Expr Expr3) : Tuple(new Expr[] { Expr1, Expr2, Expr3 })
         {
             public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
+        }
+
+        public sealed record Get1(Expr Expr) : Expr
+        {
+            public override string ToString() => $"[{Expr}.1]";
+        }
+
+        public sealed record Get2(Expr Expr) : Expr
+        {
+            public override string ToString() => $"[{Expr}.2]";
+        }
+
+        public sealed record Get3(Expr Expr) : Expr
+        {
+            public override string ToString() => $"[{Expr}.3]";
         }
 
         public abstract record List : Expr;
@@ -84,7 +87,7 @@
             public override string ToString() => $"(if {Cond} then {Then} else {Else})";
         }
 
-        public sealed record Matcher(Expr Expr, IReadOnlyList<Expr.Case> Cases) : Expr
+        public sealed record Matcher(Expr Expr, IReadOnlyList<Case> Cases) : Expr
         {
             public override string ToString()
             {
@@ -148,10 +151,12 @@
 
         public abstract record Sugar : Expr
         {
-            public sealed record Application(IReadOnlyList<Expr> Exprs) : Sugar
+            new public sealed record Application(IReadOnlyList<Expr> Exprs) : Sugar
             {
                 public override string ToString() => $"($ {string.Join(" ", Exprs)})";
             }
+
+            new public sealed record Lambda(IReadOnlyList<TermVariable> Terms, Expr Expr) : Sugar;
         }
     }
 }

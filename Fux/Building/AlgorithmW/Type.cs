@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace Fux.Building.AlgorithmW
+﻿namespace Fux.Building.AlgorithmW
 {
     public abstract record Type
     {
@@ -13,7 +11,11 @@ namespace Fux.Building.AlgorithmW
         {
             public override string ToString()
             {
-                return $"({InType} → {OutType})";
+                if (OutType is Function outFunction)
+                {
+                    return $"{InType} → {outFunction.InType} → {outFunction.OutType}";
+                }
+                return $"{InType} → {OutType}";
             }
         }
 

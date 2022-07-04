@@ -1,6 +1,4 @@
-﻿using Fux.Input.Ast;
-
-namespace Fux.Building
+﻿namespace Fux.Building
 {
     public static class PatternExtensions
     {
@@ -10,8 +8,13 @@ namespace Fux.Building
         }
 
         public static IEnumerable<A.Decl.Parameter> ExractMatchNames(this A.Pattern matchPattern)
-{
+        {
             return matchPattern.Flatten(null, true).Select(name => new A.Decl.Parameter(name));
+        }
+
+        public static IEnumerable<A.Identifier> ExractMatchIds(this A.Pattern matchPattern)
+        {
+            return matchPattern.Flatten(null, true);
         }
 
         public static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)
