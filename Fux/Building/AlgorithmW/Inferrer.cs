@@ -8,13 +8,17 @@ namespace Fux.Building.AlgorithmW
 {
     public sealed class Inferrer
     {
-        public Type Run(Expr expression, Environment typeEnvironment, bool investigated)
+        public bool Investigated { get; private set; } = false;
+
+        public Type Run(Environment env, Expr expression, bool investigated)
         {
-            if (investigated)
+            Investigated = investigated;
+
+            if (Investigated)
             {
                 Assert(true);
             }
-            var (substitution, type) = InferType(expression, typeEnvironment, investigated);
+            var (substitution, type) = InferType(expression, env);
             return ApplySubstitution(type, substitution);
         }
 
@@ -48,29 +52,29 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// The meat of the type inference algorithm.
         /// </summary>
-        private static (Substitution, Type) InferType(Expr expression, Environment env, bool investigated)
+        private (Substitution, Type) InferType(Expr expression, Environment env)
         {
             switch (expression)
             {
                 case Expr.Unify({ } type, { } expr):
                     {
-                        var (s1, type2) = InferType(expr, env, investigated);
+                        var (s1, type2) = InferType(expr, env);
                         var s2 = MostGeneralUnifier(type, type2);
                         return (ComposeSubstitutions(s2, s1), ApplySubstitution(type, s2));
                     }
 
                 case Expr.Def({ } variable, { } expr):
                     {
-                        var (s1, t1) = InferType(variable, env, investigated);
-                        var (s2, t2) = InferType(expr, env, investigated);
+                        var (s1, t1) = InferType(variable, env);
+                        var (s2, t2) = InferType(expr, env);
                         var s3 = MostGeneralUnifier(t1, t2);
-                        return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(t1, s3));
+                        return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(t1, s3));
                     }
 
                 case Expr.Tuple2({ } expr1, { } expr2):
                     {
-                        var (s1, t1) = InferType(expr1, env, investigated);
-                        var (s2, t2) = InferType(expr2, env, investigated);
+                        var (s1, t1) = InferType(expr1, env);
+                        var (s2, t2) = InferType(expr2, env);
                         var ty1 = ApplySubstitution(t1, s2);
                         var ty2 = t2;
                         var tuple2 = (Type)new Type.Tuple2(ty1, ty2);
@@ -100,13 +104,13 @@ namespace Fux.Building.AlgorithmW
                 // * Inserting the generalized type to the binding variable in the new environment.
                 // * Applying the substution for the binding to the environment and inferring the type of the expression.
                 //
-                case Expr.Let({ } term, { } expr1, { } expr2):
+                case Expr.Let1({ } term, { } expr1, { } expr2):
                     {
                         var env1 = env.Remove(term);
-                        var (s1, t1) = InferType(expr1, env, investigated);
+                        var (s1, t1) = InferType(expr1, env);
                         var tp = GeneralizePolytype(ApplySubstitution(env1, s1), t1);
                         var env2 = env1.Insert(term, tp);
-                        var (s2, t2) = InferType(expr2, ApplySubstitution(env2, s1), investigated);
+                        var (s2, t2) = InferType(expr2, ApplySubstitution(env2, s1));
                         return (ComposeSubstitutions(s2, s1), t2);
                     }
 
@@ -144,21 +148,21 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Iff({ } cond, { } expr1, { } expr2):
                     {
-                        if (investigated)
+                        if (Investigated)
                         {
                             Assert(true);
                         }
 
                         {
-                            var (s1, type1) = InferType(cond, env, investigated);
+                            var (s1, type1) = InferType(cond, env);
                             var type2 = new Type.Bool();
                             var s2 = MostGeneralUnifier(type1, type2);
                         }
                         {
-                            var (s3, type3) = InferType(expr1, env, investigated);
-                            var (s4, type4) = InferType(expr2, env, investigated);
+                            var (s3, type3) = InferType(expr1, env);
+                            var (s4, type4) = InferType(expr2, env);
                             var s5 = MostGeneralUnifier(type3, type4);
-                            return (ComposeSubstitutions(s5, ComposeSubstitutions(s4, s3)), ApplySubstitution(type3, s5));
+                            return (ComposeSubstitutions(s5, s4, s3), ApplySubstitution(type3, s5));
                         }
                     }
 
@@ -169,10 +173,10 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case Expr.Lambda({ } term, { } exp):
                     {
-                        var varType = env.Generator.GetNext();
-                        var nenv = env.Remove(term).Insert(term, new Polytype(varType));
-                        var (substitution, type) = InferType(exp, nenv, investigated);
-                        return (substitution, new Type.Function(ApplySubstitution(varType, substitution), type));
+                        var typeVariable = env.Generator.GetNext();
+                        var nenv = env.Remove(term).Insert(term, new Polytype(typeVariable));
+                        var (substitution, type) = InferType(exp, nenv);
+                        return (substitution, new Type.Function(ApplySubstitution(typeVariable, substitution), type));
                     }
 
                 // An application is typed by:
@@ -184,10 +188,10 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the unifier to the new type variable.
                 case Expr.Usage({ } callee, { } argument):
                     {
-                        var (s1, t1) = InferType(callee, env, investigated);
-                        var (s2, t2) = InferType(argument, ApplySubstitution(env, s1), investigated);
+                        var (s1, t1) = InferType(callee, env);
+                        var (s2, t2) = InferType(argument, ApplySubstitution(env, s1));
 
-                        if (investigated)
+                        if (Investigated)
                         {
                             Assert(true);
                         }
@@ -195,7 +199,7 @@ namespace Fux.Building.AlgorithmW
                         var varType = env.Generator.GetNext();
                         var t3 = ApplySubstitution(t1, s2);
                         var s3 = MostGeneralUnifier(t3, new Type.Function(t2, varType));
-                        return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(varType, s3));
+                        return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(varType, s3));
                     }
 
                 case Expr.Empty: // the empty list [] / alias list bottom
@@ -205,37 +209,37 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Cons({ } first, { } rest):
                     {
-                        var (s1, firstType) = InferType(first, env, investigated);
-                        var (s2, restType) = ((Substitution, Type.List))InferType(rest, ApplySubstitution(env, s1), investigated);
+                        var (s1, firstType) = InferType(first, env);
+                        var (s2, restType) = ((Substitution, Type.List))InferType(rest, ApplySubstitution(env, s1));
 
                         var s3 = MostGeneralUnifier(restType.Type, firstType);
 
-                        return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), ApplySubstitution(restType, s3));
+                        return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(restType, s3));
                     }
 
                 case Expr.Matcher({ } expr, { } cases):
                     {
-                        if (investigated)
+                        if (Investigated)
                         {
                             Assert(true);
                         }
 
-                        var (s1, t1) = InferType(expr, env, investigated);
+                        var (s1, t1) = InferType(expr, env);
 
                         Type? type = null;
 
                         foreach (var cheese in cases)
                         {
-                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(env, s1), investigated);
+                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(env, s1));
 
                             var s3 = MostGeneralUnifier(t1, t2);
 
                             t1 = ApplySubstitution(t1, s3);
                             t2 = ApplySubstitution(t1, s3);
 
-                            s1 = ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1));
+                            s1 = ComposeSubstitutions(s3, s2, s1);
 
-                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(env, s1), investigated);
+                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(env, s1));
 
                             s1 = ComposeSubstitutions(s4, s1);
 
@@ -263,18 +267,18 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Decons({ } first, { } rest):
                     {
-                        var (s1, t1) = InferType(first, env, investigated);
-                        var (s2, t2) = InferType(first, ApplySubstitution(env, s1), investigated);
+                        var (s1, t1) = InferType(first, env);
+                        var (s2, t2) = InferType(first, ApplySubstitution(env, s1));
 
                         var s3 = MostGeneralUnifier(t1, t2);
 
-                        return (ComposeSubstitutions(s3, ComposeSubstitutions(s2, s1)), new Type.List(ApplySubstitution(t1, s3)));
+                        return (ComposeSubstitutions(s3, s2, s1), new Type.List(ApplySubstitution(t1, s3)));
                     }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
         }
 
-        private static Type ApplySubstitution(Type type, Substitution substitution)
+        private Type ApplySubstitution(Type type, Substitution substitution)
         {
             switch (type)
             {
@@ -313,18 +317,18 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// To apply a substitution, we just apply it to each polytype in the type environment.
         /// </summary>
-        private static Environment ApplySubstitution(Environment typeEnv, Substitution substitution)
+        private Environment ApplySubstitution(Environment typeEnv, Substitution substitution)
         {
             return new Environment(typeEnv.Generator, typeEnv.Enumerate().Select(vp => (vp.var, ApplySubstitution(vp.polytype, substitution))));
         }
 
-        private static Polytype ApplySubstitution(Polytype polytype, Substitution substitution)
+        private Polytype ApplySubstitution(Polytype polytype, Substitution substitution)
         {
             var sub = substitution.RemoveRange(polytype.TypeVariables);
             return new Polytype(ApplySubstitution(polytype.Type, sub), polytype.TypeVariables);
         }
 
-        private static Polytype GeneralizePolytype(Environment typeEnv, Type type)
+        private Polytype GeneralizePolytype(Environment typeEnv, Type type)
         {
             return new Polytype(type, GetFreeTypeVariables(type).Except(GetFreeTypeVariables(typeEnv)).ToList());
         }
@@ -332,16 +336,26 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// To compose two substitutions, we apply s1 to each type in s2 and union the resulting substitution with s1.
         /// </summary>
-        private static Substitution ComposeSubstitutions(Substitution s1, Substitution s2)
+        private Substitution ComposeSubstitutions(params Substitution[] ss)
         {
-            var map = s2.Enumerate().Select(kv => (typeVar: kv.Key, type: ApplySubstitution(kv.Value, s1))).ToImmutableDictionary(x => x.typeVar, x => x.type);
-            return s1.UnionWith(new Substitution(map));
+            Assert(ss.Length >= 2);
+
+            var composed = ss[0];
+
+            for (var i = 1; i < ss.Length; i++)
+            {
+                var map = ss[i].Enumerate().Select(kv => (typeVar: kv.Key, type: ApplySubstitution(kv.Value, composed))).ToImmutableDictionary(x => x.typeVar, x => x.type);
+
+                composed = composed.UnionWith(new Substitution(map));
+            }
+
+            return composed;
         }
 
         /// <summary>
         /// Most general unifier, a substitution S such that S(self) is congruent to S(other).
         /// </summary>
-        private static Substitution MostGeneralUnifier(Type type1, Type type2)
+        private Substitution MostGeneralUnifier(Type type1, Type type2)
         {
             if (type1 is Type.List && type2 is Type.List)
             {
@@ -431,10 +445,9 @@ namespace Fux.Building.AlgorithmW
 
                 case (Type.List({ } typ1) c1, Type.List({ } typ2) c2):
                     {
-                        {
-                            return MostGeneralUnifier(typ1, typ2);
-                            break;
-                        }
+#if true
+                        return MostGeneralUnifier(typ1, typ2);
+#else
                         if (typ1 == typ2)
                         {
                             return Substitution.Empty();
@@ -459,6 +472,7 @@ namespace Fux.Building.AlgorithmW
                             return Substitution.Solo(v4.TypeVar, typ2);
                         }
                         break;
+#endif
                     }
 
                 // Otherwise, the types cannot be unified.
@@ -481,7 +495,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Attempt to bind a type variable to a type, returning an appropriate substitution.
         /// </summary>
-        private static Substitution BindVariable(TypeVariable typeVar, Type type)
+        private Substitution BindVariable(TypeVariable typeVar, Type type)
         {
             // Check for binding a variable to itself
             if (type is Type.Variable({ } u) && u == typeVar)
@@ -499,9 +513,8 @@ namespace Fux.Building.AlgorithmW
             return subst;
         }
 
-        private static HashSet<TypeVariable> GetFreeTypeVariables(Type type)
+        private HashSet<TypeVariable> GetFreeTypeVariables(Type type)
         {
-#if true
             switch (type)
             {
                 // For a type variable, there is one free variable: the variable itself.
@@ -533,26 +546,6 @@ namespace Fux.Building.AlgorithmW
             };
 
             throw new InvalidOperationException($"unexpected type '{type}'");
-#else
-            return type switch
-            {
-                // For a type variable, there is one free variable: the variable itself.
-                Type.Variable({ } typeVar) => new HashSet<TypeVariable>(new[] { typeVar }),
-
-                // For functions, we take the union of the free type variables of the input and output.
-                Type.Function({ } inType, { } outType) => union(GetFreeTypeVariables(inType), GetFreeTypeVariables(outType)),
-
-                Type.Tuple2({ } type1, { } type2) => union(GetFreeTypeVariables(type1), GetFreeTypeVariables(type2)),
-
-                // Primitive types have no free variables
-                Type.Primitive => new HashSet<TypeVariable>(),
-
-                // Concrete types have no free variables
-                Type.Concrete => new HashSet<TypeVariable>(),
-
-                _ => throw new InvalidOperationException($"unexpected type '{type}'")
-            };
-#endif
 
             static HashSet<TypeVariable> union(HashSet<TypeVariable> a, HashSet<TypeVariable> b)
             {
@@ -564,7 +557,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// The free type variables in a polytype are those that are free in the internal type and not bound by the variable mapping.
         /// </summary>
-        private static HashSet<TypeVariable> GetFreeTypeVariables(Polytype polytype)
+        private HashSet<TypeVariable> GetFreeTypeVariables(Polytype polytype)
         {
             // The free type variables in a polytype are those that are free in the internal type and not bound by the variable mapping.
             var set = GetFreeTypeVariables(polytype.Type);
@@ -575,7 +568,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// The free type variables of a type environment is the union of the free type variables of each polytype in the environment.
         /// </summary>
-        private static HashSet<TypeVariable> GetFreeTypeVariables(Environment typeEnv)
+        private HashSet<TypeVariable> GetFreeTypeVariables(Environment typeEnv)
         {
             return GetFreeTypeVariables(typeEnv.Polytypes);
         }
@@ -583,7 +576,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// The free type variables of a vector of types is the union of the free type variables of each of the types in the vector.
         /// </summary>
-        private static HashSet<TypeVariable> GetFreeTypeVariables(IEnumerable<Polytype> polytypes)
+        private HashSet<TypeVariable> GetFreeTypeVariables(IEnumerable<Polytype> polytypes)
         {
             var union = new HashSet<TypeVariable>();
             foreach (var polytype in polytypes)
@@ -596,7 +589,7 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Instantiates a polytype into a type. Replaces all bound type variables with fresh type variables and return the resulting type.
         /// </summary>
-        private static Type InstantiateType(Polytype polytype, Environment environment)
+        private Type InstantiateType(Polytype polytype, Environment environment)
         {
             var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);

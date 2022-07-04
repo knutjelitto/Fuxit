@@ -28,9 +28,21 @@
             public override string ToString() => $"(def {Var} = {Expr})";
         }
 
-        public sealed record Let(TermVariable Term, Expr Exp1, Expr Exp2) : Expr
+        public abstract record Let(Expr Exp1, Expr Exp2) : Expr;
+
+        public sealed record Let1(TermVariable Term, Expr Exp1, Expr Exp2) : Let(Exp1, Exp2)
         {
             public override string ToString() => $"(let {Term} = {Exp1} in {Exp2})";
+        }
+
+        public sealed record Let2(TermVariable Term1, TermVariable Term2, Expr Exp1, Expr Exp2) : Let(Exp1, Exp2)
+        {
+            public override string ToString() => $"(let ({Term1}, {Term2}) = {Exp1} in {Exp2})";
+        }
+
+        public sealed record Let3(TermVariable Term1, TermVariable Term2, TermVariable Term3, Expr Exp1, Expr Exp2) : Let(Exp1, Exp2)
+        {
+            public override string ToString() => $"(let ({Term1}, {Term2}, {Term3}) = {Exp1} in {Exp2})";
         }
 
         public abstract record Tuple(IReadOnlyList<Expr> Exprs) : Expr;

@@ -29,4 +29,8 @@
     <ProjectReference Include="..\Fux.TypeSystem\Fux.TypeSystem.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Building\Tools\" />
+  </ItemGroup>
+
 </Project>

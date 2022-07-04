@@ -29,7 +29,7 @@ namespace Fux.Building.AlgorithmW
                     WriteLine($"{Lex.KwElse}");
                     Indent(expr.Else);
                     break;
-                case Expr.Let expr:
+                case Expr.Let1 expr:
                     WriteLine($"{Lex.KwLet}");
                     Indent(() =>
                     {

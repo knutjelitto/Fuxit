@@ -119,7 +119,7 @@ namespace Fux.Building.Typing
             Pretty.Print(expression);
             PrintEnv(env);
             Writer.WriteLine();
-            var type = inferrer.Run(expression, env, investigated);
+            var type = inferrer.Run(env, expression, investigated);
             Writer.WriteLine($"OUTPUT: {type}");
         }
     }

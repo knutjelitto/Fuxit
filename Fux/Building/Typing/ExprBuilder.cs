@@ -8,6 +8,7 @@ namespace Fux.Building.Typing
     {
         private readonly TypeBuilder typeBuilder;
         private int wildcardNumber = 0;
+        private int idNumber = 0;
 
         public ExprBuilder(Module module, TypeBuilder typeBuilder)
         {
@@ -171,8 +172,20 @@ namespace Fux.Building.Typing
 
                 case A.Ref.Ctor ctorRef:
                     {
-                        Assert(false);
-                        break;
+                        var ctor = ctorRef.Decl;
+
+                        var variable = new W.Expr.Variable(ctor.Name);
+
+                        var polytype = env.TryGet(variable.Term);
+
+                        if (polytype == null)
+                        {
+                            polytype = typeBuilder.Build(env, ctor.Type);
+
+                            env = env.Insert(variable.Term, polytype);
+                        }
+
+                        return variable;
                     }
 
                 case A.Ref.Var varRef:
@@ -445,24 +458,38 @@ namespace Fux.Building.Typing
 
             foreach (var let in letExpr.LetDecls.Reverse())
             {
-                var (name, expr) = BuildLet(ref env, let);
-
-                inExpr = new W.Expr.Let(name, expr, inExpr);
+                inExpr = BuildLet(ref env, let, inExpr);
             }
 
             return inExpr;
         }
 
-        private (W.TermVariable name, W.Expr expr) BuildLet(ref W.Environment env, A.Decl let)
+        private W.Expr.Let BuildLet(ref W.Environment env, A.Decl let, W.Expr inExpr)
         {
             switch (let)
             {
+                case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple2 tuple2:
+                    {
+                        var artifical = GenIdentifier();
+
+                        Assert(assign.Pattern is A.Pattern.Tuple);
+                        Assert(false);
+                        break;
+                    }
+                case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple3 tuple3:
+                    {
+                        var artifical = GenIdentifier();
+
+                        Assert(assign.Pattern is A.Pattern.Tuple);
+                        Assert(false);
+                        break;
+                    }
                 case A.Decl.Var var when var.Parameters.Count == 0:
                     {
                         var name = new W.TermVariable(var.Name.Text);
                         var expr = Build(ref env, var.Expression);
 
-                        return (name, expr);
+                        return new W.Expr.Let1(name, expr, inExpr);
                     }
                 case A.Decl.Var var:
                     {
@@ -482,7 +509,7 @@ namespace Fux.Building.Typing
                             }
                         }
 
-                        return (name, expr);
+                        return new W.Expr.Let1(name, expr, inExpr);
                     }
                 default:
                     break;
@@ -500,6 +527,11 @@ namespace Fux.Building.Typing
         public A.Identifier GenWildcard()
         {
             return A.Identifier.Artificial(Module, $"_{++wildcardNumber}");
+        }
+
+        public A.Identifier GenIdentifier()
+        {
+            return A.Identifier.Artificial(Module, $"_id_{++idNumber}");
         }
     }
 }

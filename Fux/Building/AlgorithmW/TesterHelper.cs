@@ -6,7 +6,7 @@ namespace Fux.Building.AlgorithmW
     {
         public static Expr.Let let(string name, Expr e1, Expr e2)
         {
-            return new Expr.Let(name, e1, e2);
+            return new Expr.Let1(name, e1, e2);
         }
 
         public static Expr.Iff iff(Expr cond, Expr then, Expr @else)
