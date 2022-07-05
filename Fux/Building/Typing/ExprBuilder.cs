@@ -529,9 +529,18 @@ namespace Fux.Building.Typing
                                 switch (pattern)
                                 {
                                     case A.Pattern.LowerId lower:
-                                        var term = new W.TermVariable(lower.Identifier);
-                                        expr = new W.Expr.Lambda(term, expr);
-                                        break;
+                                        {
+                                            var term = new W.TermVariable(lower.Identifier);
+                                            expr = new W.Expr.Lambda(term, expr);
+                                            break;
+                                        }
+                                    case A.Pattern.Tuple2 tuple2:
+                                        {
+                                            var term = new W.TermVariable(GenIdentifier("_tuple2_"));
+                                            expr = new W.Expr.Lambda(term, expr);
+                                            Assert(false);
+                                            break;
+                                        }
                                     default:
                                         Assert(false);
                                         throw new NotImplementedException();
@@ -561,7 +570,12 @@ namespace Fux.Building.Typing
 
         public A.Identifier GenIdentifier()
         {
-            return A.Identifier.Artificial(Module, $"_id_{++idNumber}");
+            return GenIdentifier("_id_");
+        }
+
+        public A.Identifier GenIdentifier(string prefix)
+        {
+            return A.Identifier.Artificial(Module, $"{prefix}{++idNumber}");
         }
     }
 }

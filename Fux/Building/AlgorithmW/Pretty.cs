@@ -9,9 +9,9 @@ namespace Fux.Building.AlgorithmW
 
         private const int maxWidth = 30;
 
-        public static string ToString(Expr expr)
+        public static string Expr(Expr expr)
         {
-            return Instance.String(expr);
+            return Instance.Str(expr);
         }
 
         public Pretty(Writer writer)
@@ -28,7 +28,7 @@ namespace Fux.Building.AlgorithmW
 
         private void Print(Expr top)
         {
-            var str = String(top);
+            var str = Str(top);
             if (str.Length <= maxWidth)
             {
                 Write(str);
@@ -37,7 +37,7 @@ namespace Fux.Building.AlgorithmW
 
             switch (top)
             {
-                case Expr.Native:
+                case AlgorithmW.Expr.Native:
                     Write(str);
                     break;
                 case Expr.Unify expr:
@@ -101,8 +101,8 @@ namespace Fux.Building.AlgorithmW
                     Indent(() => PrintLine(expr.Exp));
                     break;
                 case Expr.Sugar.Application expr:
-                        PrintLine(expr.Exprs[0]);
-                        Indent(() =>
+                    PrintLine(expr.Exprs[0]);
+                    Indent(() =>
                         {
                             foreach (var arg in expr.Exprs.Skip(1))
                             {
@@ -129,13 +129,13 @@ namespace Fux.Building.AlgorithmW
             writer.EndLine();
         }
 
-        private string String(Expr expr)
+        private string Str(Expr expr)
         {
             switch (expr)
             {
                 case Expr.Sugar.Application app:
                     {
-                        return $"({string.Join(" ", app.Exprs.Select(e => String(e)))})";
+                        return $"({string.Join(" ", app.Exprs.Select(e => Str(e)))})";
                     }
                 case Expr.Variable var:
                     {
@@ -151,60 +151,60 @@ namespace Fux.Building.AlgorithmW
                     }
                 case Expr.Iff iff:
                     {
-                        return $"(if {String(iff.Cond)} then {String(iff.Then)} else {String(iff.Else)})";
+                        return $"(if {Str(iff.Cond)} then {Str(iff.Then)} else {Str(iff.Else)})";
                     }
                 case Expr.Application app:
                     {
-                        return String(SugarApp(app));
+                        return Str(SugarApp(app));
                     }
-                case Expr.Empty:
+                case AlgorithmW.Expr.Empty:
                     {
                         return Lex.Symbol.Empty;
                     }
-                case Expr.Wildcard:
+                case AlgorithmW.Expr.Wildcard:
                     {
                         return Lex.Symbol.Wildcard;
                     }
                 case Expr.Lambda lambda:
                     {
-                        return $"({lambda.Term} => {String(lambda.Exp)})";
+                        return $"({lambda.Term} => {Str(lambda.Exp)})";
                     }
                 case Expr.Tuple2 tuple2:
                     {
-                        return $"({String(tuple2.Expr1)}, {String(tuple2.Expr2)})";
+                        return $"({Str(tuple2.Expr1)}, {Str(tuple2.Expr2)})";
                     }
                 case Expr.Matcher matcher:
                     {
-                        var cases = string.Join(" ", matcher.Cases.Select(e => String(e)));
-                        return $"case {String(matcher.Expr)} of {cases}";
+                        var cases = string.Join(" ", matcher.Cases.Select(e => Str(e)));
+                        return $"case {Str(matcher.Expr)} of {cases}";
                     }
                 case Expr.Case @case:
                     {
-                        return $"({String(@case.Pattern)} -> {String(@case.Expr)})";
+                        return $"({Str(@case.Pattern)} -> {Str(@case.Expr)})";
                     }
                 case Expr.Let let:
                     {
-                        return $"(let {let.Term} = {String(let.Expr1)} in {String(let.Expr2)})";
+                        return $"(let {let.Term} = {Str(let.Expr1)} in {Str(let.Expr2)})";
                     }
                 case Expr.Unify unify:
                     {
-                        return String(unify.Expr);
+                        return Str(unify.Expr);
                     }
                 case Expr.Cons cons:
                     {
-                        return $"({String(cons.First)} {Lex.Symbol.Cons} {String(cons.Rest)})";
+                        return $"({Str(cons.First)} {Lex.Symbol.Cons} {Str(cons.Rest)})";
                     }
                 case Expr.Decons decons:
                     {
-                        return $"({String(decons.First)} {Lex.Symbol.Cons} {String(decons.Rest)})";
+                        return $"({Str(decons.First)} {Lex.Symbol.Cons} {Str(decons.Rest)})";
                     }
                 case Expr.Get1 get1:
                     {
-                        return $"[{String(get1.Expr)}.1]";
+                        return $"[{Str(get1.Expr)}.1]";
                     }
                 case Expr.Get2 get2:
                     {
-                        return $"[{String(get2.Expr)}.2]";
+                        return $"[{Str(get2.Expr)}.2]";
                     }
                 default:
                     break;
