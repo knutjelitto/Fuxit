@@ -281,6 +281,14 @@ namespace Fux.Building.AlgorithmW
 
                         return (ComposeSubstitutions(s3, s2, s1), new Type.List(ApplySubstitution(t1, s3)));
                     }
+                case Expr.Get1({ } expr):
+                    {
+                        var (s1, t1) = InferType(expr, env);
+
+                        Assert(t1 is Type.Tuple);
+
+                        break;
+                    }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
         }
@@ -423,6 +431,7 @@ namespace Fux.Building.AlgorithmW
                     (Type.Float, Type.Float) or
                     (Type.Bool, Type.Bool) or
                     (Type.String, Type.String) or
+                    (Type.Char, Type.Char) or
                     (Type.Float, Type.Integer) or
                     (Type.Integer, Type.Float):
                     {

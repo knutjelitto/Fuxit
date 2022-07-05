@@ -1,6 +1,4 @@
-﻿using Fux.Input.Ast;
-
-using W = Fux.Building.AlgorithmW;
+﻿using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Typing
 {
@@ -493,8 +491,6 @@ namespace Fux.Building.Typing
                     }
                 case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple3 tuple3:
                     {
-                        var artifical = GenIdentifier();
-
                         Assert(assign.Pattern is A.Pattern.Tuple);
                         Assert(false);
                         break;
@@ -522,29 +518,51 @@ namespace Fux.Building.Typing
 
                             var pattern = (A.Pattern)parameter.Expression;
 
-                            Build(pattern);
+                            expr = Decompose(pattern, expr);
 
-                            void Build(A.Pattern pattern)
+                            W.Expr Decompose(A.Pattern pattern, W.Expr expr)
                             {
                                 switch (pattern)
                                 {
                                     case A.Pattern.LowerId lower:
                                         {
                                             var term = new W.TermVariable(lower.Identifier);
-                                            expr = new W.Expr.Lambda(term, expr);
-                                            break;
+                                            return new W.Expr.Lambda(term, expr);
                                         }
                                     case A.Pattern.Tuple2 tuple2:
                                         {
                                             var term = new W.TermVariable(GenIdentifier("_tuple2_"));
+                                            var variable = new W.Expr.Variable(term);
+                                            var get1 = new W.Expr.Get1(variable);
+                                            var get2 = new W.Expr.Get2(variable);
+                                            expr = Let(tuple2.Pattern2, get2, expr);
+                                            expr = Let(tuple2.Pattern1, get1, expr);
                                             expr = new W.Expr.Lambda(term, expr);
-                                            Assert(false);
-                                            break;
+                                            return expr;
                                         }
                                     default:
                                         Assert(false);
                                         throw new NotImplementedException();
                                 }
+                            }
+
+                            W.Expr Let(A.Pattern pattern, W.Expr get, W.Expr expr)
+                            {
+                                switch (pattern)
+                                {
+                                    case A.Pattern.LowerId lower:
+                                        {
+                                            var term = new W.TermVariable(lower.Identifier);
+                                            return new W.Expr.Let(term, get, expr);
+                                        }
+                                    case A.Pattern.Signature signature when signature.Parameters.Count == 0:
+                                        {
+                                            var term = new W.TermVariable(signature.Name);
+                                            return new W.Expr.Let(term, get, expr);
+                                        }
+                                }
+                                Assert(false);
+                                throw new NotImplementedException();
                             }
                         }
 
