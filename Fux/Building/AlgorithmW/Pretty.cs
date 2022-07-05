@@ -5,7 +5,14 @@ namespace Fux.Building.AlgorithmW
 {
     public sealed class Pretty
     {
-        const int maxWidth = 40;
+        private static readonly Pretty Instance = new Pretty(Writer.Null());
+
+        private const int maxWidth = 30;
+
+        public static string ToString(Expr expr)
+        {
+            return Instance.String(expr);
+        }
 
         public Pretty(Writer writer)
         {
@@ -94,16 +101,14 @@ namespace Fux.Building.AlgorithmW
                     Indent(() => PrintLine(expr.Exp));
                     break;
                 case Expr.Sugar.Application expr:
-                    Write($"(   ");
-                    PrintLine(expr.Exprs[0]);
-                    Indent(() =>
-                    {
-                        foreach (var arg in expr.Exprs.Skip(1))
+                        PrintLine(expr.Exprs[0]);
+                        Indent(() =>
                         {
-                            PrintLine(arg);
-                        }
-                    });
-                    WriteLine($")");
+                            foreach (var arg in expr.Exprs.Skip(1))
+                            {
+                                PrintLine(arg);
+                            }
+                        });
                     break;
                 case Expr.Tuple2 tuple2:
                     Write($"(   ");
@@ -138,7 +143,7 @@ namespace Fux.Building.AlgorithmW
                     }
                 case Expr.Native native:
                     {
-                        return native.Nat.ToString();
+                        return native.Nat.FullName;
                     }
                 case Expr.Literal literal:
                     {

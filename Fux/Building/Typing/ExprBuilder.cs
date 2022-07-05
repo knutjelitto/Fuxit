@@ -1,4 +1,6 @@
-﻿using W = Fux.Building.AlgorithmW;
+﻿using Fux.Input.Ast;
+
+using W = Fux.Building.AlgorithmW;
 
 namespace Fux.Building.Typing
 {
@@ -63,7 +65,7 @@ namespace Fux.Building.Typing
                                     {
                                         var var = varRef.Decl;
 
-                                        var variable = new W.Expr.Variable(identifier.Text);
+                                        var variable = new W.Expr.Variable(identifier);
 
                                         var polytype = env.TryGet(variable.Term);
 
@@ -81,8 +83,10 @@ namespace Fux.Building.Typing
                                         var parameter = parameterRef.Decl;
 
                                         Assert(parameter.Expression is A.Identifier);
+
                                         var name = (A.Identifier)parameter.Expression;
                                         var variable = new W.Expr.Variable(name);
+
                                         return variable;
                                     }
 
@@ -401,7 +405,7 @@ namespace Fux.Building.Typing
 
             foreach (var x in lambdaExpr.Parameters.Flatten(GenWildcard).Reverse())
             {
-                var var = new W.TermVariable(x.Text);
+                var var = new W.TermVariable(x);
                 var type = env.Generator.GetNext();
                 env = env.Insert(var, new W.Polytype(type));
 
@@ -438,17 +442,18 @@ namespace Fux.Building.Typing
 
             var expr = Build(ref env, caseExpr.Expression);
             var pttn = Build(ref env, caseExpr.Pattern);
+            var cenv = env.NewEmpty();
 
-            foreach (var x in caseExpr.Pattern.Flatten().Reverse())
+            foreach (var identifier in caseExpr.Pattern.Flatten().Reverse())
             {
-                var var = new W.TermVariable(x.Text);
+                var var = new W.TermVariable(identifier);
                 var type = env.Generator.GetNext();
-                env = env.Insert(var, new W.Polytype(type));
+                cenv = cenv.Insert(var, new W.Polytype(type));
 
                 expr = new W.Expr.Application(new W.Expr.Lambda(var, expr), new W.Expr.Variable(var));
             }
 
-            return new W.Expr.Case(pttn, expr);
+            return new W.Expr.Case(cenv, pttn, expr);
         }
 
         private W.Expr BuildLetExpr(ref W.Environment env, A.Expr.Let letExpr)
@@ -474,11 +479,11 @@ namespace Fux.Building.Typing
             {
                 case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple2 tuple2:
                     {
-                        var name = new W.TermVariable(GenIdentifier().Text);
+                        var name = new W.TermVariable(GenIdentifier());
                         var expr = Build(ref env, assign.Expression);
 
-                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().First().Text);
-                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().First().Text);
+                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().First());
+                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().First());
 
                         var var = new W.Expr.Variable(name);
                         var first = new W.Expr.Get1(var);
@@ -496,25 +501,40 @@ namespace Fux.Building.Typing
                     }
                 case A.Decl.Var var when var.Parameters.Count == 0:
                     {
-                        var name = new W.TermVariable(var.Name.Text);
+                        var name = new W.TermVariable(var.Name);
                         var expr = Build(ref env, var.Expression);
 
                         return new W.Expr.Let(name, expr, inExpr);
                     }
                 case A.Decl.Var var:
                     {
-                        var name = new W.TermVariable(var.Name.Text);
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
+                        var name = new W.TermVariable(var.Name);
                         var expr = Build(ref env, var.Expression);
 
                         foreach (var parameter in var.Parameters.Reverse())
                         {
-                            if (parameter.Expression is A.Pattern pattern)
-                            {
-                                foreach (var identifier in pattern.Flatten())
-                                {
-                                    var term = new W.TermVariable(identifier.Text);
+                            Assert(parameter.Expression is A.Pattern);
 
-                                    expr = new W.Expr.Lambda(term, expr);
+                            var pattern = (A.Pattern)parameter.Expression;
+
+                            Build(pattern);
+
+                            void Build(A.Pattern pattern)
+                            {
+                                switch (pattern)
+                                {
+                                    case A.Pattern.LowerId lower:
+                                        var term = new W.TermVariable(lower.Identifier);
+                                        expr = new W.Expr.Lambda(term, expr);
+                                        break;
+                                    default:
+                                        Assert(false);
+                                        throw new NotImplementedException();
                                 }
                             }
                         }

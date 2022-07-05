@@ -11,11 +11,13 @@
         {
             public override string ToString()
             {
+                var start = InType is Function ? $"({InType})" : $"{InType}";
+
                 if (OutType is Function outFunction)
                 {
-                    return $"{InType} → {outFunction.InType} → {outFunction.OutType}";
+                    return $"{start} → {outFunction.InType} → {outFunction.OutType}";
                 }
-                return $"{InType} → {OutType}";
+                return $"{start} → {OutType}";
             }
         }
 

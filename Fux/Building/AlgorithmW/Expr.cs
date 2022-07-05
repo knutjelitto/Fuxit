@@ -4,111 +4,102 @@
     {
         public sealed record Variable(TermVariable Term) : Expr
         {
-            public Variable(A.Identifier name) : this(new TermVariable(name.Text)) { }
-            public override string ToString() => Term;
+            public Variable(A.Identifier name) : this(new TermVariable(name)) { }
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Application(Expr Exp1, Expr Exp2) : Expr
         {
-            public override string ToString() => $"(apply {Exp1} {Exp2})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Lambda(TermVariable Term, Expr Exp) : Expr
         {
-            public override string ToString() => $"({Term} => {Exp})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Unify(Type Type, Expr Expr) : Expr
         {
-            public override string ToString() => $"{Expr}";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Def(Expr.Variable Var, Expr Expr) : Expr
         {
-            public override string ToString() => $"(def {Var} = {Expr})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Let(TermVariable Term, Expr Expr1, Expr Expr2) : Expr
         {
-            public override string ToString() => $"(let {Term} = {Expr1} in {Expr2})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public abstract record Tuple(IReadOnlyList<Expr> Exprs) : Expr;
 
         public sealed record Tuple2(Expr Expr1, Expr Expr2) : Tuple(new Expr[] { Expr1, Expr2 })
         {
-            public override string ToString() => $"(tuple {Expr1}, {Expr2})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Tuple3(Expr Expr1, Expr Expr2, Expr Expr3) : Tuple(new Expr[] { Expr1, Expr2, Expr3 })
         {
-            public override string ToString() => $"(tuple {Expr1}, {Expr2}, {Expr3})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Get1(Expr Expr) : Expr
         {
-            public override string ToString() => $"[{Expr}.1]";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Get2(Expr Expr) : Expr
         {
-            public override string ToString() => $"[{Expr}.2]";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Get3(Expr Expr) : Expr
         {
-            public override string ToString() => $"[{Expr}.3]";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public abstract record List : Expr;
 
         public sealed record Empty : List
         {
-            public override string ToString() => $"{Lex.Symbol.Empty}";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Cons(Expr First, List Rest) : List
         {
-            public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Decons(Expr First, Expr Rest) : List
         {
-            public override string ToString() => $"({First} {Lex.Symbol.Cons} {Rest})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Native(A.Decl.Native Nat) : Expr
         {
-            public override string ToString() => $"(native {Nat})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Iff(Expr Cond, Expr Then, Expr Else) : Expr
         {
-            public override string ToString() => $"(if {Cond} then {Then} else {Else})";
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Matcher(Expr Expr, IReadOnlyList<Case> Cases) : Expr
         {
-            public override string ToString()
-            {
-                return $"(case {Expr} of {string.Join(" ", Cases)}";
-            }
+            public override string ToString() => Pretty.ToString(this);
         }
 
-        public sealed record Case(Expr Pattern, Expr Expr) : Expr
+        public sealed record Case(Environment Env, Expr Pattern, Expr Expr) : Expr
         {
-            public override string ToString()
-            {
-                return $"({Pattern} -> {Expr})";
-            }
+            public override string ToString() => Pretty.ToString(this);
         }
 
         public sealed record Wildcard(string Text) : Expr
         {
-            public override string ToString()
-            {
-                return $"{Text}";
-            }
+            public override string ToString() => Pretty.ToString(this);
         }
 
         /// <summary>
@@ -153,7 +144,7 @@
         {
             new public sealed record Application(IReadOnlyList<Expr> Exprs) : Sugar
             {
-                public override string ToString() => $"($ {string.Join(" ", Exprs)})";
+                public override string ToString() => Pretty.ToString(this);
             }
 
             new public sealed record Lambda(IReadOnlyList<TermVariable> Terms, Expr Expr) : Sugar;

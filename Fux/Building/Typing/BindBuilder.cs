@@ -61,7 +61,7 @@ namespace Fux.Building.Typing
                         case W.Type.Concrete:
                         case W.Type.Primitive.List:
                             {
-                                var term = new W.TermVariable(parameterName.Text);
+                                var term = new W.TermVariable(parameterName);
                                 env = env.Insert(term, new W.Polytype(parameterType));
                                 break;
                             }

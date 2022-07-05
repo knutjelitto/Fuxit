@@ -230,7 +230,14 @@ namespace Fux.Building.AlgorithmW
 
                         foreach (var cheese in cases)
                         {
-                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(env, s1));
+                            var cenv = env;
+
+                            foreach (var x in cheese.Env.Enumerate())
+                            {
+                                cenv = cenv.Insert(x.var, x.polytype);
+                            }
+
+                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(cenv, s1));
 
                             var s3 = MostGeneralUnifier(t1, t2);
 
@@ -239,7 +246,7 @@ namespace Fux.Building.AlgorithmW
 
                             s1 = ComposeSubstitutions(s3, s2, s1);
 
-                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(env, s1));
+                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(cenv, s1));
 
                             s1 = ComposeSubstitutions(s4, s1);
 
@@ -260,7 +267,7 @@ namespace Fux.Building.AlgorithmW
                         return (s1, type);
                     }
 
-                case Expr.Case({ } pattern, { } expr):
+                case Expr.Case({ } cenv, { } pattern, { } expr):
                     {
                         break;
                     }

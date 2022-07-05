@@ -10,6 +10,11 @@
             Name = name;
         }
 
+        public TermVariable(A.Identifier name)
+        {
+            Name = name.Text;
+        }
+
         public string Name { get; }
 
         public static implicit operator string(TermVariable term) => term.Name;

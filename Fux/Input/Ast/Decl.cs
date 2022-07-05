@@ -210,6 +210,7 @@ namespace Fux.Input.Ast
             public Identifier ModuleName { get; }
             public Identifier Name { get; }
             public Type? Type { get; set; } = null;
+            public string FullName => $"{ModuleName}.{Name}";
 
             public override string ToString()
             {

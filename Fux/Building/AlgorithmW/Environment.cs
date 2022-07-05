@@ -31,6 +31,11 @@ namespace Fux.Building.AlgorithmW
             return new(generator, builder.ToImmutable());
         }
 
+        public Environment NewEmpty()
+        {
+            return Initial(Generator);
+        }
+
         public Polytype? TryGet(TermVariable term) => Map.TryGetValue(term, out var polytype) ? polytype : null;
 
         public Environment Insert(TermVariable term, Polytype polytype) => new(Generator, Map.Add(term, polytype));
