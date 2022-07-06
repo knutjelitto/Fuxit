@@ -281,13 +281,31 @@ namespace Fux.Building.AlgorithmW
 
                         return (ComposeSubstitutions(s3, s2, s1), new Type.List(ApplySubstitution(t1, s3)));
                     }
-                case Expr.Get1({ } expr):
+                case Expr.Get21({ } expr):
                     {
                         var (s1, t1) = InferType(expr, env);
+                        var t2 = new Type.Tuple2(env.Generator.GetNext(), env.Generator.GetNext());
+                        var s2 = MostGeneralUnifier(t1, t2);
+                        var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
+                        Assert(t3 is Type.Tuple2);
 
-                        Assert(t1 is Type.Tuple);
+                        var s = ComposeSubstitutions(s3, s2, s1);
+                        var t = ((Type.Tuple2)t3).Type1;
 
-                        break;
+                        return (s, t);
+                    }
+                case Expr.Get22({ } expr):
+                    {
+                        var (s1, t1) = InferType(expr, env);
+                        var t2 = new Type.Tuple2(env.Generator.GetNext(), env.Generator.GetNext());
+                        var s2 = MostGeneralUnifier(t1, t2);
+                        var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
+                        Assert(t3 is Type.Tuple2);
+
+                        var s = ComposeSubstitutions(s3, s2, s1);
+                        var t = ((Type.Tuple2)t3).Type2;
+
+                        return (s, t);
                     }
             }
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");

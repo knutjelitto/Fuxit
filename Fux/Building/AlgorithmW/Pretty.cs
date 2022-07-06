@@ -198,11 +198,11 @@ namespace Fux.Building.AlgorithmW
                     {
                         return $"({Str(decons.First)} {Lex.Symbol.Cons} {Str(decons.Rest)})";
                     }
-                case Expr.Get1 get1:
+                case Expr.Get21 get1:
                     {
                         return $"[{Str(get1.Expr)}.1]";
                     }
-                case Expr.Get2 get2:
+                case Expr.Get22 get2:
                     {
                         return $"[{Str(get2.Expr)}.2]";
                     }

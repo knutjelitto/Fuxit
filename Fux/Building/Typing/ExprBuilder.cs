@@ -4,6 +4,8 @@ namespace Fux.Building.Typing
 {
     public sealed class ExprBuilder
     {
+        const string GenTuple2 = "_tuple2_";
+
         private readonly TypeBuilder typeBuilder;
         private int wildcardNumber = 0;
         private int idNumber = 0;
@@ -484,8 +486,8 @@ namespace Fux.Building.Typing
                         var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().First());
 
                         var var = new W.Expr.Variable(name);
-                        var first = new W.Expr.Get1(var);
-                        var second = new W.Expr.Get2(var);
+                        var first = new W.Expr.Get21(var);
+                        var second = new W.Expr.Get22(var);
 
                         return new W.Expr.Let(name, expr, new W.Expr.Let(name1, first, new W.Expr.Let(name2, second, inExpr)));
                     }
@@ -531,10 +533,10 @@ namespace Fux.Building.Typing
                                         }
                                     case A.Pattern.Tuple2 tuple2:
                                         {
-                                            var term = new W.TermVariable(GenIdentifier("_tuple2_"));
+                                            var term = new W.TermVariable(GenIdentifier(GenTuple2));
                                             var variable = new W.Expr.Variable(term);
-                                            var get1 = new W.Expr.Get1(variable);
-                                            var get2 = new W.Expr.Get2(variable);
+                                            var get1 = new W.Expr.Get21(variable);
+                                            var get2 = new W.Expr.Get22(variable);
                                             expr = Let(tuple2.Pattern2, get2, expr);
                                             expr = Let(tuple2.Pattern1, get1, expr);
                                             expr = new W.Expr.Lambda(term, expr);

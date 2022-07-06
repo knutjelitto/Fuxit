@@ -45,17 +45,27 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Get1(Expr Expr) : Expr
+        public sealed record Get21(Expr Expr) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Get2(Expr Expr) : Expr
+        public sealed record Get22(Expr Expr) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Get3(Expr Expr) : Expr
+        public sealed record Get31(Expr Expr) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
+        public sealed record Get32(Expr Expr) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
+        public sealed record Get33(Expr Expr) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
