@@ -81,9 +81,9 @@
             }
         }
 
-        public class Ctor : Pattern
+        public class DeCtor : Pattern
         {
-            public Ctor(Identifier name, params Pattern[] arguments)
+            public DeCtor(Identifier name, params Pattern[] arguments)
             {
                 Assert(name.IsMultiUpper);
 
@@ -212,9 +212,9 @@
             }
         }
 
-        public class Destruct : Pattern
+        public class DeCons : Pattern
         {
-            public Destruct(List<Pattern> patterns)
+            public DeCons(List<Pattern> patterns)
             {
                 Assert(patterns.Count >= 2);
 

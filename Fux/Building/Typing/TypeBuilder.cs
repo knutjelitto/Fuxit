@@ -11,7 +11,7 @@ namespace Fux.Building.Typing
         {
             if (type == null)
             {
-                return new W.Polytype(env.Generator.GetNext());
+                return new W.Polytype(env.GetNext());
             }
 
             vars.Clear();
@@ -118,7 +118,7 @@ namespace Fux.Building.Typing
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
-                    typeVar = env.Generator.GetNext(text).TypeVar;
+                    typeVar = env.GetNext(text).TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
                 }

@@ -33,7 +33,7 @@
                 }
                 while (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.Cons));
 
-                return new A.Pattern.Destruct(patterns);
+                return new A.Pattern.DeCons(patterns);
             }
 
             return pattern;
@@ -168,7 +168,7 @@
                 patterns.Add(pattern);
             }
 
-            var ctor = new A.Pattern.Ctor(name, patterns.ToArray());
+            var ctor = new A.Pattern.DeCtor(name, patterns.ToArray());
 
             return ctor;
         }

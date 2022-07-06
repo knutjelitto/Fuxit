@@ -45,6 +45,11 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
+        public sealed record GetValue(Expr Expr, Func<Environment, Type> TypeGen, int Index) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
         public sealed record Get21(Expr Expr) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
@@ -82,7 +87,7 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Decons(Expr First, Expr Rest) : List
+        public sealed record DeCons(Expr First, Expr Rest) : List
         {
             public override string ToString() => Pretty.Expr(this);
         }

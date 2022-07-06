@@ -62,7 +62,7 @@
                         break;
                     }
 
-                case A.Pattern.Destruct destruct:
+                case A.Pattern.DeCons destruct:
                     {
                         foreach (var item in destruct.Patterns)
                         {
@@ -98,7 +98,7 @@
                         break;
                     }
 
-                case A.Pattern.Ctor ctor:
+                case A.Pattern.DeCtor ctor:
                     {
                         foreach (var argument in ctor.Arguments)
                         {

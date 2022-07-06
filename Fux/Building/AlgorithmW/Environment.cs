@@ -4,7 +4,7 @@ namespace Fux.Building.AlgorithmW
 {
     public sealed class Environment
     {
-        public readonly TypeVarGenerator Generator;
+        private readonly TypeVarGenerator Generator;
 
         private readonly ImmutableDictionary<TermVariable, Polytype> Map;
 
@@ -17,6 +17,11 @@ namespace Fux.Building.AlgorithmW
         public Environment(TypeVarGenerator generator, IEnumerable<(TermVariable var, Polytype poly)> values)
             : this(generator, values.ToImmutableDictionary(kv => kv.var, kv => kv.poly))
         {
+        }
+
+        public static Environment From(Environment env, IEnumerable<(TermVariable var, Polytype poly)> values)
+        {
+            return new Environment(env.Generator, values);
         }
 
         public static Environment Initial(TypeVarGenerator generator, params (TermVariable var, Polytype polytype)[] inits)
@@ -45,5 +50,7 @@ namespace Fux.Building.AlgorithmW
         public IEnumerable<Polytype> Polytypes => Map.Values;
 
         public IEnumerable<(TermVariable var, Polytype polytype)> Enumerate() => Map.Select(kv => (kv.Key, kv.Value));
+
+        public Type.Variable GetNext(string? name = null) => Generator.GetNext(name);
     }
 }

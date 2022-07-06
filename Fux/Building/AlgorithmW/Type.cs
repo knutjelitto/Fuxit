@@ -1,5 +1,10 @@
 ﻿namespace Fux.Building.AlgorithmW
 {
+    public interface WithStructure
+    {
+        Type At(int index);
+    }
+
     public abstract record Type
     {
         public sealed record Variable(TypeVariable TypeVar) : Type
@@ -21,7 +26,10 @@
             }
         }
 
-        public abstract record Tuple(IReadOnlyList<Type> Types) : Type;
+        public abstract record Tuple(IReadOnlyList<Type> Types) : Type, WithStructure
+        {
+            public Type At(int index) => Types[index];
+        }
 
         public sealed record Tuple2(Type Type1, Type Type2) : Tuple(new Type[] { Type1, Type2 })
         {

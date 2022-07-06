@@ -431,7 +431,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.Destruct destruct:
+                    case A.Pattern.DeCons destruct:
                         {
                             foreach (var pattern in destruct.Patterns)
                             {
@@ -474,7 +474,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.Ctor ctor:
+                    case A.Pattern.DeCtor ctor:
                         {
                             ResolveExpr(scope, ctor.Name);
                             foreach (var pattern in ctor.Arguments)
@@ -491,16 +491,21 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.LowerId identifier:
+                    case A.Pattern.LowerId lower:
                         {
-                            ResolveExpr(scope, identifier.Identifier);
+                            ResolveExpr(scope, lower.Identifier);
+                            break;
+                        }
+
+                    case A.Pattern.UpperId upper:
+                        {
+                            ResolveExpr(scope, upper.Identifier);
                             break;
                         }
 
                     case A.Pattern.Wildcard:
                     case A.Pattern.Unit:
                     case A.Pattern.Literal:
-                    case A.Pattern.UpperId:
                         break;
 
                     case A.Ref.Native:

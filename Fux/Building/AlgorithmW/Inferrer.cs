@@ -84,14 +84,14 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Native:
                     {
-                        var type = (Type)env.Generator.GetNext();
+                        var type = (Type)env.GetNext();
 
                         return (Substitution.Empty(), type);
                     }
 
                 case Expr.Wildcard:
                     {
-                        var type = (Type)env.Generator.GetNext();
+                        var type = (Type)env.GetNext();
 
                         return (Substitution.Empty(), type);
                     }
@@ -118,7 +118,7 @@ namespace Fux.Building.AlgorithmW
                 // A variable is typed as an instantiation of the corresponding type in the
                 // environment.
                 //
-                case Expr.Variable(var term):
+                case Expr.Variable({ } term):
                     {
                         if (env.TryGet(term) is Polytype polytype)
                         {
@@ -173,7 +173,7 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case Expr.Lambda({ } term, { } exp):
                     {
-                        var typeVariable = env.Generator.GetNext();
+                        var typeVariable = env.GetNext();
                         var nenv = env.Remove(term).Insert(term, new Polytype(typeVariable));
                         var (substitution, type) = InferType(exp, nenv);
                         return (substitution, new Type.Function(ApplySubstitution(typeVariable, substitution), type));
@@ -196,7 +196,7 @@ namespace Fux.Building.AlgorithmW
                             Assert(true);
                         }
 
-                        var varType = env.Generator.GetNext();
+                        var varType = env.GetNext();
                         var t3 = ApplySubstitution(t1, s2);
                         var s3 = MostGeneralUnifier(t3, new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(varType, s3));
@@ -204,7 +204,7 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Empty: // the empty list [] / alias list bottom
                     {
-                        return (Substitution.Empty(), new Type.List(env.Generator.GetNext()));
+                        return (Substitution.Empty(), new Type.List(env.GetNext()));
                     }
 
                 case Expr.Cons({ } first, { } rest):
@@ -272,7 +272,7 @@ namespace Fux.Building.AlgorithmW
                         break;
                     }
 
-                case Expr.Decons({ } first, { } rest):
+                case Expr.DeCons({ } first, { } rest):
                     {
                         var (s1, t1) = InferType(first, env);
                         var (s2, t2) = InferType(first, ApplySubstitution(env, s1));
@@ -281,10 +281,26 @@ namespace Fux.Building.AlgorithmW
 
                         return (ComposeSubstitutions(s3, s2, s1), new Type.List(ApplySubstitution(t1, s3)));
                     }
+                case Expr.GetValue({ } expr, { } typeGen, { } index):
+                    {
+                        var (s1, t1) = InferType(expr, env);
+                        var t2 = typeGen(env);
+                        Assert(t2 is WithStructure);
+                        var s2 = MostGeneralUnifier(t1, t2);
+                        var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
+
+                        Assert(t2.GetType() == t3.GetType());
+
+                        var s = ComposeSubstitutions(s3, s2, s1);
+                        var t = ((WithStructure)t3).At(index);
+
+                        return (s, t);
+                    }
+
                 case Expr.Get21({ } expr):
                     {
                         var (s1, t1) = InferType(expr, env);
-                        var t2 = new Type.Tuple2(env.Generator.GetNext(), env.Generator.GetNext());
+                        var t2 = new Type.Tuple2(env.GetNext(), env.GetNext());
                         var s2 = MostGeneralUnifier(t1, t2);
                         var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
                         Assert(t3 is Type.Tuple2);
@@ -294,10 +310,11 @@ namespace Fux.Building.AlgorithmW
 
                         return (s, t);
                     }
+
                 case Expr.Get22({ } expr):
                     {
                         var (s1, t1) = InferType(expr, env);
-                        var t2 = new Type.Tuple2(env.Generator.GetNext(), env.Generator.GetNext());
+                        var t2 = new Type.Tuple2(env.GetNext(), env.GetNext());
                         var s2 = MostGeneralUnifier(t1, t2);
                         var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
                         Assert(t3 is Type.Tuple2);
@@ -308,6 +325,7 @@ namespace Fux.Building.AlgorithmW
                         return (s, t);
                     }
             }
+
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
         }
 
@@ -350,9 +368,9 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// To apply a substitution, we just apply it to each polytype in the type environment.
         /// </summary>
-        private Environment ApplySubstitution(Environment typeEnv, Substitution substitution)
+        private Environment ApplySubstitution(Environment env, Substitution substitution)
         {
-            return new Environment(typeEnv.Generator, typeEnv.Enumerate().Select(vp => (vp.var, ApplySubstitution(vp.polytype, substitution))));
+            return Environment.From(env, env.Enumerate().Select(vp => (vp.var, ApplySubstitution(vp.polytype, substitution))));
         }
 
         private Polytype ApplySubstitution(Polytype polytype, Substitution substitution)
@@ -625,7 +643,7 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private Type InstantiateType(Polytype polytype, Environment environment)
         {
-            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.Generator.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
+            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
         }

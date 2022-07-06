@@ -45,11 +45,11 @@ namespace Fux.Building.AlgorithmW
                     break;
                 case Expr.Iff expr:
                     WriteLine($"{Lex.KwIf}");
-                    Indent(expr.Cond);
+                    Indent(() => Print(expr.Cond));
                     WriteLine($"{Lex.KwThen}");
-                    Indent(expr.Then);
+                    Indent(() => Print(expr.Then));
                     WriteLine($"{Lex.KwElse}");
-                    Indent(expr.Else);
+                    Indent(() => Print(expr.Else));
                     break;
                 case Expr.Let expr:
                     WriteLine($"{Lex.KwLet}");
@@ -60,14 +60,11 @@ namespace Fux.Building.AlgorithmW
                     });
                     writer.EndLine();
                     WriteLine($"{Lex.KwIn}");
-                    Indent(() =>
-                    {
-                        PrintLine(expr.Expr2);
-                    });
+                    Indent(() => Print(expr.Expr2));
                     break;
                 case Expr.Matcher expr:
                     WriteLine($"{Lex.KwCase}");
-                    Indent(() => PrintLine(expr.Expr));
+                    Indent(() => Print(expr.Expr));
                     WriteLine($"{Lex.KwOf}");
                     Indent(() =>
                     {
@@ -98,7 +95,7 @@ namespace Fux.Building.AlgorithmW
                     break;
                 case Expr.Lambda expr:
                     WriteLine($"{expr.Term} =>");
-                    Indent(() => PrintLine(expr.Exp));
+                    Indent(() => Print(expr.Exp));
                     break;
                 case Expr.Sugar.Application expr:
                     PrintLine(expr.Exprs[0]);
@@ -123,19 +120,13 @@ namespace Fux.Building.AlgorithmW
             }
         }
 
-        private void PrintLine(Expr expr)
-        {
-            Print(expr);
-            writer.EndLine();
-        }
-
-        private string Str(Expr expr)
+        private string Str(Expr expr, int prio = 1)
         {
             switch (expr)
             {
                 case Expr.Sugar.Application app:
                     {
-                        return $"({string.Join(" ", app.Exprs.Select(e => Str(e)))})";
+                        return Clamp($"{string.Join(" ", app.Exprs.Select(e => Str(e)))}");
                     }
                 case Expr.Variable var:
                     {
@@ -194,7 +185,7 @@ namespace Fux.Building.AlgorithmW
                     {
                         return $"({Str(cons.First)} {Lex.Symbol.Cons} {Str(cons.Rest)})";
                     }
-                case Expr.Decons decons:
+                case Expr.DeCons decons:
                     {
                         return $"({Str(decons.First)} {Lex.Symbol.Cons} {Str(decons.Rest)})";
                     }
@@ -206,11 +197,24 @@ namespace Fux.Building.AlgorithmW
                     {
                         return $"[{Str(get2.Expr)}.2]";
                     }
+                case Expr.GetValue getValue:
+                    {
+                        return $"[{Str(getValue.Expr)}@{getValue.Index}]";
+                    }
                 default:
                     break;
             }
             Assert(false);
             throw new NotImplementedException($"not implemented expr ({expr.GetType().FullName}) - {expr}");
+
+            string Clamp(string str)
+            {
+                if (prio > 0)
+                {
+                    return $"({str})";
+                }
+                return str;
+            }
         }
 
         private Expr Sugar(Expr expr)
@@ -246,38 +250,21 @@ namespace Fux.Building.AlgorithmW
             }
         }
 
-        private void Indent(Expr expr)
+        private void PrintLine(Expr expr)
         {
-            writer.Indent(() =>
-            {
-                Print(expr);
-                writer.EndLine();
-            });
+            Print(expr);
+            writer.EndLine();
         }
 
         private void Indent(Action action)
         {
             writer.Indent(action);
-        }
-
-        private void IndentLine(string text)
-        {
-            writer.Indent(() => writer.WriteLine(text));
-        }
-
-        private void WriteLine(Expr expr)
-        {
-            writer.WriteLine($"{expr}");
+            writer.EndLine();
         }
 
         private void WriteLine(string? text = null)
         {
             writer.WriteLine(text ?? string.Empty);
-        }
-
-        private void Write(Expr expr)
-        {
-            writer.Write($"{expr}");
         }
 
         private void Write(string? text = null)

@@ -435,7 +435,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.Ctor ctor:
+                    case A.Pattern.DeCtor ctor:
                         {
                             foreach (var argument in ctor.Arguments)
                             {
