@@ -106,6 +106,11 @@ namespace Fux.Building.AlgorithmW
                 //
                 case Expr.Let({ } term, { } expr1, { } expr2):
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         var env1 = env.Remove(term);
                         var (s1, t1) = InferType(expr1, env);
                         var tp = GeneralizePolytype(ApplySubstitution(env1, s1), t1);
@@ -230,6 +235,40 @@ namespace Fux.Building.AlgorithmW
 
                         foreach (var cheese in cases)
                         {
+#if true
+                            var cenv = env;
+
+#if false
+                            foreach (var x in cheese.Env.Enumerate())
+                            {
+                                cenv = cenv.Insert(x.var, x.polytype);
+                            }
+#endif
+
+                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(cenv, s1));
+
+                            var s3 = MostGeneralUnifier(t1, t2);
+
+                            t1 = ApplySubstitution(t1, s3);
+                            t2 = ApplySubstitution(t1, s3);
+
+                            s1 = ComposeSubstitutions(s3, s2, s1);
+
+                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(cenv, s1));
+
+                            s1 = ComposeSubstitutions(s4, s1);
+
+                            if (type != null)
+                            {
+                                var s5 = MostGeneralUnifier(type, t4);
+                                type = ApplySubstitution(t4, s5);
+                                s1 = ComposeSubstitutions(s5, s1);
+                            }
+                            else
+                            {
+                                type = ApplySubstitution(t4, s1);
+                            }
+#else
                             var cenv = env;
 
                             foreach (var x in cheese.Env.Enumerate())
@@ -260,6 +299,7 @@ namespace Fux.Building.AlgorithmW
                             {
                                 type = ApplySubstitution(t4, s1);
                             }
+#endif
                         }
 
                         Assert(type != null);
@@ -274,17 +314,27 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.DeCons({ } first, { } rest):
                     {
+#if true
+                        var type = env.GetNext();
+                        return (Substitution.Empty(), new Type.List(type));
+#else
                         var (s1, t1) = InferType(first, env);
                         var (s2, t2) = InferType(first, ApplySubstitution(env, s1));
 
                         var s3 = MostGeneralUnifier(t1, t2);
 
                         return (ComposeSubstitutions(s3, s2, s1), new Type.List(ApplySubstitution(t1, s3)));
+#endif
                     }
                 case Expr.GetValue({ } expr, { } typeGen, { } index):
                     {
                         var (s1, t1) = InferType(expr, env);
                         var t2 = typeGen(env);
+                        if (t2 is not WithStructure)
+                        {
+                            t2 = typeGen(env);
+
+                        }
                         Assert(t2 is WithStructure);
                         var s2 = MostGeneralUnifier(t1, t2);
                         var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
@@ -293,34 +343,6 @@ namespace Fux.Building.AlgorithmW
 
                         var s = ComposeSubstitutions(s3, s2, s1);
                         var t = ((WithStructure)t3).At(index);
-
-                        return (s, t);
-                    }
-
-                case Expr.Get21({ } expr):
-                    {
-                        var (s1, t1) = InferType(expr, env);
-                        var t2 = new Type.Tuple2(env.GetNext(), env.GetNext());
-                        var s2 = MostGeneralUnifier(t1, t2);
-                        var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
-                        Assert(t3 is Type.Tuple2);
-
-                        var s = ComposeSubstitutions(s3, s2, s1);
-                        var t = ((Type.Tuple2)t3).Type1;
-
-                        return (s, t);
-                    }
-
-                case Expr.Get22({ } expr):
-                    {
-                        var (s1, t1) = InferType(expr, env);
-                        var t2 = new Type.Tuple2(env.GetNext(), env.GetNext());
-                        var s2 = MostGeneralUnifier(t1, t2);
-                        var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
-                        Assert(t3 is Type.Tuple2);
-
-                        var s = ComposeSubstitutions(s3, s2, s1);
-                        var t = ((Type.Tuple2)t3).Type2;
 
                         return (s, t);
                     }
@@ -340,10 +362,20 @@ namespace Fux.Building.AlgorithmW
 
                 // To apply to a function, we simply apply to each of the input and output.
                 case Type.Function({ } t1, { } t2):
-                    return new Type.Function(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution));
+                    return new Type.Function(
+                        ApplySubstitution(t1, substitution),
+                        ApplySubstitution(t2, substitution));
 
                 case Type.Tuple2({ } t1, { } t2):
-                    return new Type.Tuple2(ApplySubstitution(t1, substitution), ApplySubstitution(t2, substitution));
+                    return new Type.Tuple2(
+                        ApplySubstitution(t1, substitution),
+                        ApplySubstitution(t2, substitution));
+
+                case Type.Tuple3({ } t1, { } t2, { } t3):
+                    return new Type.Tuple3(
+                        ApplySubstitution(t1, substitution),
+                        ApplySubstitution(t2, substitution),
+                        ApplySubstitution(t3, substitution));
 
                 case Type.List({ } tl):
                     return new Type.List(ApplySubstitution(tl, substitution));

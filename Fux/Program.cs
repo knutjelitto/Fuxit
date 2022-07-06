@@ -116,7 +116,7 @@ namespace Fux
                 var mods = builder.Modules.ToList();
                 var max = mods.Max(m => m.Lines != null ? m.Lines.Count : 0);
 
-                Terminal.Write($"[{builder.Packages.Count()} paks, {mods.Count} mods, {max} lmax, {Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} lps] ");
+                Terminal.Write($"[{Collector.Instance.NumberOfExceptions} except, {builder.Packages.Count()} paks, {mods.Count} mods, {max} lmax, {Collector.Instance.NumberOfLines} lines, {whole.ElapsedMilliseconds} ms, {locsec} lps] ");
             }
             catch (DiagnosticException diagnostics)
             {

@@ -214,16 +214,15 @@
 
         public class DeCons : Pattern
         {
-            public DeCons(List<Pattern> patterns)
+            public DeCons(Pattern first, Pattern rest)
             {
-                Assert(patterns.Count >= 2);
-
-                Patterns = patterns.ToArray();
+                First = first;
+                Rest = rest;
             }
+            public Pattern First { get; }
+            public Pattern Rest { get; }
 
-            public IReadOnlyList<Pattern> Patterns { get; }
-
-            public override string ToString() => $"{Patterns.First()} {Lex.Symbol.Cons} {string.Join($" {Lex.Symbol.Cons} ", Patterns.Skip(1))}";
+            public override string ToString() => $"{First} {Lex.Symbol.Cons} {Rest}";
         }
 
     }

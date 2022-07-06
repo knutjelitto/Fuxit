@@ -64,12 +64,13 @@
 
                 case A.Pattern.DeCons destruct:
                     {
-                        foreach (var item in destruct.Patterns)
+                        foreach (var pim in Flatten(destruct.First, genWildcard, true))
                         {
-                            foreach (var pim in Flatten(item, genWildcard, true))
-                            {
-                                yield return pim;
-                            }
+                            yield return pim;
+                        }
+                        foreach (var pim in Flatten(destruct.Rest, genWildcard, true))
+                        {
+                            yield return pim;
                         }
                         break;
                     }

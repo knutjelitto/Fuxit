@@ -1,11 +1,13 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0066 // Convert switch statement to expression
 #pragma warning disable IDE0051 // Remove unused private members
 
 namespace Fux.Building.AlgorithmW
 {
     public sealed class Pretty
     {
-        private static readonly Pretty Instance = new Pretty(Writer.Null());
+        private static readonly Pretty Instance = new(Writer.Null());
 
         private const int maxWidth = 30;
 
@@ -114,6 +116,9 @@ namespace Fux.Building.AlgorithmW
                     PrintLine(tuple2.Expr2);
                     WriteLine($")");
                     break;
+                case Expr.DeCons deCons:
+                    Write($"<<<{Str(deCons)}>>>");
+                    break;
                 default:
                     Assert(false);
                     throw new NotImplementedException();
@@ -128,82 +133,92 @@ namespace Fux.Building.AlgorithmW
                     {
                         return Clamp($"{string.Join(" ", app.Exprs.Select(e => Str(e)))}");
                     }
+
                 case Expr.Variable var:
                     {
                         return var.Term.Name;
                     }
+
                 case Expr.Native native:
                     {
                         return native.Nat.FullName;
                     }
+
                 case Expr.Literal literal:
                     {
                         return literal.ToString();
                     }
+
                 case Expr.Iff iff:
                     {
                         return $"(if {Str(iff.Cond)} then {Str(iff.Then)} else {Str(iff.Else)})";
                     }
+
                 case Expr.Application app:
                     {
                         return Str(SugarApp(app));
                     }
+
                 case AlgorithmW.Expr.Empty:
                     {
                         return Lex.Symbol.Empty;
                     }
+
                 case AlgorithmW.Expr.Wildcard:
                     {
                         return Lex.Symbol.Wildcard;
                     }
+
                 case Expr.Lambda lambda:
                     {
                         return $"({lambda.Term} => {Str(lambda.Exp)})";
                     }
+
                 case Expr.Tuple2 tuple2:
                     {
                         return $"({Str(tuple2.Expr1)}, {Str(tuple2.Expr2)})";
                     }
+
                 case Expr.Matcher matcher:
                     {
                         var cases = string.Join(" ", matcher.Cases.Select(e => Str(e)));
                         return $"case {Str(matcher.Expr)} of {cases}";
                     }
+
                 case Expr.Case @case:
                     {
                         return $"({Str(@case.Pattern)} -> {Str(@case.Expr)})";
                     }
+
                 case Expr.Let let:
                     {
                         return $"(let {let.Term} = {Str(let.Expr1)} in {Str(let.Expr2)})";
                     }
+
                 case Expr.Unify unify:
                     {
                         return Str(unify.Expr);
                     }
+
                 case Expr.Cons cons:
                     {
                         return $"({Str(cons.First)} {Lex.Symbol.Cons} {Str(cons.Rest)})";
                     }
-                case Expr.DeCons decons:
+
+                case Expr.DeCons deCons:
                     {
-                        return $"({Str(decons.First)} {Lex.Symbol.Cons} {Str(decons.Rest)})";
+                        return $"({Str(deCons.First)} {Lex.Symbol.Cons} {Str(deCons.Rest)})";
                     }
-                case Expr.Get21 get1:
-                    {
-                        return $"[{Str(get1.Expr)}.1]";
-                    }
-                case Expr.Get22 get2:
-                    {
-                        return $"[{Str(get2.Expr)}.2]";
-                    }
+
                 case Expr.GetValue getValue:
                     {
                         return $"[{Str(getValue.Expr)}@{getValue.Index}]";
                     }
+
                 default:
                     break;
             }
+
             Assert(false);
             throw new NotImplementedException($"not implemented expr ({expr.GetType().FullName}) - {expr}");
 

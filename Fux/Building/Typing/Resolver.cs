@@ -72,6 +72,8 @@ namespace Fux.Building.Typing
                     }
                 });
                 Writer.WriteLine();
+
+                Collector.Instance.NumberOfExceptions++;
             }
         }
 

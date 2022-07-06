@@ -2,8 +2,6 @@
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0060 // Remove unused parameter
 
-using Fux.Building.Typing;
-
 namespace Fux.Building.Phases
 {
     public sealed class Phase6Resolve : Phase
@@ -432,11 +430,9 @@ namespace Fux.Building.Phases
                         }
 
                     case A.Pattern.DeCons destruct:
-                        {
-                            foreach (var pattern in destruct.Patterns)
-                            {
-                                ResolveExpr(scope, pattern);
-                            }
+{
+                            ResolveExpr(scope, destruct.First);
+                            ResolveExpr(scope, destruct.Rest);
                             break;
                         }
                     case A.Pattern.Tuple tuple:

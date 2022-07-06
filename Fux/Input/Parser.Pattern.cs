@@ -21,19 +21,11 @@
 
             if (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.Cons))
             {
-                var patterns = new List<A.Pattern> { pattern };
+                cursor.Swallow(Lex.Operator);
 
-                do
-                {
-                    cursor.Swallow(Lex.Operator);
+                var rest = Pattern(cursor);
 
-                    var patternx = PatternX(cursor);
-
-                    patterns.Add(patternx);
-                }
-                while (cursor.Is(Lex.Operator) && cursor.IsWeak(Lex.Symbol.Cons));
-
-                return new A.Pattern.DeCons(patterns);
+                return new A.Pattern.DeCons(pattern, rest);
             }
 
             return pattern;

@@ -47,8 +47,18 @@
             }
         }
 
-        public sealed record List(Type Type) : Type
+        public sealed record List(Type Type) : Type, WithStructure
 {
+            public Type At(int index)
+            {
+                if (index == 0)
+                {
+                    return Type;
+                }
+
+                return this;
+            }
+
             public override string ToString() => $"{Lex.Primitive.List}<{Type}>";
         }
 
