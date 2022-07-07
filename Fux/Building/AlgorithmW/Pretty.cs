@@ -111,13 +111,16 @@ namespace Fux.Building.AlgorithmW
                     break;
                 case Expr.Tuple2 tuple2:
                     Write($"(   ");
-                    PrintLine(tuple2.Expr1);
+                    Indent(() => Print(tuple2.Expr1));
                     Write($",   ");
-                    PrintLine(tuple2.Expr2);
+                    Indent(() => Print(tuple2.Expr2));
                     WriteLine($")");
                     break;
                 case Expr.DeCons deCons:
                     Write($"<<<{Str(deCons)}>>>");
+                    break;
+                case Expr.DeCtor deCtor:
+                    Write($"{Str(deCtor)}");
                     break;
                 default:
                     Assert(false);
@@ -208,6 +211,16 @@ namespace Fux.Building.AlgorithmW
                 case Expr.DeCons deCons:
                     {
                         return $"({Str(deCons.First)} {Lex.Symbol.Cons} {Str(deCons.Rest)})";
+                    }
+
+                case Expr.DeCtor deCtor:
+                    {
+                        if (deCtor.Arguments.Count > 0)
+                        {
+                            var args = string.Join(" ", deCtor.Arguments.Select(a => Str(a)));
+                            return $"({Str(deCtor.First)} {args})";
+                        }
+                        return $"({Str(deCtor.First)})";
                     }
 
                 case Expr.GetValue getValue:

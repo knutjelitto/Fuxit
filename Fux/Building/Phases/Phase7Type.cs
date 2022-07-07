@@ -10,7 +10,7 @@ namespace Fux.Building.Phases
 {
     public sealed class Phase7Typing : Phase
     {
-        private const int underInvestigation = 135;
+        private const int underInvestigation = 177;
         private static int numero = 0;
         private const int numeroFrom = 1;
         private const int numeroTo = 200;

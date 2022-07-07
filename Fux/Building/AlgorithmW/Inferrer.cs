@@ -314,27 +314,34 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.DeCons({ } first, { } rest):
                     {
-#if true
                         var type = env.GetNext();
                         return (Substitution.Empty(), new Type.List(type));
-#else
-                        var (s1, t1) = InferType(first, env);
-                        var (s2, t2) = InferType(first, ApplySubstitution(env, s1));
-
-                        var s3 = MostGeneralUnifier(t1, t2);
-
-                        return (ComposeSubstitutions(s3, s2, s1), new Type.List(ApplySubstitution(t1, s3)));
-#endif
                     }
+
+                case Expr.DeCtor({ } first, { } arguments):
+                    {
+                        Assert(first is Expr.Variable);
+
+                        var type = env.GetNext();
+                        return (Substitution.Empty(), type);
+                    }
+
                 case Expr.GetValue({ } expr, { } typeGen, { } index):
                     {
-                        var (s1, t1) = InferType(expr, env);
-                        var t2 = typeGen(env);
-                        if (t2 is not WithStructure)
+                        if (Investigated)
                         {
-                            t2 = typeGen(env);
-
+                            Assert(true);
                         }
+                        var (s1, t1) = InferType(expr, env);
+
+                        if (t1 is Type.Concrete concrete)
+                        {
+                            var type = InstantiateType(typeGen(env), env);
+
+                            return (s1, type);
+                        }
+
+                        var t2 = InstantiateType(typeGen(env), env);
                         Assert(t2 is WithStructure);
                         var s2 = MostGeneralUnifier(t1, t2);
                         var (s3, t3) = InferType(expr, ApplySubstitution(env, s2));
@@ -673,9 +680,9 @@ namespace Fux.Building.AlgorithmW
         /// <summary>
         /// Instantiates a polytype into a type. Replaces all bound type variables with fresh type variables and return the resulting type.
         /// </summary>
-        private Type InstantiateType(Polytype polytype, Environment environment)
+        private Type InstantiateType(Polytype polytype, Environment env)
         {
-            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: environment.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
+            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: env.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
         }

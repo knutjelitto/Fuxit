@@ -193,7 +193,12 @@
 
             public class Integer : Literal
             {
-                public Integer(Expr.Literal.Integer literal) : base(literal) { }
+                public Integer(Expr.Literal.Integer literal) : base(literal)
+                {
+                    Value = literal.Value;
+                }
+
+                public long Value { get; }
             }
 
             public class Float : Literal

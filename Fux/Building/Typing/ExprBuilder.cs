@@ -304,23 +304,25 @@ namespace Fux.Building.Typing
 
                 case A.Pattern.DeCtor deCtor:
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         Assert(deCtor.Name.Resolved is A.Ref.Ctor);
 
                         var first = Build(ref env, deCtor.Name);
 
-                        return apply(ref env, first, deCtor.Arguments.Count - 1);
-
-                        W.Expr apply(ref W.Environment env, W.Expr first, int index)
+                        var arguments = new List<W.Expr>();
+                        foreach (var arg in deCtor.Arguments)
                         {
-                            if (index < 0)
-                            {
-                                return first;
-                            }
-                            else
-                            {
-                                return new W.Expr.Application(first, apply(ref env, BuildPattern(ref env, deCtor.Arguments[index]), index - 1));
-                            }
+                            var argument = BuildPattern(ref env, arg);
+                            arguments.Add(argument);
                         }
+
+                        var expr = new W.Expr.DeCtor(first, arguments);
+
+                        return expr;
                     }
 
                 case A.Pattern.DeCons deCons:
@@ -349,10 +351,9 @@ namespace Fux.Building.Typing
                             BuildPattern(ref env, tuple3.Pattern3));
                     }
 
-                case A.Pattern.Literal.Integer:
+                case A.Pattern.Literal.Integer integer:
                     {
-                        // TODO: value
-                        return new W.Expr.Literal.Integer(0);
+                        return new W.Expr.Literal.Integer(integer.Value);
                     }
                 case A.Pattern.WithAlias withAlias:
                     {
@@ -372,8 +373,13 @@ namespace Fux.Building.Typing
 
         private bool nonforce = false;
 
-        private W.Expr BuildDestructure(ref W.Environment env, W.Expr.Variable matchExpr, A.Pattern pattern, W.Expr caseExpr)
+        private W.Expr BuildDestructure(ref W.Environment env, W.Expr.Variable matchVariable, A.Pattern pattern, W.Expr caseExpr)
         {
+            if (Investigated)
+            {
+                Assert(true);
+            }
+
             switch (pattern)
             {
                 case A.Pattern.Wildcard:
@@ -386,40 +392,20 @@ namespace Fux.Building.Typing
                         return caseExpr;
                     }
 
+                case A.Pattern.Literal.Integer integer:
+                    {
+                        return caseExpr;
+                    }
+
+                case A.Pattern.UpperId upper:
+                    {
+                        return caseExpr;
+                    }
+
                 case A.Pattern.List list when list.Patterns.Count > 0:
                     {
                         Assert(false);
                         throw new NotImplementedException();
-                    }
-
-                case A.Pattern.DeCons deCons:
-                    {
-                        if (matchExpr is W.Expr.Variable matchVar)
-                        {
-                            var var1 = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
-                            var select1 = new W.Expr.GetValue(matchVar, genType, 0);
-                            var var2 = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
-                            var select2 = new W.Expr.GetValue(matchVar, genType, 1);
-
-                            var let =
-                                new W.Expr.Let(var1.Term, select1,
-                                    new W.Expr.Let(var2.Term, select2,
-                                        BuildDestructure(ref env, var1, deCons.First,
-                                            BuildDestructure(ref env, var2, deCons.Rest, caseExpr))));
-
-                            return let;
-
-                            W.Type genType(W.Environment env)
-                            {
-                                return new W.Type.List(env.GetNext());
-                            }
-                        }
-
-                        Assert(nonforce);
-
-                        return new W.Expr.DeCons(
-                            BuildDestructure(ref env, matchExpr, deCons.First, caseExpr),
-                            BuildDestructure(ref env, matchExpr, deCons.Rest, caseExpr));
                     }
 
                 case A.Pattern.Signature sign:
@@ -428,7 +414,7 @@ namespace Fux.Building.Typing
                         {
                             var variable = new W.Expr.Variable(sign.Name);
 
-                            return new W.Expr.Let(variable.Term, matchExpr, caseExpr);
+                            return new W.Expr.Let(variable.Term, matchVariable, caseExpr);
                         }
 
                         Assert(false);
@@ -439,18 +425,7 @@ namespace Fux.Building.Typing
                     {
                         var variable = new W.Expr.Variable(lower.Identifier);
 
-                        return new W.Expr.Let(variable.Term, matchExpr, caseExpr);
-                    }
-
-                case A.Pattern.UpperId upper:
-                    {
-                        Assert(nonforce);
-
-                        Assert(upper.Identifier.Resolved is A.Ref.Ctor);
-
-                        var first = Build(ref env, upper.Identifier);
-
-                        return first;
+                        return new W.Expr.Let(variable.Term, matchVariable, caseExpr);
                     }
 
                 case A.Pattern.DeCtor deCtor:
@@ -463,16 +438,7 @@ namespace Fux.Building.Typing
 
                         Assert(deCtor.Arguments.Count == ctor.Arguments.Count);
 
-                        if (deCtor.Arguments.Count == 0)
-                        {
-                            return caseExpr;
-                        }
-
-                        Assert(nonforce);
-
                         var expr = GenDestruct(ref env, 0);
-
-                        nonforce = true;
 
                         return expr;
 
@@ -486,26 +452,64 @@ namespace Fux.Building.Typing
                             {
                                 var variable = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
                                 var type = ctor.Arguments[index];
-                                Func<W.Environment, W.Type> genType = env =>
+                                Func<W.Environment, W.Polytype> genType = env =>
                                 {
                                     var ty = typeBuilder.Build(env, type);
-                                    Assert(ty.TypeVariables.Count == 0);
-                                    return ty.Type;
+                                    return ty;
                                 };
-                                var select = new W.Expr.GetValue(matchExpr, genType, index);
+                                var select = new W.Expr.GetValue(matchVariable, genType, index);
                                 return new W.Expr.Let(variable.Term, select, 
                                     BuildDestructure(ref env, variable, deCtor.Arguments[index], GenDestruct(ref env, index + 1)));
                             }
                         }
                     }
 
+
+                case A.Pattern.DeCons deCons:
+                    {
+                        var var1 = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
+                        var select1 = new W.Expr.GetValue(matchVariable, genType, 0);
+                        var var2 = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
+                        var select2 = new W.Expr.GetValue(matchVariable, genType, 1);
+
+                        var let =
+                            new W.Expr.Let(var1.Term, select1,
+                                new W.Expr.Let(var2.Term, select2,
+                                    BuildDestructure(ref env, var1, deCons.First,
+                                        BuildDestructure(ref env, var2, deCons.Rest, caseExpr))));
+
+                        return let;
+
+                        W.Polytype genType(W.Environment env)
+                        {
+                            return new W.Polytype(new W.Type.List(env.GetNext()));
+                        }
+                    }
+
                 case A.Pattern.Tuple2 tuple2:
                     {
-                        Assert(nonforce);
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
 
-                        return new W.Expr.Tuple2(
-                            BuildDestructure(ref env, matchExpr, tuple2.Pattern1, caseExpr),
-                            BuildDestructure(ref env, matchExpr, tuple2.Pattern2, caseExpr));
+                        var var1 = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
+                        var select1 = new W.Expr.GetValue(matchVariable, genType, 0);
+                        var var2 = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
+                        var select2 = new W.Expr.GetValue(matchVariable, genType, 1);
+
+                        var let =
+                            new W.Expr.Let(var1.Term, select1,
+                                new W.Expr.Let(var2.Term, select2,
+                                    BuildDestructure(ref env, var1, tuple2.Pattern1,
+                                        BuildDestructure(ref env, var2, tuple2.Pattern2, caseExpr))));
+
+                        return let;
+
+                        W.Polytype genType(W.Environment env)
+                        {
+                            return new W.Polytype(new W.Type.Tuple2(env.GetNext(), env.GetNext()));
+                        }
                     }
 
                 case A.Pattern.Tuple3 tuple3:
@@ -513,23 +517,16 @@ namespace Fux.Building.Typing
                         Assert(nonforce);
 
                         return new W.Expr.Tuple3(
-                            BuildDestructure(ref env, matchExpr, tuple3.Pattern1, caseExpr),
-                            BuildDestructure(ref env, matchExpr, tuple3.Pattern2, caseExpr),
-                            BuildDestructure(ref env, matchExpr, tuple3.Pattern3, caseExpr));
+                            BuildDestructure(ref env, matchVariable, tuple3.Pattern1, caseExpr),
+                            BuildDestructure(ref env, matchVariable, tuple3.Pattern2, caseExpr),
+                            BuildDestructure(ref env, matchVariable, tuple3.Pattern3, caseExpr));
                     }
 
-                case A.Pattern.Literal.Integer:
-                    {
-                        Assert(nonforce);
-
-                        // TODO: value
-                        return new W.Expr.Literal.Integer(0);
-                    }
                 case A.Pattern.WithAlias withAlias:
                     {
                         Assert(nonforce);
 
-                        var x = BuildDestructure(ref env, matchExpr, withAlias.Pattern, caseExpr);
+                        var x = BuildDestructure(ref env, matchVariable, withAlias.Pattern, caseExpr);
 
                         break;
                     }
@@ -664,7 +661,7 @@ namespace Fux.Building.Typing
                             new W.Expr.Let(name1, first,
                                 new W.Expr.Let(name2, second, inExpr)));
 
-                        W.Type typeGen(W.Environment env) => new W.Type.Tuple2(env.GetNext(), env.GetNext());
+                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple2(env.GetNext(), env.GetNext()));
                     }
 
                 case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple3 tuple2:
@@ -686,7 +683,7 @@ namespace Fux.Building.Typing
                                 new W.Expr.Let(name2, second,
                                     new W.Expr.Let(name3, third, inExpr))));
 
-                        W.Type typeGen(W.Environment env) => new W.Type.Tuple3(env.GetNext(), env.GetNext(), env.GetNext());
+                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple3(env.GetNext(), env.GetNext(), env.GetNext()));
                     }
                 case A.Decl.Var var when var.Parameters.Count == 0:
                     {
@@ -733,7 +730,7 @@ namespace Fux.Building.Typing
                                             expr = new W.Expr.Lambda(term, expr);
                                             return expr;
 
-                                            W.Type typeGen(W.Environment env) => new W.Type.Tuple2(env.GetNext(), env.GetNext());
+                                            W.Polytype typeGen(W.Environment env) =>  new W.Polytype(new W.Type.Tuple2(env.GetNext(), env.GetNext()));
                                         }
                                     default:
                                         Assert(false);
