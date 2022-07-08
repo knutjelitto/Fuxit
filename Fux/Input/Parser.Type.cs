@@ -8,7 +8,6 @@ namespace Fux.Input
 {
     public partial class Parser
     {
-
         private A.Type TypeArgument(Cursor cursor)
         {
             return cursor.Scope(cursor =>
@@ -39,9 +38,9 @@ namespace Fux.Input
             });
         }
 
-        private A.Type Construction(Cursor cursor)
+        private A.Type.Ctor Construction(Cursor cursor)
         {
-            return cursor.Scope<A.Type>(cursor =>
+            return cursor.Scope(cursor =>
             {
                 var name = Identifier(cursor).MultiUpper();
 

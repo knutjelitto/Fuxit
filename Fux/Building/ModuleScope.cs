@@ -214,6 +214,7 @@ namespace Fux.Building
                         {
                             Assert(importName.Text.StartsWith("Elm.Kernel."));
                             native = new A.Decl.Native(importName, memberName);
+                            native.InModule = importModule;
                             Collector.Instance.Native.Add(native);
                             importModule.Scope.AddNative(native);
                         }

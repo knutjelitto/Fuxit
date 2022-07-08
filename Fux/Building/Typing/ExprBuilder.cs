@@ -185,6 +185,17 @@ namespace Fux.Building.Typing
             return BuildReference(ref env, reference);
         }
 
+        private W.Expr.Variable MakeVar(A.NamedDecl decl)
+        {
+            Assert(decl.InModule != null);
+
+            var name = $"{decl.InModule.Name}.{decl.Name}";
+            var variable = new W.Expr.Variable(name);
+
+            return variable;
+        }
+
+
         private W.Expr BuildReference(ref W.Environment env, A.Ref reference)
         {
             switch (reference)
@@ -210,6 +221,8 @@ namespace Fux.Building.Typing
                 case A.Ref.Var varRef:
                     {
                         var var = varRef.Decl;
+
+                        Assert(var.InModule != null);
 
                         var variable = new W.Expr.Variable(reference.Name);
 

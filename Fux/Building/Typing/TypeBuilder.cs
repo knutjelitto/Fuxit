@@ -80,7 +80,7 @@ namespace Fux.Building.Typing
                             case Lex.Primitive.Char:
                                 return new W.Type.Char  ();
                         }
-                        return new W.Type.Concrete(concrete.Name.Text);
+                        return new W.Type.Concrete(concrete, concrete.Name.Text);
                     }
 
                 case A.Type.Primitive.List list:
@@ -88,6 +88,8 @@ namespace Fux.Building.Typing
 
                 case A.Type.Custom custom:
                     {
+                        Assert(custom.InModule != null);
+
                         switch (custom.Name.Text)
                         {
                             case Lex.Primitive.Int:
@@ -103,16 +105,18 @@ namespace Fux.Building.Typing
                         }
 
                         var args = custom.Parameters.Select(t => VarType(t.Text)).ToList();
-                        return new W.Type.Concrete(custom.Name.Text, args.ToArray());
+                        return new W.Type.Concrete(custom, custom.Name.Text, args.ToArray());
                     }
                 case A.Type.Ctor ctor:
                     {
+                        Assert(ctor.InModule != null);
+
                         var args = ctor.Arguments.Select(t => Resolve(env, t)).ToList();
                         if (args.Count > 0)
                         {
-                            return new W.Type.Concrete(ctor.Name.Text, args.ToArray());
+                            return new W.Type.Concrete(ctor, ctor.Name.Text, args.ToArray());
                         }
-                        return new W.Type.Concrete(ctor.Name.Text);
+                        return new W.Type.Concrete(ctor, ctor.Name.Text);
                     }
             }
             throw new NotImplementedException($"type not implemented: '{type.Resolved.GetType().FullName}({type})'");

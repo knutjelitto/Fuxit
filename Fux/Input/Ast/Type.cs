@@ -151,7 +151,7 @@
         {
             public override string ToString()
             {
-                return $"()";
+                return Lex.Symbol.Unit;
             }
         }
 
@@ -165,6 +165,16 @@
 
             public Identifier Name { get; }
             public Decl.TypeParameterList Parameters { get; }
+
+            public override string ToString()
+            {
+                if (Parameters.Count > 0)
+                {
+                    var parameters = string.Join(",", Parameters);
+                    return $"{Name}<{Parameters}>";
+                }
+                return $"{Name}";
+            }
         }
 
         public class Ctor : Type
