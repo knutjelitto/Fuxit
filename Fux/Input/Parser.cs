@@ -204,12 +204,12 @@ namespace Fux.Input
                 {
                     if (cursor.Is(Lex.LowerId))
                     {
-                        var name = new A.Identifier(cursor.Swallow(Lex.LowerId));
+                        var name = SingleIdentifier(cursor).SingleLower();
                         exposed.Add(new A.Exposed.Var(name));
                     }
                     else if (cursor.Is(Lex.UpperId))
                     {
-                        var name = new A.Identifier(cursor.Swallow(Lex.UpperId));
+                        var name = SingleIdentifier(cursor).SingleUpper();
                         var inclusive = false;
                         if (cursor.IsWeak(Lex.Weak.ExposeAll))
                         {
@@ -220,7 +220,7 @@ namespace Fux.Input
                     }
                     else if (cursor.Is(Lex.OperatorId))
                     {
-                        var name = new A.Identifier(cursor.Swallow(Lex.OperatorId));
+                        var name = SingleIdentifier(cursor).SingleOp();
                         exposed.Add(new A.Exposed.Var(name));
                     }
                     else
@@ -250,8 +250,7 @@ namespace Fux.Input
                 }
                 var prioTok = cursor.Swallow(Lex.Integer);
                 var power = new A.InfixPower(prioTok);
-                var operatorTok = cursor.Swallow(Lex.OperatorId);
-                var operatorSymbol = new A.Identifier(operatorTok);
+                var operatorSymbol = SingleIdentifier(cursor).SingleOp();
                 var defineTok = cursor.Swallow(Lex.Assign);
                 var definition = Identifier(cursor).SingleLower(); ;
 
@@ -274,7 +273,7 @@ namespace Fux.Input
 
                 Assert(cursor.Is(Lex.UpperId));
 
-                var name = new A.Identifier(cursor.Swallow(Lex.UpperId));
+                var name = SingleIdentifier(cursor).SingleUpper();
 
                 var parameterList = new List<A.Decl.TypeParameter>();
 
@@ -316,7 +315,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                return new A.Decl.TypeParameter(new A.Identifier(cursor.Swallow(Lex.LowerId)));
+                return new A.Decl.TypeParameter(SingleIdentifier(cursor).SingleLower());
             });
         }
 

@@ -92,6 +92,11 @@
             public override string ToString() => Name;
         }
 
+        public sealed record Unit() : Primitive(Lex.Symbol.Unit)
+        {
+            public override string ToString() => Name;
+        }
+
         public sealed record Integer() : Primitive(Lex.Primitive.Int)
         {
             public override string ToString() => Name;

@@ -47,7 +47,10 @@ namespace Fux.Building.Typing
                 case A.Type.Parameter parameter:
                     return VarType(parameter.Text);
 
-                case A.Type.Primitive.Bool b:
+                case A.Type.Unit:
+                    return new W.Type.Unit();
+
+                case A.Type.Primitive.Bool:
                     return new W.Type.Bool();
 
                 case A.Type.Primitive.Int:

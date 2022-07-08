@@ -325,6 +325,13 @@ namespace Fux.Building.AlgorithmW
                         var type = env.GetNext();
                         return (Substitution.Empty(), type);
                     }
+                case Expr.DeVariable({ } var):
+                    {
+                        Assert(var is Expr.Variable);
+
+                        var type = env.GetNext();
+                        return (Substitution.Empty(), type);
+                    }
 
                 case Expr.GetValue({ } expr, { } typeGen, { } index):
                     {
@@ -520,6 +527,11 @@ namespace Fux.Building.AlgorithmW
 
                 case (Type.Concrete c1, Type.Concrete c2):
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         if (c1.Name == c2.Name && c1.Arguments.Count == c2.Arguments.Count)
                         {
                             var subst = Substitution.Empty();

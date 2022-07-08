@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Linq;
 
 using W = Fux.Building.AlgorithmW;
 
@@ -10,6 +11,7 @@ namespace Fux.Building.Typing
         const string GenListPrefix = "_list_";
         const string GenVarPrefix = "_var_";
         const string GenMatchPrefix = "_match_";
+        const string GenParamPrefix = "_param_";
 
         private readonly TypeBuilder typeBuilder;
         private int wildcardNumber = 0;
@@ -27,12 +29,19 @@ namespace Fux.Building.Typing
         public W.Expr Build(ref W.Environment env, A.Expr expr, bool investigated)
         {
             Investigated = investigated;
+            wildcardNumber = 0;
+            idNumber = 0;
 
             return Build(ref env, expr);
         }
 
         private W.Expr Build(ref W.Environment env, A.Expr expr)
         {
+            if (Investigated)
+            {
+                Assert(true);
+            }
+
             switch (expr)
             {
                 case A.Identifier identifier:
@@ -66,6 +75,11 @@ namespace Fux.Building.Typing
                                 );
                         }
                         break;
+                    }
+
+                case A.Expr.Unit unit:
+                    {
+                        return new W.Expr.Unit();
                     }
 
                 case A.Expr.Literal.Integer literal:
@@ -179,7 +193,7 @@ namespace Fux.Building.Typing
                     {
                         var ctor = ctorRef.Decl;
 
-                        var variable = new W.Expr.Variable(ctor.Name);
+                        var variable = new W.Expr.Variable(reference.Name);
 
                         var polytype = env.TryGet(variable.Term);
 
@@ -197,7 +211,7 @@ namespace Fux.Building.Typing
                     {
                         var var = varRef.Decl;
 
-                        var variable = new W.Expr.Variable(var.Name);
+                        var variable = new W.Expr.Variable(reference.Name);
 
                         var polytype = env.TryGet(variable.Term);
 
@@ -279,7 +293,7 @@ namespace Fux.Building.Typing
                     {
                         if (sign.Parameters.Count == 0)
                         {
-                            var variable = new W.Expr.Variable(sign.Name);
+                            var variable = new W.Expr.DeVariable(new W.Expr.Variable(sign.Name));
 
                             return variable;
                         }
@@ -290,7 +304,9 @@ namespace Fux.Building.Typing
 
                 case A.Pattern.LowerId lower:
                     {
-                        return Build(ref env, lower.Identifier);
+                        var variable = new W.Expr.DeVariable(new W.Expr.Variable(lower.Identifier));
+
+                        return variable;
                     }
 
                 case A.Pattern.UpperId upper:
@@ -331,8 +347,6 @@ namespace Fux.Building.Typing
                             BuildPattern(ref env, deCons.First),
                             BuildPattern(ref env, deCons.Rest));
 
-                        Assert(x.ToString() != "(x :: (x :: []))");
-
                         return x;
                     }
 
@@ -357,9 +371,11 @@ namespace Fux.Building.Typing
                     }
                 case A.Pattern.WithAlias withAlias:
                     {
-                        var x = BuildPattern(ref env, withAlias.Pattern);
+                        var x = new W.Expr.WithAlias(
+                            BuildPattern(ref env, withAlias.Pattern),
+                            new W.Expr.DeVariable(new W.Expr.Variable(withAlias.Alias.Identifier)));
 
-                        break;
+                        return x;
                     }
 
                 default:
@@ -524,11 +540,14 @@ namespace Fux.Building.Typing
 
                 case A.Pattern.WithAlias withAlias:
                     {
-                        Assert(nonforce);
+                        var variable = new W.Expr.Variable(withAlias.Alias.Identifier);
 
-                        var x = BuildDestructure(ref env, matchVariable, withAlias.Pattern, caseExpr);
+                        var let = new W.Expr.Let(
+                            variable.Term,
+                            matchVariable,
+                            BuildDestructure(ref env, variable, withAlias.Pattern, caseExpr));
 
-                        break;
+                        return let;
                     }
 
                 default:
@@ -546,8 +565,56 @@ namespace Fux.Building.Typing
             {
                 Assert(true);
             }
+
             var expr = Build(ref env, lambdaExpr.Expression);
 
+            foreach (var prm in lambdaExpr.Parameters.Parameters.Reverse())
+            {
+                switch (prm)
+                {
+                    case A.Pattern.LowerId lower:
+                        {
+                            var name = new W.TermVariable(lower.Identifier);
+                            var type = env.GetNext();
+                            env = env.Insert(name, new W.Polytype(type));
+
+                            expr = new W.Expr.Lambda(name, expr);
+
+                            break;
+                        }
+                    case A.Pattern.Wildcard:
+                        {
+                            var name = new W.TermVariable(GenWildcard());
+                            var type = env.GetNext();
+                            env = env.Insert(name, new W.Polytype(type));
+
+                            expr = new W.Expr.Lambda(name, expr);
+
+                            break;
+                        }
+                    case A.Pattern.Tuple2 tuple:
+                        {
+                            var name = new W.TermVariable(GenIdentifier(GenParamPrefix));
+                            var type = env.GetNext();
+                            env = env.Insert(name, new W.Polytype(type));
+
+                            expr = BuildDestructure(ref env, new W.Expr.Variable(name), prm, expr);
+                            expr = new W.Expr.Lambda(name, expr);
+
+                            break;
+                        }
+                    default:
+                        {
+                            Assert(false);
+
+                            var name = new W.Expr.Variable(GenIdentifier(GenParamPrefix));
+
+                            break;
+                        }
+                }
+            }
+
+#if false
             foreach (var x in lambdaExpr.Parameters.Flatten(GenWildcard).Reverse())
             {
                 var var = new W.TermVariable(x);
@@ -556,6 +623,7 @@ namespace Fux.Building.Typing
 
                 expr = new W.Expr.Lambda(var, expr);
             }
+#endif
 
             return expr;
         }

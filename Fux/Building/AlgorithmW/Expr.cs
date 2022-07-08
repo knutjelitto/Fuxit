@@ -8,12 +8,12 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Application(Expr Exp1, Expr Exp2) : Expr
+        public sealed record Application(Expr Expr1, Expr Expr2) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Lambda(TermVariable Term, Expr Exp) : Expr
+        public sealed record Lambda(TermVariable Term, Expr Expr) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
@@ -45,7 +45,17 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
+        public sealed record WithAlias(Expr Expr, Expr Alias) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
         public sealed record GetValue(Expr Expr, Func<Environment, Polytype> TypeGen, int Index) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
+        public sealed record Unit : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
@@ -67,7 +77,12 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record DeCtor(Expr First, IReadOnlyList<Expr> Arguments) : List
+        public sealed record DeCtor(Expr First, IReadOnlyList<Expr> Arguments) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
+        public sealed record DeVariable(Expr Var) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
@@ -142,7 +157,15 @@
                 public override string ToString() => Pretty.Expr(this);
             }
 
-            new public sealed record Lambda(IReadOnlyList<TermVariable> Terms, Expr Expr) : Sugar;
+            new public sealed record Lambda(IReadOnlyList<TermVariable> Terms, Expr Expr) : Sugar
+            {
+                public override string ToString() => Pretty.Expr(this);
+            }
+
+            new public sealed record Let(IReadOnlyList<(TermVariable term, Expr value)> Lets, Expr Expr) : Sugar
+            {
+                public override string ToString() => Pretty.Expr(this);
+            }
         }
     }
 }

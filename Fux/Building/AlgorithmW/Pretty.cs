@@ -53,17 +53,6 @@ namespace Fux.Building.AlgorithmW
                     WriteLine($"{Lex.KwElse}");
                     Indent(() => Print(expr.Else));
                     break;
-                case Expr.Let expr:
-                    WriteLine($"{Lex.KwLet}");
-                    Indent(() =>
-                    {
-                        WriteLine($"{expr.Term} =");
-                        Indent(() => Print(expr.Expr1));
-                    });
-                    writer.EndLine();
-                    WriteLine($"{Lex.KwIn}");
-                    Indent(() => Print(expr.Expr2));
-                    break;
                 case Expr.Matcher expr:
                     WriteLine($"{Lex.KwCase}");
                     Indent(() => Print(expr.Expr));
@@ -95,19 +84,36 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Application expr:
                     Print(SugarApp(expr));
                     break;
-                case Expr.Lambda expr:
-                    WriteLine($"{expr.Term} =>");
-                    Indent(() => Print(expr.Exp));
+                case Expr.Let expr:
+                    Print(SugarLet(expr));
                     break;
                 case Expr.Sugar.Application expr:
                     PrintLine(expr.Exprs[0]);
                     Indent(() =>
+                    {
+                        foreach (var arg in expr.Exprs.Skip(1))
                         {
-                            foreach (var arg in expr.Exprs.Skip(1))
-                            {
-                                PrintLine(arg);
-                            }
-                        });
+                            PrintLine(arg);
+                        }
+                    });
+                    break;
+                case Expr.Sugar.Let expr:
+                    WriteLine($"{Lex.KwLet}");
+                    Indent(() =>
+                    {
+                        foreach (var (term, value) in expr.Lets)
+                        {
+                            Write($"{term} = ");
+                            Print(value);
+                            EndLine();
+                        }
+                    });
+                    WriteLine($"{Lex.KwIn}");
+                    Indent(() => Print(expr.Expr));
+                    break;
+                case Expr.Lambda expr:
+                    WriteLine($"{expr.Term} =>");
+                    Indent(() => Print(expr.Expr));
                     break;
                 case Expr.Tuple2 tuple2:
                     Write($"(   ");
@@ -132,9 +138,26 @@ namespace Fux.Building.AlgorithmW
         {
             switch (expr)
             {
+
+                case Expr.Application app:
+                    {
+                        return Str(SugarApp(app));
+                    }
+
                 case Expr.Sugar.Application app:
                     {
                         return Clamp($"{string.Join(" ", app.Exprs.Select(e => Str(e)))}");
+                    }
+
+                case Expr.Let let:
+                    {
+                        return Str(SugarLet(let));
+                    }
+
+                case Expr.Sugar.Let let:
+                    {
+                        var assignments = string.Join(")(", let.Lets.Select(assign => $"{assign.term} = {Str(assign.value)}"));
+                        return $"(let ({assignments}) in {Str(let.Expr)})";
                     }
 
                 case Expr.Variable var:
@@ -144,7 +167,12 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Native native:
                     {
-                        return native.Nat.FullName;
+                        return native.Nat.FullText;
+                    }
+
+                case Expr.Unit unit:
+                    {
+                        return Lex.Symbol.Unit;
                     }
 
                 case Expr.Literal literal:
@@ -155,11 +183,6 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Iff iff:
                     {
                         return $"(if {Str(iff.Cond)} then {Str(iff.Then)} else {Str(iff.Else)})";
-                    }
-
-                case Expr.Application app:
-                    {
-                        return Str(SugarApp(app));
                     }
 
                 case AlgorithmW.Expr.Empty:
@@ -174,7 +197,7 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Lambda lambda:
                     {
-                        return $"({lambda.Term} => {Str(lambda.Exp)})";
+                        return $"({lambda.Term} => {Str(lambda.Expr)})";
                     }
 
                 case Expr.Tuple2 tuple2:
@@ -191,11 +214,6 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Case @case:
                     {
                         return $"({Str(@case.Pattern)} -> {Str(@case.Expr)})";
-                    }
-
-                case Expr.Let let:
-                    {
-                        return $"(let {let.Term} = {Str(let.Expr1)} in {Str(let.Expr2)})";
                     }
 
                 case Expr.Unify unify:
@@ -227,6 +245,14 @@ namespace Fux.Building.AlgorithmW
                     {
                         return $"[{Str(getValue.Expr)}@{getValue.Index}]";
                     }
+                case Expr.DeVariable deVariable:
+                    {
+                        return $"{Str(deVariable.Var)}";
+                    }
+                case Expr.WithAlias withAlias:
+                    {
+                        return $"({withAlias.Expr} as {withAlias.Alias})";
+                    }
 
                 default:
                     break;
@@ -251,6 +277,8 @@ namespace Fux.Building.AlgorithmW
             {
                 case Expr.Application app:
                     return SugarApp(app);
+                case Expr.Let let:
+                    return SugarLet(let);
                 default:
                     return expr;
             }
@@ -262,7 +290,7 @@ namespace Fux.Building.AlgorithmW
 
             IEnumerable<Expr> multi(Expr.Application expr)
             {
-                if (expr.Exp1 is Expr.Application app)
+                if (expr.Expr1 is Expr.Application app)
                 {
                     foreach (var inner in multi(app).ToList())
                     {
@@ -271,11 +299,34 @@ namespace Fux.Building.AlgorithmW
                 }
                 else
                 {
-                    yield return Sugar(expr.Exp1);
+                    yield return Sugar(expr.Expr1);
                 }
                 
-                yield return Sugar(expr.Exp2);
+                yield return Sugar(expr.Expr2);
             }
+        }
+
+        private Expr.Sugar.Let SugarLet(Expr.Let let)
+        {
+            Expr last;
+            var assignments = new List<(TermVariable, Expr)>();
+
+            do
+            {
+                last = let.Expr2;
+                assignments.Add((let.Term, let.Expr1));
+                if (last is Expr.Let next)
+                {
+                    let = next;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            while (true);
+
+            return new Expr.Sugar.Let(assignments, last);
         }
 
         private void PrintLine(Expr expr)
@@ -298,6 +349,11 @@ namespace Fux.Building.AlgorithmW
         private void Write(string? text = null)
         {
             writer.Write(text ?? string.Empty);
+        }
+
+        private void EndLine()
+        {
+            writer.EndLine();
         }
     }
 }

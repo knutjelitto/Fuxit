@@ -10,9 +10,9 @@
         public Parser Parser { get; }
         public ExprParser Expr => Parser.Expr;
 
-        public A.Pattern Lambda(Cursor cursor)
+        public A.Pattern.Lambda Lambda(Cursor cursor)
         {
-            return SignPattern(cursor, true);
+            return new A.Pattern.Lambda(CollectAtomic(cursor));
         }
 
         public A.Pattern Pattern(Cursor cursor)
@@ -133,18 +133,11 @@
             return patterns;
         }
 
-        private A.Pattern SignPattern(Cursor cursor, bool lambda = false)
+        private A.Pattern SignPattern(Cursor cursor)
         {
-            if (lambda)
-            {
-                return new A.Pattern.Lambda(CollectAtomic(cursor));
-            }
-            else
-            {
-                var name = Parser.Identifier(cursor).SingleLower();
+            var name = Parser.Identifier(cursor).SingleLower();
 
-                return new A.Pattern.Signature(name, CollectAtomic(cursor));
-            }
+            return new A.Pattern.Signature(name, CollectAtomic(cursor));
         }
 
         private A.Pattern CtorPattern(Cursor cursor)

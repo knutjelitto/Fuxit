@@ -205,12 +205,14 @@ namespace Fux.Input.Ast
             {
                 ModuleName = moduleName;
                 Name = name;
+                FullName = new Identifier(ModuleName.Concat(Name).ToArray());
             }
 
             public Identifier ModuleName { get; }
             public Identifier Name { get; }
             public Type? Type { get; set; } = null;
-            public string FullName => $"{ModuleName}.{Name}";
+            public Identifier FullName { get; }
+            public string FullText => $"{FullName}";
 
             public override string ToString()
             {
@@ -328,6 +330,7 @@ namespace Fux.Input.Ast
                 Ctors = new CtorList();
 
                 Type = new Type.Custom(Name, parameters);
+                Type.InModule = Name.InModule;
             }
 
             public TypeParameterList Parameters { get; }

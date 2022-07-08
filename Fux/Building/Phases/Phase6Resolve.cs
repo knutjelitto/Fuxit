@@ -120,6 +120,11 @@ namespace Fux.Building.Phases
 
             private void ResolveType(Scope scope, A.Type type)
             {
+                if (type.Location.Line == 53)
+                {
+                    Assert(true);
+                }
+
                 switch (type)
                 {
                     case A.Type.Function function:
@@ -280,22 +285,22 @@ namespace Fux.Building.Phases
                             {
                                 if (resolved is A.Decl.Var var)
                                 {
-                                    expression.Resolved = new A.Ref.Var(var);
+                                    expression.Resolved = new A.Ref.Var(identifier, var);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Parameter parameter)
                                 {
-                                    expression.Resolved = new A.Ref.Parameter(parameter);
+                                    expression.Resolved = new A.Ref.Parameter(identifier, parameter);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Native native)
                                 {
-                                    expression.Resolved = new A.Ref.Native(native);
+                                    expression.Resolved = new A.Ref.Native(identifier, native);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Infix infix)
                                 {
-                                    expression.Resolved = new A.Ref.Infix(infix);
+                                    expression.Resolved = new A.Ref.Infix(identifier, infix);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Ctor ctor)
@@ -304,17 +309,17 @@ namespace Fux.Building.Phases
                                     {
                                         Assert(true);
                                     }
-                                    expression.Resolved = new A.Ref.Ctor(ctor);
+                                    expression.Resolved = new A.Ref.Ctor(identifier, ctor);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Custom type)
                                 {
-                                    expression.Resolved = new A.Ref.Type(type);
+                                    expression.Resolved = new A.Ref.Type(identifier, type);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Alias alias)
                                 {
-                                    expression.Resolved = new A.Ref.Alias(alias);
+                                    expression.Resolved = new A.Ref.Alias(identifier, alias);
                                     break;
                                 }
                                 else

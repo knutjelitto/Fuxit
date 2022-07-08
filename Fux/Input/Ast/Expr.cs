@@ -160,13 +160,13 @@ namespace Fux.Input.Ast
         }
         public sealed class Lambda : ExprImpl
         {
-            public Lambda(Pattern parameters, Expr expr)
+            public Lambda(Pattern.Lambda parameters, Expr expr)
             {
                 Parameters = parameters;
                 Expression = expr;
             }
 
-            public Pattern Parameters { get; }
+            public Pattern.Lambda Parameters { get; }
             public Expr Expression { get; }
 
             public LetScope Scope { get; } = new();
