@@ -15,7 +15,7 @@ namespace Fux.Building.Typing
         public Module Module { get; }
         public ExprBuilder ExprBuilder { get; }
 
-        public (W.Expr, W.Type) Bind(W.Type type, W.Expr expr, A.Parameters parameters, ref W.Environment env, bool investigated)
+        public W.Type Bind(ref W.Environment env, W.Type type, A.Parameters parameters, bool investigated)
         {
             if (investigated)
             {
@@ -37,6 +37,7 @@ namespace Fux.Building.Typing
 
                 var parameterNames = BindIdentifiers(pr).ToList();
                 List<W.Type> parameterTypes;
+
                 if (parameterNames.Count == 1)
                 {
                     parameterTypes = new List<W.Type> { ty };
@@ -45,6 +46,7 @@ namespace Fux.Building.Typing
                 {
                     parameterTypes = BindTypes(ty).ToList();
                 }
+
                 Assert(parameterNames.Count == parameterTypes.Count);
                 var count = parameterNames.Count;
 
@@ -78,7 +80,7 @@ namespace Fux.Building.Typing
 
             result = Recombine(types, parameters.Count, result);
 
-            return (expr, result);
+            return result;
         }
 
         private W.Type Recombine(List<W.Type> types, int index, W.Type type)
@@ -197,7 +199,7 @@ namespace Fux.Building.Typing
                     }
                     break;
                 default:
-                    //Assert(false);
+                    Assert(false);
                     throw new NotImplementedException();
             }
         }

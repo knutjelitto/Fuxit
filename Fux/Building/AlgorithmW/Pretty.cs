@@ -245,10 +245,17 @@ namespace Fux.Building.AlgorithmW
                     {
                         return $"[{Str(getValue.Expr)}@{getValue.Index}]";
                     }
+
+                case Expr.GetValue2 getValue:
+                    {
+                        return $"[{Str(getValue.Expr)}[{getValue.Index}]]";
+                    }
+
                 case Expr.DeVariable deVariable:
                     {
                         return $"{Str(deVariable.Var)}";
                     }
+
                 case Expr.WithAlias withAlias:
                     {
                         return $"({withAlias.Expr} as {withAlias.Alias})";

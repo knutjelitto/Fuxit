@@ -54,10 +54,20 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private (Substitution, Type) InferType(Expr expression, Environment env)
         {
+            if (Investigated)
+            {
+                Assert(true);
+            }
+
             switch (expression)
             {
                 case Expr.Unify({ } type, { } expr):
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         var (s1, type2) = InferType(expr, env);
                         var s2 = MostGeneralUnifier(type, type2);
                         return (ComposeSubstitutions(s2, s1), ApplySubstitution(type, s2));
@@ -203,7 +213,7 @@ namespace Fux.Building.AlgorithmW
 
                         var varType = env.GetNext();
                         var t3 = ApplySubstitution(t1, s2);
-                        var s3 = MostGeneralUnifier(t3, new Type.Function(t2, varType));
+                        var s3 = MostGeneralUnifier(t1, new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(varType, s3));
                     }
 
@@ -333,6 +343,12 @@ namespace Fux.Building.AlgorithmW
                         return (Substitution.Empty(), type);
                     }
 
+                case Expr.Unit:
+                    {
+                        var type = new Type.Unit();
+                        return (Substitution.Empty(), type);
+                    }
+
                 case Expr.GetValue({ } expr, { } typeGen, { } index):
                     {
                         if (Investigated)
@@ -359,6 +375,18 @@ namespace Fux.Building.AlgorithmW
                         var t = ((WithStructure)t3).At(index);
 
                         return (s, t);
+                    }
+
+                case Expr.GetValue2({ } expr, { } typeGen, { } index):
+                    {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
+                        var type = InstantiateType(typeGen(env, index), env);
+
+                        return (Substitution.Empty(), type);
                     }
             }
 
@@ -400,6 +428,7 @@ namespace Fux.Building.AlgorithmW
                 case Type.Bool:
                 case Type.String:
                 case Type.Char:
+                case Type.Unit:
                     return type;
 
                 // A concrete type is not changed by a substitution.

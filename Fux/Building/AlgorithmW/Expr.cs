@@ -55,6 +55,11 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
+        public sealed record GetValue2(Expr Expr, Func<Environment, int, Polytype> TypeGen, int Index) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
         public sealed record Unit : Expr
         {
             public override string ToString() => Pretty.Expr(this);

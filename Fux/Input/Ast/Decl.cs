@@ -402,6 +402,8 @@ namespace Fux.Input.Ast
         {
             public Parameter(Expr expression)
             {
+                Assert(expression is A.Pattern);
+
                 Expression = expression;
             }
 

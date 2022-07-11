@@ -8,7 +8,7 @@ namespace Fux.Building.Phases
 {
     public static class RefExtensions
     {
-        public static T Locate<T>(this T r, A.Decl d)
+        public static T Locate<T>(this T r, A.Expr d)
             where T : A.Ref
         {
             //Assert(d.InModule != null);

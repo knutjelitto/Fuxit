@@ -15,7 +15,7 @@ namespace Fux.Input
             var native = new A.Decl.Native(basics, name);
             native.InModule = module;
 
-            var reference = new A.Ref.Native(native.FullName, native);
+            var reference = new A.Ref.Native(native);
             reference.InModule = module;
 
             return reference;

@@ -62,9 +62,9 @@
             public override string ToString() => $"{Lex.Primitive.List}<{Type}>";
         }
 
-        public sealed record Concrete(object Id, string Name, IReadOnlyList<Type> Arguments) : Type
+        public sealed record Concrete(string Name, IReadOnlyList<Type> Arguments) : Type
         {
-            public Concrete(object Id, string Name) : this(Id, Name, Array.Empty<Type>())
+            public Concrete(string Name) : this(Name, Array.Empty<Type>())
             {
                 if (Name == "Bool")
                 {

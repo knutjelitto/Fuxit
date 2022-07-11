@@ -47,6 +47,8 @@ namespace Fux.Building.Phases
 
             public Module Module { get; }
 
+            private bool Investigated { get; set; } = false;
+
             public override void Make()
             {
                 if (Module.Name == "Set")
@@ -55,12 +57,19 @@ namespace Fux.Building.Phases
                 }
                 foreach (var declaration in Module.Ast!.Declarations)
                 {
+                    Investigated = Module.Name == "Set" && declaration is A.Decl.Var;
+
                     Resolve(declaration);
                 }
             }
 
             private void Resolve(A.Decl declaration)
             {
+                if (Investigated)
+                {
+                    Assert(true);
+                }
+
                 switch (declaration)
                 {
                     case A.Decl.Import:
@@ -69,8 +78,19 @@ namespace Fux.Building.Phases
                         ResolveInfix(infix);
                         break;
                     case A.Decl.Custom type:
-                        ResolveType(type);
-                        break;
+                        {
+                            if (Investigated)
+                            {
+                                Assert(true);
+                            }
+
+                            ResolveType(type.Type);
+                            foreach (var ctor in type.Ctors)
+                            {
+                                Resolve(ctor);
+                            }
+                            break;
+                        }
                     case A.Decl.Var var:
                         ResolveVar(var);
                         break;
@@ -83,6 +103,14 @@ namespace Fux.Building.Phases
                     case A.Decl.Alias alias:
                         ResolveAlias(alias);
                         break;
+                    case A.Decl.Ctor ctor:
+                        {
+                            foreach (var argument in ctor.Arguments)
+                            {
+                                ResolveType(argument);
+                            }
+                            break;
+                        }
                     default:
                         Assert(false);
                         throw new InvalidOperationException();
@@ -101,13 +129,20 @@ namespace Fux.Building.Phases
 
             private void ResolveVar(A.Decl.Var var)
             {
-                //Assert(var.Type != null);
                 ResolveExpr(var.Scope, var.Expression);
+                foreach (var parameter in var.Parameters)
+                {
+                    ResolveExpr(var.Scope, parameter.Expression);
+                }
             }
 
             private void ResolveType(A.Decl.Custom type)
             {
-                ResolveType(Module.Scope, type.Type);
+            }
+
+            private void ResolveType(A.Type type)
+            {
+                ResolveType(Module.Scope, type);
             }
 
             private void ResolveAnnotation(A.Decl.TypeAnnotation annotation)
@@ -124,7 +159,7 @@ namespace Fux.Building.Phases
 
             private void ResolveType(Scope scope, A.Type type)
             {
-                if (type.Location.Line == 53)
+                if (Investigated)
                 {
                     Assert(true);
                 }
@@ -219,52 +254,55 @@ namespace Fux.Building.Phases
 
                     case A.Type.Ctor ctor:
                         {
-                            if (ctor.Name.Text == "Set_elm_builtin")
-                            {
-                                Assert(true);
-                            }
+                            Assert(ctor.InModule != null);
+
                             if (scope.Resolve(ctor.Name, out var resolved))
                             {
                                 Assert(resolved.InModule != null);
 
-                                if (resolved.InModule.IsCore && resolved is A.Decl.Custom)
+                                if (resolved is A.Decl.Custom custom)
                                 {
-                                    foreach (var argument in ctor.Arguments)
-                                    {
-                                        ResolveType(scope, argument);
-                                    }
+                                    ctor.Resolved = custom.Type;
 
-                                    if (ctor.Arguments.Count == 0)
+                                    if (resolved.InModule.IsCore)
                                     {
-                                        Assert(ctor.Arguments.Count == 0);
-                                        //Assert(union.Name.Text == decl.Name.Text);
-
-                                        switch (ctor.Name.Text)
+                                        foreach (var argument in ctor.Arguments)
                                         {
-                                            case Lex.Primitive.Int:
-                                                ctor.Resolved = new A.Type.Primitive.Int(ctor.Name);
-                                                break;
-                                            case Lex.Primitive.Float:
-                                                ctor.Resolved = new A.Type.Primitive.Float(ctor.Name);
-                                                break;
-                                            case Lex.Primitive.Bool:
-                                                ctor.Resolved = new A.Type.Primitive.Bool(ctor.Name);
-                                                break;
-                                            case Lex.Primitive.String:
-                                                ctor.Resolved = new A.Type.Primitive.String(ctor.Name);
-                                                break;
-                                            case Lex.Primitive.Char:
-                                                ctor.Resolved = new A.Type.Primitive.Char(ctor.Name);
-                                                break;
+                                            ResolveType(scope, argument);
                                         }
-                                    }
-                                    else if (ctor.Arguments.Count == 1)
-                                    {
-                                        switch (ctor.Name.Text)
+
+                                        if (ctor.Arguments.Count == 0)
                                         {
-                                            case Lex.Primitive.List:
-                                                ctor.Resolved = new A.Type.Primitive.List(ctor.Name, ctor.Arguments[0]);
-                                                break;
+                                            Assert(ctor.Arguments.Count == 0);
+                                            //Assert(union.Name.Text == decl.Name.Text);
+
+                                            switch (ctor.Name.Text)
+                                            {
+                                                case Lex.Primitive.Int:
+                                                    ctor.Resolved = new A.Type.Primitive.Int(ctor.Name);
+                                                    break;
+                                                case Lex.Primitive.Float:
+                                                    ctor.Resolved = new A.Type.Primitive.Float(ctor.Name);
+                                                    break;
+                                                case Lex.Primitive.Bool:
+                                                    ctor.Resolved = new A.Type.Primitive.Bool(ctor.Name);
+                                                    break;
+                                                case Lex.Primitive.String:
+                                                    ctor.Resolved = new A.Type.Primitive.String(ctor.Name);
+                                                    break;
+                                                case Lex.Primitive.Char:
+                                                    ctor.Resolved = new A.Type.Primitive.Char(ctor.Name);
+                                                    break;
+                                            }
+                                        }
+                                        else if (ctor.Arguments.Count == 1)
+                                        {
+                                            switch (ctor.Name.Text)
+                                            {
+                                                case Lex.Primitive.List:
+                                                    ctor.Resolved = new A.Type.Primitive.List(ctor.Name, ctor.Arguments[0]);
+                                                    break;
+                                            }
                                         }
                                     }
                                 }
@@ -304,22 +342,22 @@ namespace Fux.Building.Phases
                             {
                                 if (resolved is A.Decl.Var var)
                                 {
-                                    expression.Resolved = new A.Ref.Var(identifier, var).Locate(var);
+                                    expression.Resolved = new A.Ref.Var(var).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Parameter parameter)
                                 {
-                                    expression.Resolved = new A.Ref.Parameter(identifier, parameter).Locate(parameter);
+                                    expression.Resolved = new A.Ref.Parameter(parameter).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Native native)
                                 {
-                                    expression.Resolved = new A.Ref.Native(identifier, native).Locate(native);
+                                    expression.Resolved = new A.Ref.Native(native).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Infix infix)
                                 {
-                                    expression.Resolved = new A.Ref.Infix(identifier, infix).Locate(infix);
+                                    expression.Resolved = new A.Ref.Infix(infix).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Ctor ctor)
@@ -328,17 +366,17 @@ namespace Fux.Building.Phases
                                     {
                                         Assert(true);
                                     }
-                                    expression.Resolved = new A.Ref.Ctor(identifier, ctor).Locate(ctor);
+                                    expression.Resolved = new A.Ref.Ctor(ctor).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Custom type)
                                 {
-                                    expression.Resolved = new A.Ref.Type(identifier, type).Locate(type);
+                                    expression.Resolved = new A.Ref.Type(type).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Alias alias)
                                 {
-                                    expression.Resolved = new A.Ref.Alias(identifier, alias).Locate(alias);
+                                    expression.Resolved = new A.Ref.Alias(alias).Locate(identifier);
                                     break;
                                 }
                                 else

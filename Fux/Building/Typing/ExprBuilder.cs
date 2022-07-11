@@ -14,6 +14,8 @@ namespace Fux.Building.Typing
         const string GenParamPrefix = "_param_";
 
         private readonly TypeBuilder typeBuilder;
+        private readonly BindBuilder bindBuilder;
+        private readonly BindBuilder2 bind2;
         private int wildcardNumber = 0;
         private int idNumber = 0;
 
@@ -21,18 +23,41 @@ namespace Fux.Building.Typing
         {
             Module = module;
             this.typeBuilder = typeBuilder;
+            this.bindBuilder = new BindBuilder(Module, this);
+            bind2 = new BindBuilder2(Module, this);
         }
 
         public Module Module { get; }
         public bool Investigated { get; set; }
 
-        public W.Expr Build(ref W.Environment env, A.Expr expr, bool investigated)
+        public W.Expr Build(ref W.Environment env, A.Decl.Var var, bool investigated)
         {
             Investigated = investigated;
             wildcardNumber = 0;
             idNumber = 0;
 
-            return Build(ref env, expr);
+            var varType = typeBuilder.Build(env, var.Type);
+
+            var variable = var.FullName();
+            env = env.Insert(variable.Term, varType);
+
+            W.Expr wExpr;
+            W.Type wType;
+
+            if (Investigated || true)
+            {
+                (wExpr, wType) = BuildVarLambda(ref env, var);
+            }
+            else
+            {
+                wExpr = Build(ref env, var.Expression.Resolved);
+
+                wType = bindBuilder.Bind(ref env, varType.Type, var.Parameters, investigated);
+            }
+
+            var expression = new W.Expr.Unify(wType, wExpr);
+
+            return expression;
         }
 
         private W.Expr Build(ref W.Environment env, A.Expr expr)
@@ -178,23 +203,12 @@ namespace Fux.Building.Typing
 
         private W.Expr BuildIdentifier(ref W.Environment env, A.Identifier identifier)
         {
-            Assert(identifier.Resolved != null && identifier.Resolved is A.Ref);
+            Assert(identifier.Resolved is A.Ref);
 
             var reference = (A.Ref)identifier.Resolved!;
 
             return BuildReference(ref env, reference);
         }
-
-        private W.Expr.Variable MakeVar(A.NamedDecl decl)
-        {
-            Assert(decl.InModule != null);
-
-            var name = $"{decl.InModule.Name}.{decl.Name}";
-            var variable = new W.Expr.Variable(name);
-
-            return variable;
-        }
-
 
         private W.Expr BuildReference(ref W.Environment env, A.Ref reference)
         {
@@ -202,9 +216,14 @@ namespace Fux.Building.Typing
             {
                 case A.Ref.Ctor ctorRef:
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         var ctor = ctorRef.Decl;
 
-                        var variable = new W.Expr.Variable(reference.Name);
+                        var variable = ctor.FullName();
 
                         var polytype = env.TryGet(variable.Term);
 
@@ -224,7 +243,7 @@ namespace Fux.Building.Typing
 
                         Assert(var.InModule != null);
 
-                        var variable = new W.Expr.Variable(reference.Name);
+                        var variable = var.FullName();
 
                         var polytype = env.TryGet(variable.Term);
 
@@ -459,6 +478,11 @@ namespace Fux.Building.Typing
 
                 case A.Pattern.DeCtor deCtor:
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         if (deCtor.Name.Resolved is not A.Ref.Ctor ctorRef || ctorRef.Decl is not A.Decl.Ctor ctor)
                         {
                             Assert(false);
@@ -466,6 +490,19 @@ namespace Fux.Building.Typing
                         }
 
                         Assert(deCtor.Arguments.Count == ctor.Arguments.Count);
+
+                        var name = ctor.FullName();
+                        var args = new List<W.Polytype>();
+                        foreach (var arg in ctor.Arguments)
+                        {
+                            args.Add(typeBuilder.Build(env, arg));
+                        }
+
+                        W.Polytype genType(W.Environment env, int index)
+                        {
+                            Assert(index < ctor.Arguments.Count);
+                            return args![index];
+                        }
 
                         var expr = GenDestruct(ref env, 0);
 
@@ -480,13 +517,9 @@ namespace Fux.Building.Typing
                             else
                             {
                                 var variable = new W.Expr.Variable(GenIdentifier(GenVarPrefix));
-                                var type = ctor.Arguments[index];
-                                Func<W.Environment, W.Polytype> genType = env =>
-                                {
-                                    var ty = typeBuilder.Build(env, type);
-                                    return ty;
-                                };
-                                var select = new W.Expr.GetValue(matchVariable, genType, index);
+
+                                var select = new W.Expr.GetValue2(matchVariable, genType, index);
+
                                 return new W.Expr.Let(variable.Term, select, 
                                     BuildDestructure(ref env, variable, deCtor.Arguments[index], GenDestruct(ref env, index + 1)));
                             }
@@ -572,6 +605,43 @@ namespace Fux.Building.Typing
 
         }
 
+        private (W.Expr, W.Type) BuildVarLambda(ref W.Environment env, A.Decl.Var var)
+        {
+            if (Investigated)
+            {
+                Assert(true);
+            }
+
+            var varType = typeBuilder.Build(env, var.Type);
+
+            var expr = Build(ref env, var.Expression);
+
+            var (itypes, iresult) = bind2.Invert(varType.Type);
+            var (types, result) = bind2.Flatten(varType.Type);
+
+            var patterns = var.Parameters.Select(p => p.Expression).Cast<A.Pattern>().Reverse().ToList();
+
+            var i = 0;
+            for (; i < patterns.Count; i++)
+            {
+                var pattern = patterns[i];
+                var type = itypes[i];
+
+                var name = new W.TermVariable(GenIdentifier(GenParamPrefix));
+
+                //var ty = bind2.Recombine(itypes, i, iresult);
+                //env = env.Insert(name, new W.Polytype(type));
+
+                expr = BuildDestructure(ref env, new W.Expr.Variable(name), pattern, expr);
+                expr = new W.Expr.Lambda(name, expr);
+            }
+
+            //var wtype = bind2.Recombine(itypes, i, iresult);
+            var wtype = bind2.Recombine(itypes, 0, iresult);
+
+            return (expr, varType.Type);
+        }
+
         private W.Expr BuildLambdaExpr(ref W.Environment env, A.Expr.Lambda lambdaExpr)
         {
             if (Investigated)
@@ -627,17 +697,6 @@ namespace Fux.Building.Typing
                 }
             }
 
-#if false
-            foreach (var x in lambdaExpr.Parameters.Flatten(GenWildcard).Reverse())
-            {
-                var var = new W.TermVariable(x);
-                var type = env.GetNext();
-                env = env.Insert(var, new W.Polytype(type));
-
-                expr = new W.Expr.Lambda(var, expr);
-            }
-#endif
-
             return expr;
         }
 
@@ -681,28 +740,11 @@ namespace Fux.Building.Typing
                 Assert(true);
             }
 
-#if true
             var caseExpr = Build(ref env, cheese.Expression);
             var pattern = BuildPattern(ref env, cheese.Pattern);
             var destructure = BuildDestructure(ref env, matchExpr, cheese.Pattern, caseExpr);
 
             return new W.Expr.Case(env, pattern, destructure);
-#else
-            var expr = Build(ref env, caseExpr.Expression);
-            var pttn = BuildPattern(ref env, caseExpr.Pattern);
-            var cenv = env.NewEmpty();
-
-            foreach (var identifier in caseExpr.Pattern.Flatten().Reverse())
-            {
-                var var = new W.TermVariable(identifier);
-                var type = env.GetNext();
-                cenv = cenv.Insert(var, new W.Polytype(type));
-
-                expr = new W.Expr.Application(new W.Expr.Lambda(var, expr), new W.Expr.Variable(var));
-            }
-
-            return new W.Expr.Case(cenv, pttn, expr);
-#endif
         }
 
         private W.Expr BuildLetExpr(ref W.Environment env, A.Expr.Let letExpr)

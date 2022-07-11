@@ -79,27 +79,13 @@ namespace Fux.Building.Typing
 
         private void Resolve(A.Decl.Var var, bool investigated)
         {
-            if (var.Name.Text == "radians")
-            {
-                Assert(true);
-            }
-
             var inferrer = new W.Inferrer();
             var env = inferrer.GetEmptyEnvironment();
 
             Assert(var.Type != null);
             Assert(var.Parameters.Count >= 0);
 
-            var varType = typeBuilder.Build(env, var.Type);
-
-            var variable = new W.Expr.Variable(var.Name);
-            env = env.Insert(variable.Term, varType);
-
-            var varExpr = exprBuilder.Build(ref env, var.Expression.Resolved, investigated);
-
-            var (wexpr, wtype) = bindBuilder.Bind(varType.Type, varExpr, var.Parameters, ref env, investigated);
-
-            var expression = new W.Expr.Unify(wtype, wexpr);
+            var expression = exprBuilder.Build(ref env, var, investigated);
 
             Writer.Indent(() =>
             {
