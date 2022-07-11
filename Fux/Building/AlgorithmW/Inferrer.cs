@@ -245,15 +245,7 @@ namespace Fux.Building.AlgorithmW
 
                         foreach (var cheese in cases)
                         {
-#if true
                             var cenv = env;
-
-#if false
-                            foreach (var x in cheese.Env.Enumerate())
-                            {
-                                cenv = cenv.Insert(x.var, x.polytype);
-                            }
-#endif
 
                             var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(cenv, s1));
 
@@ -278,38 +270,6 @@ namespace Fux.Building.AlgorithmW
                             {
                                 type = ApplySubstitution(t4, s1);
                             }
-#else
-                            var cenv = env;
-
-                            foreach (var x in cheese.Env.Enumerate())
-                            {
-                                cenv = cenv.Insert(x.var, x.polytype);
-                            }
-
-                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(cenv, s1));
-
-                            var s3 = MostGeneralUnifier(t1, t2);
-
-                            t1 = ApplySubstitution(t1, s3);
-                            t2 = ApplySubstitution(t1, s3);
-
-                            s1 = ComposeSubstitutions(s3, s2, s1);
-
-                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(cenv, s1));
-
-                            s1 = ComposeSubstitutions(s4, s1);
-
-                            if (type != null)
-                            {
-                                var s5 = MostGeneralUnifier(type, t4);
-                                type = ApplySubstitution(t4, s5);
-                                s1 = ComposeSubstitutions(s5, s1);
-                            }
-                            else
-                            {
-                                type = ApplySubstitution(t4, s1);
-                            }
-#endif
                         }
 
                         Assert(type != null);

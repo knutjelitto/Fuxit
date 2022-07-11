@@ -153,6 +153,12 @@
             public const string ExposeAll = "(..)";
         }
 
+        public static class CoreModule
+        {
+            public const string List = "List";
+        }
+
+
         public static class Primitive
         {
             public const string Int = "Int";

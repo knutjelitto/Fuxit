@@ -158,6 +158,7 @@ namespace Fux.Input.Ast
                 Parameters = parameters;
                 Declaration = declaration;
             }
+
             public TypeParameterList Parameters { get; }
             public Type Declaration { get; }
 
@@ -329,8 +330,10 @@ namespace Fux.Input.Ast
                 Parameters = parameters;
                 Ctors = new CtorList();
 
-                Type = new Type.Custom(Name, parameters);
-                Type.InModule = Name.InModule;
+                Type = new Type.Custom(Name, parameters)
+                {
+                    InModule = Name.InModule
+                };
             }
 
             public TypeParameterList Parameters { get; }
@@ -398,11 +401,11 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Parameter : Decl.DeclImpl
+        public sealed class Parameter : DeclImpl
         {
             public Parameter(Expr expression)
             {
-                Assert(expression is A.Pattern);
+                Assert(expression is Pattern);
 
                 Expression = expression;
             }

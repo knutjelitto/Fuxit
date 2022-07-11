@@ -182,7 +182,7 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Case : Expr.ExprImpl
+        public sealed class Case : ExprImpl
         {
             public Case(Pattern pattern, Expr expression)
             {
@@ -379,8 +379,9 @@ namespace Fux.Input.Ast
             }
 
             public Identifier? BaseRecord { get; }
-
             public IReadOnlyList<FieldAssign> Fields { get; }
+
+            public LetScope Scope { get; } = new();
 
             public override string ToString()
             {

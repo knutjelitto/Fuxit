@@ -51,14 +51,16 @@ namespace Fux.Building.Phases
 
             public override void Make()
             {
-                if (Module.Name == "Set")
+                if (Module.Ast == null)
                 {
-                    Assert(true);
+                    Assert(false);
+                    throw new InvalidOperationException();
                 }
-                foreach (var declaration in Module.Ast!.Declarations)
-                {
-                    Investigated = Module.Name == "Set" && declaration is A.Decl.Var;
 
+                Investigated = false;
+
+                foreach (var declaration in Module.Ast.Declarations)
+                {
                     Resolve(declaration);
                 }
             }
@@ -74,9 +76,13 @@ namespace Fux.Building.Phases
                 {
                     case A.Decl.Import:
                         return;
+
                     case A.Decl.Infix infix:
-                        ResolveInfix(infix);
-                        break;
+                        {
+                            ResolveExpr(Module.Scope, infix.Expression);
+                            break;
+                        }
+
                     case A.Decl.Custom type:
                         {
                             if (Investigated)
@@ -84,77 +90,62 @@ namespace Fux.Building.Phases
                                 Assert(true);
                             }
 
-                            ResolveType(type.Type);
+                            ResolveType(Module.Scope, type.Type);
                             foreach (var ctor in type.Ctors)
                             {
                                 Resolve(ctor);
                             }
                             break;
                         }
+
                     case A.Decl.Var var:
-                        ResolveVar(var);
-                        break;
+                        {
+                            ResolveExpr(var.Scope, var.Expression);
+                            foreach (var parameter in var.Parameters)
+                            {
+                                ResolveExpr(var.Scope, parameter.Expression);
+                            }
+                            break;
+                        }
+
                     case A.Decl.LetAssign let:
-                        ResolveLet(let);
-                        break;
+                        {
+                            ResolveExpr(let.Scope, let.Expression);
+                            break;
+                        }
+
                     case A.Decl.TypeAnnotation annotation:
-                        ResolveAnnotation(annotation);
-                        break;
+                        {
+                            ResolveType(Module.Scope, annotation.Type);
+                            break;
+                        }
+
                     case A.Decl.Alias alias:
-                        ResolveAlias(alias);
-                        break;
+                        {
+                            Assert(alias.Parameters.Count >= 0);
+
+                            ResolveType(Module.Scope, alias.Declaration);
+                            //Assert(alias.Declaration.Resolved is A.Type.Custom);
+                            foreach (var parameter in alias.Parameters)
+                            {
+                            }
+
+                            break;
+                        }
+
                     case A.Decl.Ctor ctor:
                         {
                             foreach (var argument in ctor.Arguments)
                             {
-                                ResolveType(argument);
+                                ResolveType(Module.Scope, argument);
                             }
                             break;
                         }
+
                     default:
                         Assert(false);
                         throw new InvalidOperationException();
                 }
-            }
-
-            private void ResolveInfix(A.Decl.Infix infix)
-            {
-                ResolveExpr(Module.Scope, infix.Expression);
-            }
-
-            private void ResolveLet(A.Decl.LetAssign var)
-            {
-                ResolveExpr(var.Scope, var.Expression);
-            }
-
-            private void ResolveVar(A.Decl.Var var)
-            {
-                ResolveExpr(var.Scope, var.Expression);
-                foreach (var parameter in var.Parameters)
-                {
-                    ResolveExpr(var.Scope, parameter.Expression);
-                }
-            }
-
-            private void ResolveType(A.Decl.Custom type)
-            {
-            }
-
-            private void ResolveType(A.Type type)
-            {
-                ResolveType(Module.Scope, type);
-            }
-
-            private void ResolveAnnotation(A.Decl.TypeAnnotation annotation)
-            {
-                ResolveType(Module.Scope, annotation.Type);
-            }
-
-            private void ResolveAlias(A.Decl.Alias alias)
-            {
-                Assert(alias.Parameters.Count >= 0);
-
-                ResolveType(Module.Scope, alias.Declaration);
             }
 
             private void ResolveType(Scope scope, A.Type type)
@@ -197,10 +188,6 @@ namespace Fux.Building.Phases
 
                     case A.Type.Concrete concrete:
                         {
-                            if (concrete.Name.Text == "Dict.Dict")
-                            {
-                                Assert(true);
-                            }
                             if (scope.Resolve(concrete.Name, out var resolved))
                             {
                                 if (resolved is A.Decl.Custom typeDecl)
@@ -243,12 +230,8 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Type.Custom custom:
+                    case A.Type.Custom:
                         {
-                            if (custom.Name.Text == "Dict.Dict")
-                            {
-                                Assert(true);
-                            }
                             break;
                         }
 
@@ -334,7 +317,7 @@ namespace Fux.Building.Phases
                         break; //TODO: what to do here
                     case A.Identifier identifier:
                         {
-                            if (identifier.Text == "Dict.empty")
+                            if (identifier.Text == "Node")
                             {
                                 Assert(true);
                             }
@@ -362,10 +345,6 @@ namespace Fux.Building.Phases
                                 }
                                 else if (resolved is A.Decl.Ctor ctor)
                                 {
-                                    if (ctor.Name.Text == "Just")
-                                    {
-                                        Assert(true);
-                                    }
                                     expression.Resolved = new A.Ref.Ctor(ctor).Locate(identifier);
                                     break;
                                 }

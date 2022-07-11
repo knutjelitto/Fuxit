@@ -43,13 +43,13 @@ namespace Fux.Building.Phases
 
         private class Maker : Phase
         {
-            public Maker(Ambience ambience, Package package, Module module, List<A.Decl> delcarations)
+            public Maker(Ambience ambience, Package package, Module module, List<A.Decl> declarations)
                 : base("resolve", ambience, package)
             {
                 Assert(module.Ast != null);
 
                 Module = module;
-                Declarations = delcarations;
+                Declarations = declarations;
             }
 
             public Module Module { get; }
@@ -57,162 +57,145 @@ namespace Fux.Building.Phases
 
             public override void Make()
             {
-                Assert(Module.Ast != null);
+                if (Module.Ast == null)
+                {
+                    Assert(false);
+                    throw new InvalidOperationException();
+                }
 
                 var module = Module;
 
-                if (Module.Ast != null)
+                var ast = Module.Ast;
+                var header = ast.Header;
+
+                var declarations = ast.Declarations.ToList();
+                Assert(declarations.Count == ast.Declarations.Count);
+
+                Declarations.Add(header);
+
+                foreach (var where in header.Where)
                 {
-                    var ast = Module.Ast;
-                    var header = ast.Header;
-
-                    var declarations = ast.Declarations.ToList();
-                    Assert(declarations.Count == ast.Declarations.Count);
-
-                    Declarations.Add(header);
-
-                    foreach (var where in header.Where)
-                    {
-                        module.Scope.AddVar(where);
-                    }
-
-                    if (module.IsCore && module.Name == Lex.Primitive.List)
-                    {
-                        if (!module.Scope.LookupType(A.Identifier.Artificial(module, Lex.Primitive.List), out _))
-                        {
-                            Declare(FakeList.MakeType(module));
-                        }
-                    }
-
-                    foreach (var declaration in ast.Declarations)
-                    {
-                        Declare(declaration);
-                    }
-                    Assert(module.Scope.HintsAreEmpty);
+                    module.Scope.AddVar(where);
                 }
 
-                void Declare(A.Decl declaration)
+                if (module.IsCore && module.Name == Lex.Primitive.List)
                 {
-                    switch (declaration)
+                    if (!module.Scope.LookupType(A.Identifier.Artificial(module, Lex.CoreModule.List), out _))
                     {
-                        case A.Decl.Import import:
-                            Import(module.Scope, import);
-                            break;
-                        case A.Decl.Infix infix:
-                            Infix(module.Scope, infix);
-                            break;
-                        case A.Decl.Custom type:
-                            Type(module.Scope, type);
-                            break;
-                        case A.Decl.Alias alias:
-                            Alias(module.Scope, alias);
-                            break;
-                        case A.Decl.Var varDecl:
-                            VarDecl(module.Scope, varDecl);
-                            break;
-                        case A.Decl.TypeAnnotation annotation:
-                            TypeAnnotation(module.Scope, annotation);
-                            break;
-                        default:
-                            Assert(false);
-                            throw new NotImplementedException();
-                            break;
+                        Declare(Module, FakeList.MakeType(module));
                     }
                 }
+
+                foreach (var declaration in ast.Declarations)
+                {
+                    Declare(Module, declaration);
+                }
+                Assert(module.Scope.HintsAreEmpty);
+
+
             }
 
-            private void TypeAnnotation(Scope scope, A.Decl.TypeAnnotation annotation)
+            private void Declare(Module Module, A.Decl declaration)
             {
-                Collector.Annotation.Add(annotation);
-
-                Declarations.Add(annotation);
-
-                scope.AddHint(annotation);
-            }
-
-            private void VarDecl(Scope scope, A.Decl.Var var)
-            {
-                if (var.Name.Text == "fromPolar")
+                switch (declaration)
                 {
-                    Assert(true);
-                }
-
-                Collector.Var.Add(var);
-
-                Declarations.Add(var);
-
-                scope.AddVar(var);
-
-                var.Scope.Parent = scope;
-
-                foreach (var parameter in var.Parameters)
-                {
-                    Assert(parameter.Expression is A.Pattern);
-
-                    if (parameter.Expression is A.Pattern pattern)
-                    {
-                        foreach (var identifier in pattern.Flatten())
+                    case A.Decl.Import import:
                         {
-                            var.Scope.Add(new A.Decl.Parameter(identifier));
+                            Collector.Import.Add(import);
+                            Declarations.Add(import);
+
+                            Module.Scope.ImportAddImport(import);
+
+                            break;
                         }
-                    }
-                    else
-                    {
+
+                    case A.Decl.Infix infix:
+                        {
+                            Collector.Infix.Add(infix);
+                            Declarations.Add(infix);
+
+                            Module.Scope.AddInfix(infix);
+
+                            ScopeExpr(Module.Scope, infix.Expression);
+
+                            break;
+                        }
+
+                    case A.Decl.Custom type:
+                        {
+                            Collector.Custom.Add(type);
+                            Declarations.Add(type);
+
+                            Module.Scope.AddType(type);
+
+                            type.Scope.Parent = Module.Scope;
+
+                            foreach (var parameter in type.Parameters)
+                            {
+                                type.Scope.Add(parameter);
+                            }
+
+                            foreach (var constructor in type.Ctors)
+                            {
+                                Module.Scope.AddConstructor(constructor);
+                            }
+                            break;
+                        }
+
+                    case A.Decl.Alias alias:
+                        {
+                            Collector.Alias.Add(alias);
+                            Declarations.Add(alias);
+
+                            Module.Scope.AddAlias(alias);
+                            break;
+                        }
+
+                    case A.Decl.Var var:
+                        {
+                            Collector.Var.Add(var);
+                            Declarations.Add(var);
+
+                            Module.Scope.AddVar(var);
+
+                            var.Scope.Parent = Module.Scope;
+
+                            foreach (var parameter in var.Parameters)
+                            {
+                                if (parameter.Expression is A.Pattern pattern)
+                                {
+                                    foreach (var identifier in pattern.Flatten())
+                                    {
+                                        var.Scope.Add(new A.Decl.Parameter(identifier));
+                                    }
+                                }
+                                else
+                                {
+                                    Assert(parameter.Expression is A.Pattern);
+                                    throw new InvalidOperationException();
+                                }
+                            }
+
+                            ScopeExpr(var.Scope, var.Expression);
+
+                            break;
+                        }
+
+                    case A.Decl.TypeAnnotation annotation:
+                        {
+                            Collector.Annotation.Add(annotation);
+                            Declarations.Add(annotation);
+
+                            Module.Scope.AddHint(annotation);
+
+                            break;
+                        }
+
+                    default:
                         Assert(false);
-                    }
+                        throw new NotImplementedException();
+                        break;
                 }
-
-                ScopeExpr(var.Scope, var.Expression);
-            }
-
-            private void Import(ModuleScope scope, A.Decl.Import import)
-            {
-                Collector.Import.Add(import);
-
-                Declarations.Add(import);
-
-                scope.ImportAddImport(import);
-            }
-
-            private void Infix(ModuleScope scope, A.Decl.Infix infix)
-            {
-                Collector.Infix.Add(infix);
-
-                Declarations.Add(infix);
-
-                scope.AddInfix(infix);
-
-                ScopeExpr(scope, infix.Expression);
-            }
-
-            private void Type(ModuleScope scope, A.Decl.Custom type)
-            {
-                Collector.Custom.Add(type);
-
-                Declarations.Add(type);
-
-                scope.AddType(type);
-
-                type.Scope.Parent = scope;
-
-                foreach (var parameter in type.Parameters)
-                {
-                    type.Scope.Add(parameter);
-                }
-
-                foreach (var constructor in type.Ctors)
-                {
-                    scope.AddConstructor(constructor);
-                }
-            }
-
-            private void Alias(ModuleScope scope, A.Decl.Alias alias)
-            {
-                Collector.Alias.Add(alias);
-
-                Declarations.Add(alias);
-
-                scope.AddAlias(alias);
             }
 
             private void ScopeExpr(Scope scope, A.Expr expression)
@@ -225,85 +208,118 @@ namespace Fux.Building.Phases
                     case A.Expr.Literal:
                     case A.Expr.Unit:
                     case A.Expr.Dot: //TODO: what to do here?
-                        break;
-                    case A.Expr.If iff:
-                        ScopeExpr(scope, iff.Condition);
-                        ScopeExpr(scope, iff.IfTrue);
-                        ScopeExpr(scope, iff.IfFalse);
-                        break;
-                    case A.Expr.Matcher match:
-                        ScopeExpr(scope, match.Expression);
-                        foreach (var matchCase in match.Cases)
                         {
-                            ScopeExpr(scope, matchCase);
-                            Assert(matchCase.Scope.Parent != null);
+                            break;
                         }
-                        break;
-                    case A.Expr.Case matchCase:
-                        Assert(matchCase.Scope.Parent == null);
-                        matchCase.Scope.Parent = scope;
-                        if (matchCase.Pattern is A.Pattern pattern)
+                    case A.Expr.If iff:
                         {
-                            foreach (var parameter in pattern.ExractMatchNames())
+                            ScopeExpr(scope, iff.Condition);
+                            ScopeExpr(scope, iff.IfTrue);
+                            ScopeExpr(scope, iff.IfFalse);
+                            break;
+                        }
+                    case A.Expr.Matcher match:
+                        {
+                            ScopeExpr(scope, match.Expression);
+                            foreach (var matchCase in match.Cases)
+                            {
+                                ScopeExpr(scope, matchCase);
+                                Assert(matchCase.Scope.Parent != null);
+                            }
+                            break;
+                        }
+                    case A.Expr.Case matchCase:
+                        {
+                            Assert(matchCase.Scope.Parent == null);
+                            matchCase.Scope.Parent = scope;
+
+                            foreach (var parameter in matchCase.Pattern.ExractMatchNames())
                             {
                                 matchCase.Scope.Add(parameter);
                             }
+
+                            ScopeExpr(matchCase.Scope, matchCase.Expression);
+                            break;
                         }
-                        else
-                        {
-                            foreach (var identifier in ExplodePattern(matchCase.Pattern))
-                            {
-                                matchCase.Scope.Add(identifier);
-                            }
-                        }
-                        ScopeExpr(matchCase.Scope, matchCase.Expression);
-                        break;
+
                     case A.Expr.Sequence sequence:
-                        foreach (var expr in sequence)
                         {
-                            ScopeExpr(scope, expr);
+                            foreach (var expr in sequence)
+                            {
+                                ScopeExpr(scope, expr);
+                            }
+                            break;
                         }
-                        break;
+
                     case A.Expr.Tuple tuple:
-                        foreach (var expr in tuple)
                         {
-                            ScopeExpr(scope, expr);
+                            foreach (var expr in tuple)
+                            {
+                                ScopeExpr(scope, expr);
+                            }
+                            break;
                         }
-                        break;
+
                     case A.Expr.List list:
-                        foreach (var expr in list)
                         {
-                            ScopeExpr(scope, expr);
+                            foreach (var expr in list)
+                            {
+                                ScopeExpr(scope, expr);
+                            }
+                            break;
                         }
-                        break;
+
                     case A.Expr.Prefix prefix:
-                        ScopeExpr(scope, prefix.Rhs);
-                        break;
+                        {
+                            ScopeExpr(scope, prefix.Rhs);
+                            break;
+                        }
+
                     case A.Expr.Infix infix:
-                        ScopeExpr(scope, infix.Lhs);
-                        ScopeExpr(scope, infix.Rhs);
-                        break;
-                    case A.OpChain opChain:
-                        ScopeExpr(scope, opChain.First);
-                        foreach (var rest in opChain.Rest)
                         {
-                            ScopeExpr(scope, rest.Expression);
+                            ScopeExpr(scope, infix.Lhs);
+                            ScopeExpr(scope, infix.Rhs);
+                            break;
                         }
-                        break;
+
+                    case A.OpChain chain:
+                        {
+                            ScopeExpr(scope, chain.First);
+                            foreach (var rest in chain.Rest)
+                            {
+                                ScopeExpr(scope, rest.Expression);
+                            }
+                            break;
+                        }
+
                     case A.Expr.Let letExpr:
-                        letExpr.Scope.Parent = scope;
-                        ScopeLet(letExpr);
-                        break;
-                    case A.Expr.Lambda lambda:
-                        lambda.Scope.Parent = scope;
-                        ScopeLambda(lambda);
-                        break;
-                    case A.Expr.Record record:
-                        foreach (var field in record.Fields)
                         {
-                            ScopeExpr(scope, field.Expression);
+                            letExpr.Scope.Parent = scope;
+                            ScopeLet(letExpr);
+                            break;
                         }
-                        break;
+
+                    case A.Expr.Lambda lambda:
+                        {
+                            lambda.Scope.Parent = scope;
+                            foreach (var parameter in lambda.Parameters.ExractMatchNames())
+                            {
+                                lambda.Scope.Add(parameter);
+                            }
+
+                            ScopeExpr(lambda.Scope, lambda.Expression);
+                            break;
+                        }
+
+                    case A.Expr.Record record:
+                        {
+                            record.Scope.Parent = scope;
+                            foreach (var field in record.Fields)
+                            {
+                                ScopeExpr(record.Scope, field.Expression);
+                            }
+                            break;
+                        }
 
                     case A.Expr.Select select:
                         {
@@ -323,23 +339,21 @@ namespace Fux.Building.Phases
                 }
             }
 
-            private void ScopeLet(A.Expr.Let letExr)
+            private void ScopeLet(A.Expr.Let letExpr)
             {
                 var hints = new Dictionary<A.Identifier, A.Decl.TypeAnnotation>();
-                Assert(letExr.Scope.HintsAreEmpty);
+                Assert(letExpr.Scope.HintsAreEmpty);
 
-                foreach (var expr in letExr.LetDecls)
+                foreach (var expr in letExpr.LetDecls)
                 {
                     switch (expr)
                     {
                         case A.Decl.Var var:
                             {
-                                var.Scope.Parent = letExr.Scope;
+                                var.Scope.Parent = letExpr.Scope;
 
                                 foreach (var parameter in var.Parameters)
                                 {
-                                    Assert(parameter.Expression is A.Pattern);
-
                                     if (parameter.Expression is A.Pattern pattern)
                                     {
                                         foreach (var identifier in pattern.ExtractNamedParameters())
@@ -349,37 +363,41 @@ namespace Fux.Building.Phases
                                     }
                                     else
                                     {
-                                        foreach (var identifier in ExplodePattern(parameter.Expression))
-                                        {
-                                            var.Scope.Add(identifier);
-                                        }
+                                        Assert(parameter.Expression is A.Pattern);
+                                        throw new InvalidOperationException();
                                     }
                                 }
 
-                                letExr.Scope.AddVar(var);
+                                letExpr.Scope.AddVar(var);
 
                                 ScopeExpr(var.Scope, var.Expression);
+
+                                break;
                             }
-                            break;
+
                         case A.Decl.LetAssign assign:
                             {
-                                assign.Scope.Parent = letExr.Scope;
+                                assign.Scope.Parent = letExpr.Scope;
 
-                                Assert(letExr.Scope.HintsAreEmpty);
+                                Assert(letExpr.Scope.HintsAreEmpty);
 
                                 foreach (var identifier in assign.Pattern.ExtractNamedParameters())
                                 {
-                                    letExr.Scope.Add(identifier);
+                                    letExpr.Scope.Add(identifier);
                                 }
 
                                 ScopeExpr(assign.Scope, assign.Expression);
+
+                                break;
                             }
-                            break;
+
                         case A.Decl.TypeAnnotation annotation:
                             {
-                                letExr.Scope.AddHint(annotation);
+                                letExpr.Scope.AddHint(annotation);
+
+                                break;
                             }
-                            break;
+
                         default:
                             Assert(false);
                             throw new NotImplementedException();
@@ -387,21 +405,12 @@ namespace Fux.Building.Phases
                 }
 
                 Assert(hints.Count == 0);
-                Assert(letExr.Scope.HintsAreEmpty);
+                Assert(letExpr.Scope.HintsAreEmpty);
 
-                ScopeExpr(letExr.Scope, letExr.InExpression);
+                ScopeExpr(letExpr.Scope, letExpr.InExpression);
             }
 
-            private void ScopeLambda(A.Expr.Lambda lambda)
-            {
-                foreach (var parameter in lambda.Parameters.ExractMatchNames())
-                {
-                    lambda.Scope.Add(parameter);
-                }
-
-                ScopeExpr(lambda.Scope, lambda.Expression);
-            }
-
+#if false
             private IEnumerable<A.Decl.Parameter> ExplodePattern(A.Expr pattern)
             {
                 switch (pattern)
@@ -561,29 +570,29 @@ namespace Fux.Building.Phases
                     yield return new A.Decl.Parameter(pattern.Alias.SingleLower());
                 }
             }
-        }
 
-        private void Write(Module module)
-        {
-            if (Ambience.Config.WriteTheDeclarations)
+            private void Write(Module module)
             {
-                using (var writer = MakeWriter(module, "declarations"))
+                if (Ambience.Config.WriteTheDeclarations)
                 {
-                    foreach (var declaration in declarations)
+                    using (var writer = MakeWriter(module, "declarations"))
                     {
-                        var name = declaration is A.NamedDecl named ? named.Name.Text : "<no-name>";
-                        writer.Write($"{declaration.GetType().Name} - {name}");
-                        writer.WriteLine();
-                        writer.Indent(() =>
+                        foreach (var declaration in Declarations)
                         {
-                            declaration.PP(writer);
-                        });
-                        writer.EndLine();
-                        writer.WriteLine();
+                            var name = declaration is A.NamedDecl named ? named.Name.Text : "<no-name>";
+                            writer.Write($"{declaration.GetType().Name} - {name}");
+                            writer.WriteLine();
+                            writer.Indent(() =>
+                            {
+                                declaration.PP(writer);
+                            });
+                            writer.EndLine();
+                            writer.WriteLine();
+                        }
                     }
                 }
             }
+#endif
         }
-
     }
 }
