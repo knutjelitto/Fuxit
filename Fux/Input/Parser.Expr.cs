@@ -135,9 +135,7 @@ namespace Fux.Input
 
                     if (cursor.SwallowIf(Lex.KwAs))
                     {
-                        var alias = Parser.Identifier(cursor).SingleLower();
-
-                        atom.Alias = alias;
+                        Assert(false);
                     }
 
                     return atom;

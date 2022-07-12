@@ -52,7 +52,7 @@ endif
 
 # Global compiler flags
 CXXFLAGS := $(DBGCFLAGS) -Ofast -std=c++11 -fno-rtti -Wno-writable-strings -Wno-unknown-pragmas
-CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c99 -Isrc/include
+CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c2x -Isrc/include
 
 # Global compiler flags for Wasm targeting
 CLANGFLAGS := -target wasm32 -nostdinc

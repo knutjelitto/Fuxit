@@ -29,3 +29,9 @@ int square(int num)
 {
 	return num * num;
 }
+
+
+int duple(int num)
+{
+	return num + num;
+}

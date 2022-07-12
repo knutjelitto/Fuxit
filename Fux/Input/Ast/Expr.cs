@@ -8,7 +8,6 @@ namespace Fux.Input.Ast
 {
     public interface Expr : Node
     {
-        Identifier? Alias { get; set; }
         Expr Resolved { get; set; }
 
         public abstract class ExprImpl : NodeImpl, Expr

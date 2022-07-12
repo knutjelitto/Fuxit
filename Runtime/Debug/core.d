@@ -1,11 +1,11 @@
 Debug/core.o: src\kernel\core\core.c src\kernel\core\core.h \
   src\kernel\core\..\wrapper\wrapper.h src\include\stddef.h \
   src\include\stdbool.h src\kernel\core\..\wrapper\..\core\types.h \
-  src\include\stdint.h src\include\stdlib.h \
+  src\include\assert.h src\include\stdint.h src\include\stdlib.h \
   src\kernel\core\debug\debug.h src\kernel\core\types.h \
   src\kernel\core\..\..\lib\stb\stb_sprintf.c \
   src\kernel\core\..\..\lib\stb\.\stb_sprintf.h src\include\stdarg.h \
-  src\kernel\core\basics.c src\kernel\core\bitwise.c \
+  src\kernel\core\basics.c src\include\math.h src\kernel\core\bitwise.c \
   src\kernel\core\char.c src\kernel\core\dynamic-array.c \
   src\kernel\core\.\core.h src\kernel\core\js-array.c \
   src\kernel\core\..\json\json.h src\kernel\core\..\json\..\core\types.h \
@@ -36,6 +36,8 @@ src\include\stdbool.h:
 
 src\kernel\core\..\wrapper\..\core\types.h:
 
+src\include\assert.h:
+
 src\include\stdint.h:
 
 src\include\stdlib.h:
@@ -51,6 +53,8 @@ src\kernel\core\..\..\lib\stb\.\stb_sprintf.h:
 src\include\stdarg.h:
 
 src\kernel\core\basics.c:
+
+src\include\math.h:
 
 src\kernel\core\bitwise.c:
 

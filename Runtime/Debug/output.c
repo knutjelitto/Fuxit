@@ -205,7 +205,7 @@ DEFINE_REINTERPRET(f64_reinterpret_i64, u64, f64)
 DEFINE_REINTERPRET(i64_reinterpret_f64, f64, u64)
 
 
-static u32 func_types[21];
+static u32 func_types[22];
 
 static void init_func_types(void) {
   func_types[0] = wasm_rt_register_func_type(1, 1, WASM_RT_I32, WASM_RT_I32);
@@ -216,23 +216,25 @@ static void init_func_types(void) {
   func_types[5] = wasm_rt_register_func_type(3, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
   func_types[6] = wasm_rt_register_func_type(0, 0);
   func_types[7] = wasm_rt_register_func_type(4, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
-  func_types[8] = wasm_rt_register_func_type(1, 1, WASM_RT_F64, WASM_RT_I32);
-  func_types[9] = wasm_rt_register_func_type(0, 1, WASM_RT_I32);
-  func_types[10] = wasm_rt_register_func_type(5, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
-  func_types[11] = wasm_rt_register_func_type(4, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
-  func_types[12] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_F64, WASM_RT_I32);
-  func_types[13] = wasm_rt_register_func_type(2, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_F64);
-  func_types[14] = wasm_rt_register_func_type(6, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_F64, WASM_RT_I32, WASM_RT_I32);
-  func_types[15] = wasm_rt_register_func_type(7, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I64);
-  func_types[16] = wasm_rt_register_func_type(7, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I64, WASM_RT_I64);
-  func_types[17] = wasm_rt_register_func_type(5, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
-  func_types[18] = wasm_rt_register_func_type(2, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I64);
-  func_types[19] = wasm_rt_register_func_type(8, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
-  func_types[20] = wasm_rt_register_func_type(9, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
+  func_types[8] = wasm_rt_register_func_type(0, 1, WASM_RT_I32);
+  func_types[9] = wasm_rt_register_func_type(1, 1, WASM_RT_F64, WASM_RT_F64);
+  func_types[10] = wasm_rt_register_func_type(1, 1, WASM_RT_F64, WASM_RT_I32);
+  func_types[11] = wasm_rt_register_func_type(5, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
+  func_types[12] = wasm_rt_register_func_type(4, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
+  func_types[13] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_F64, WASM_RT_F64);
+  func_types[14] = wasm_rt_register_func_type(2, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_F64);
+  func_types[15] = wasm_rt_register_func_type(6, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_F64, WASM_RT_I32, WASM_RT_I32);
+  func_types[16] = wasm_rt_register_func_type(7, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I64);
+  func_types[17] = wasm_rt_register_func_type(7, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I64, WASM_RT_I64);
+  func_types[18] = wasm_rt_register_func_type(5, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
+  func_types[19] = wasm_rt_register_func_type(2, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I64);
+  func_types[20] = wasm_rt_register_func_type(8, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
+  func_types[21] = wasm_rt_register_func_type(9, 0, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
 }
 
 static void w2c___wasm_call_ctors(void);
 static u32 w2c_square(u32);
+static u32 w2c_duple(u32);
 static u32 w2c_sum(u32);
 static void w2c_stbsp_set_separators(u32, u32);
 static u32 w2c_stbsp_vsprintfcb(u32, u32, u32, u32, u32);
@@ -742,6 +744,16 @@ static u32 w2c_square(u32 w2c_p0) {
   w2c_i0 = w2c_p0;
   w2c_i1 = w2c_p0;
   w2c_i0 *= w2c_i1;
+  FUNC_EPILOGUE;
+  return w2c_i0;
+}
+
+static u32 w2c_duple(u32 w2c_p0) {
+  FUNC_PROLOGUE;
+  u32 w2c_i0, w2c_i1;
+  w2c_i0 = w2c_p0;
+  w2c_i1 = 1u;
+  w2c_i0 <<= (w2c_i1 & 31);
   FUNC_EPILOGUE;
   return w2c_i0;
 }
@@ -8957,8 +8969,7 @@ static u32 w2c_eval_pow(u32 w2c_p0) {
   w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1) + 8u);
   w2c_i2 = w2c_l1;
   w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2) + 8u);
-  w2c_i1 = (*Z_envZ_powZ_idd)(w2c_d1, w2c_d2);
-  w2c_d1 = (f64)(s32)(w2c_i1);
+  w2c_d1 = (*Z_envZ_powZ_ddd)(w2c_d1, w2c_d2);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
   w2c_i0 = w2c_l2;
   FUNC_EPILOGUE;
@@ -9008,21 +9019,21 @@ static u32 w2c_newElmFloat(f64 w2c_p0) {
 }
 
 static u32 w2c_eval_round(u32 w2c_p0) {
-  u32 w2c_l1 = 0;
+  f64 w2c_l1 = 0;
   FUNC_PROLOGUE;
   u32 w2c_i0, w2c_i1;
   f64 w2c_d0, w2c_d1;
   w2c_i0 = w2c_p0;
   w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0) + 8u);
-  w2c_i0 = (*Z_envZ_roundZ_id)(w2c_d0);
-  w2c_l1 = w2c_i0;
+  w2c_d0 = (*Z_envZ_roundZ_dd)(w2c_d0);
+  w2c_l1 = w2c_d0;
   w2c_i0 = 1u;
   w2c_i1 = 4u;
   w2c_i0 = w2c_GC_allocate(w2c_i0, w2c_i1);
   w2c_p0 = w2c_i0;
-  w2c_i1 = w2c_l1;
-  w2c_d1 = (f64)(s32)(w2c_i1);
+  w2c_d1 = w2c_l1;
+  w2c_d1 = trunc(w2c_d1);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
   w2c_i0 = w2c_p0;
   w2c_i1 = 4u;
@@ -9033,21 +9044,21 @@ static u32 w2c_eval_round(u32 w2c_p0) {
 }
 
 static u32 w2c_eval_floor(u32 w2c_p0) {
-  u32 w2c_l1 = 0;
+  f64 w2c_l1 = 0;
   FUNC_PROLOGUE;
   u32 w2c_i0, w2c_i1;
   f64 w2c_d0, w2c_d1;
   w2c_i0 = w2c_p0;
   w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0) + 8u);
-  w2c_i0 = (*Z_envZ_floorZ_id)(w2c_d0);
-  w2c_l1 = w2c_i0;
+  w2c_d0 = (*Z_envZ_floorZ_dd)(w2c_d0);
+  w2c_l1 = w2c_d0;
   w2c_i0 = 1u;
   w2c_i1 = 4u;
   w2c_i0 = w2c_GC_allocate(w2c_i0, w2c_i1);
   w2c_p0 = w2c_i0;
-  w2c_i1 = w2c_l1;
-  w2c_d1 = (f64)(s32)(w2c_i1);
+  w2c_d1 = w2c_l1;
+  w2c_d1 = trunc(w2c_d1);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
   w2c_i0 = w2c_p0;
   w2c_i1 = 4u;
@@ -9058,21 +9069,21 @@ static u32 w2c_eval_floor(u32 w2c_p0) {
 }
 
 static u32 w2c_eval_ceiling(u32 w2c_p0) {
-  u32 w2c_l1 = 0;
+  f64 w2c_l1 = 0;
   FUNC_PROLOGUE;
   u32 w2c_i0, w2c_i1;
   f64 w2c_d0, w2c_d1;
   w2c_i0 = w2c_p0;
   w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0) + 8u);
-  w2c_i0 = (*Z_envZ_ceilZ_id)(w2c_d0);
-  w2c_l1 = w2c_i0;
+  w2c_d0 = (*Z_envZ_ceilZ_dd)(w2c_d0);
+  w2c_l1 = w2c_d0;
   w2c_i0 = 1u;
   w2c_i1 = 4u;
   w2c_i0 = w2c_GC_allocate(w2c_i0, w2c_i1);
   w2c_p0 = w2c_i0;
-  w2c_i1 = w2c_l1;
-  w2c_d1 = (f64)(s32)(w2c_i1);
+  w2c_d1 = w2c_l1;
+  w2c_d1 = trunc(w2c_d1);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
   w2c_i0 = w2c_p0;
   w2c_i1 = 4u;
@@ -9403,21 +9414,20 @@ static void w2c_Debug_assert(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, u32
 }
 
 static u32 w2c_eval_log(u32 w2c_p0) {
-  u32 w2c_l1 = 0;
+  f64 w2c_l1 = 0;
   FUNC_PROLOGUE;
   u32 w2c_i0, w2c_i1;
   f64 w2c_d0, w2c_d1;
   w2c_i0 = w2c_p0;
   w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0) + 8u);
-  w2c_i0 = (*Z_envZ_logZ_id)(w2c_d0);
-  w2c_l1 = w2c_i0;
+  w2c_d0 = (*Z_envZ_logZ_dd)(w2c_d0);
+  w2c_l1 = w2c_d0;
   w2c_i0 = 1u;
   w2c_i1 = 4u;
   w2c_i0 = w2c_GC_allocate(w2c_i0, w2c_i1);
   w2c_p0 = w2c_i0;
-  w2c_i1 = w2c_l1;
-  w2c_d1 = (f64)(s32)(w2c_i1);
+  w2c_d1 = w2c_l1;
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
   w2c_i0 = w2c_p0;
   w2c_i1 = 268435460u;
@@ -36882,7 +36892,7 @@ static void w2c_GC_init_root(u32 w2c_p0, u32 w2c_p1) {
   i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
   w2c_i0 = w2c_p0;
   w2c_i1 = w2c_p1;
-  w2c_i1 = CALL_INDIRECT(w2c___indirect_function_table, u32 (*)(void), 9, w2c_i1);
+  w2c_i1 = CALL_INDIRECT(w2c___indirect_function_table, u32 (*)(void), 8, w2c_i1);
   i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
   w2c_i0 = w2c_p1;
   w2c_i1 = 0u;
@@ -38007,6 +38017,8 @@ wasm_rt_memory_t (*WASM_RT_ADD_PREFIX(Z_memory));
 void (*WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv))(void);
 /* export: 'square' */
 u32 (*WASM_RT_ADD_PREFIX(Z_squareZ_ii))(u32);
+/* export: 'duple' */
+u32 (*WASM_RT_ADD_PREFIX(Z_dupleZ_ii))(u32);
 /* export: 'sum' */
 u32 (*WASM_RT_ADD_PREFIX(Z_sumZ_ii))(u32);
 /* export: 'stbsp_set_separators' */
@@ -38719,6 +38731,8 @@ static void init_exports(void) {
   WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv) = (&w2c___wasm_call_ctors);
   /* export: 'square' */
   WASM_RT_ADD_PREFIX(Z_squareZ_ii) = (&w2c_square);
+  /* export: 'duple' */
+  WASM_RT_ADD_PREFIX(Z_dupleZ_ii) = (&w2c_duple);
   /* export: 'sum' */
   WASM_RT_ADD_PREFIX(Z_sumZ_ii) = (&w2c_sum);
   /* export: 'stbsp_set_separators' */

@@ -7,11 +7,12 @@
  (type $i32_i32_i32_=>_none (func (param i32 i32 i32)))
  (type $none_=>_none (func))
  (type $i32_i32_i32_i32_=>_i32 (func (param i32 i32 i32 i32) (result i32)))
- (type $f64_=>_i32 (func (param f64) (result i32)))
  (type $none_=>_i32 (func (result i32)))
+ (type $f64_=>_f64 (func (param f64) (result f64)))
+ (type $f64_=>_i32 (func (param f64) (result i32)))
  (type $i32_i32_i32_i32_i32_=>_i32 (func (param i32 i32 i32 i32 i32) (result i32)))
  (type $i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32)))
- (type $f64_f64_=>_i32 (func (param f64 f64) (result i32)))
+ (type $f64_f64_=>_f64 (func (param f64 f64) (result f64)))
  (type $i32_i32_=>_f64 (func (param i32 i32) (result f64)))
  (type $i32_i32_i32_i32_f64_i32_=>_i32 (func (param i32 i32 i32 i32 f64 i32) (result i32)))
  (type $i32_i32_i32_i32_i32_i32_i64_=>_none (func (param i32 i32 i32 i32 i32 i32 i64)))
@@ -22,11 +23,11 @@
  (type $i32_i32_i32_i32_i32_i32_i32_i32_i32_=>_none (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32)))
  (import "env" "sweepJsRefs" (func $sweepJsRefs (param i32)))
  (import "env" "abort" (func $abort))
- (import "env" "pow" (func $pow (param f64 f64) (result i32)))
- (import "env" "round" (func $round (param f64) (result i32)))
- (import "env" "floor" (func $floor (param f64) (result i32)))
- (import "env" "ceil" (func $ceil (param f64) (result i32)))
- (import "env" "log" (func $log (param f64) (result i32)))
+ (import "env" "pow" (func $pow (param f64 f64) (result f64)))
+ (import "env" "round" (func $round (param f64) (result f64)))
+ (import "env" "floor" (func $floor (param f64) (result f64)))
+ (import "env" "ceil" (func $ceil (param f64) (result f64)))
+ (import "env" "log" (func $log (param f64) (result f64)))
  (import "env" "applyJsRef" (func $applyJsRef (param i32 i32 i32) (result i32)))
  (import "env" "jsStepper" (func $jsStepper (param i32)))
  (import "env" "exit" (func $exit (param i32)))
@@ -203,6 +204,7 @@
  (export "memory" (memory $0))
  (export "__wasm_call_ctors" (func $__wasm_call_ctors))
  (export "square" (func $square))
+ (export "duple" (func $duple))
  (export "sum" (func $sum))
  (export "stbsp_set_separators" (func $stbsp_set_separators))
  (export "stbsp_vsprintfcb" (func $stbsp_vsprintfcb))
@@ -561,6 +563,12 @@
   (i32.mul
    (local.get $0)
    (local.get $0)
+  )
+ )
+ (func $duple (param $0 i32) (result i32)
+  (i32.shl
+   (local.get $0)
+   (i32.const 1)
   )
  )
  (func $sum (param $0 i32) (result i32)
@@ -12729,14 +12737,12 @@
   )
   (f64.store offset=8
    (local.get $2)
-   (f64.convert_i32_s
-    (call $pow
-     (f64.load offset=8
-      (local.get $0)
-     )
-     (f64.load offset=8
-      (local.get $1)
-     )
+   (call $pow
+    (f64.load offset=8
+     (local.get $0)
+    )
+    (f64.load offset=8
+     (local.get $1)
     )
    )
   )
@@ -12784,7 +12790,7 @@
   (local.get $1)
  )
  (func $eval_round (param $0 i32) (result i32)
-  (local $1 i32)
+  (local $1 f64)
   (local.set $1
    (call $round
     (f64.load offset=8
@@ -12801,7 +12807,7 @@
      (i32.const 4)
     )
    )
-   (f64.convert_i32_s
+   (f64.trunc
     (local.get $1)
    )
   )
@@ -12812,7 +12818,7 @@
   (local.get $0)
  )
  (func $eval_floor (param $0 i32) (result i32)
-  (local $1 i32)
+  (local $1 f64)
   (local.set $1
    (call $floor
     (f64.load offset=8
@@ -12829,7 +12835,7 @@
      (i32.const 4)
     )
    )
-   (f64.convert_i32_s
+   (f64.trunc
     (local.get $1)
    )
   )
@@ -12840,7 +12846,7 @@
   (local.get $0)
  )
  (func $eval_ceiling (param $0 i32) (result i32)
-  (local $1 i32)
+  (local $1 f64)
   (local.set $1
    (call $ceil
     (f64.load offset=8
@@ -12857,7 +12863,7 @@
      (i32.const 4)
     )
    )
-   (f64.convert_i32_s
+   (f64.trunc
     (local.get $1)
    )
   )
@@ -13288,7 +13294,7 @@
   )
  )
  (func $eval_log (param $0 i32) (result i32)
-  (local $1 i32)
+  (local $1 f64)
   (local.set $1
    (call $log
     (f64.load offset=8
@@ -13305,9 +13311,7 @@
      (i32.const 4)
     )
    )
-   (f64.convert_i32_s
-    (local.get $1)
-   )
+   (local.get $1)
   )
   (i32.store
    (local.get $0)

@@ -327,10 +327,6 @@ namespace Fux.Building.Phases
                         break; //TODO: what to do here
                     case A.Identifier identifier:
                         {
-                            if (identifier.Text == "Node")
-                            {
-                                Assert(true);
-                            }
                             if (scope.Resolve(identifier, out var resolved))
                             {
                                 if (resolved is A.Decl.Var var)

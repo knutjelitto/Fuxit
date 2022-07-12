@@ -12,6 +12,7 @@ Closure Bitwise_and = {
   .max_values = 2,
 };
 
+
 void* eval_Bitwise_or(void* args[]) {
   ElmInt* a = args[0];
   ElmInt* b = args[1];
@@ -22,6 +23,7 @@ Closure Bitwise_or = {
   .evaluator = eval_Bitwise_or,
   .max_values = 2,
 };
+
 
 void* eval_Bitwise_xor(void* args[]) {
   ElmInt* a = args[0];
@@ -34,6 +36,7 @@ Closure Bitwise_xor = {
   .max_values = 2,
 };
 
+
 void* eval_Bitwise_complement(void* args[]) {
   ElmInt* a = args[0];
   return newElmInt(~(i32)a->value);
@@ -43,6 +46,7 @@ Closure Bitwise_complement = {
   .evaluator = eval_Bitwise_complement,
   .max_values = 1,
 };
+
 
 void* eval_Bitwise_shiftLeftBy(void* args[]) {
   ElmInt* offset = args[0];
@@ -55,6 +59,7 @@ Closure Bitwise_shiftLeftBy = {
   .max_values = 2,
 };
 
+
 void* eval_Bitwise_shiftRightBy(void* args[]) {
   ElmInt* offset = args[0];
   ElmInt* a = args[1];
@@ -65,6 +70,7 @@ Closure Bitwise_shiftRightBy = {
   .evaluator = eval_Bitwise_shiftRightBy,
   .max_values = 2,
 };
+
 
 void* eval_Bitwise_shiftRightZfBy(void* args[]) {
   ElmInt* offset = args[0];

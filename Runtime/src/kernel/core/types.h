@@ -1,6 +1,7 @@
 #ifndef ELM_KERNEL_TYPES
 #define ELM_KERNEL_TYPES
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -12,13 +13,26 @@ typedef short i16;
 typedef int i32;
 typedef long long int i64;
 
+static_assert(sizeof(i8) == 1);
+static_assert(sizeof(i16) == 2);
+static_assert(sizeof(i32) == 4);
+static_assert(sizeof(i64) == 8);
+
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long int u64;
 
+static_assert(sizeof(u8) == 1);
+static_assert(sizeof(u16) == 2);
+static_assert(sizeof(u32) == 4);
+static_assert(sizeof(u64) == 8);
+
 typedef float f32;
 typedef double f64;
+
+static_assert(sizeof(f32) == 4);
+static_assert(sizeof(f64) == 8);
 
 typedef enum {
   // Tag_Zero, // invalid Elm value  TODO: fails Json tests, is that a real bug?

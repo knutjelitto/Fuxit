@@ -107,17 +107,19 @@ namespace Fux.Building.Typing
                         var args = custom.Parameters.Select(t => VarType(t.Text)).ToList();
                         return new W.Type.Concrete(custom.FullName(), args.ToArray());
                     }
+
                 case A.Type.Ctor ctor:
                     {
                         Assert(ctor.InModule != null);
                         Assert(ctor.Resolved.InModule != null);
 
-                        var args = ctor.Arguments.Select(t => Resolve(env, t)).ToList();
-                        if (args.Count > 0)
-                        {
-                            return new W.Type.Concrete(ctor.FullName(), args.ToArray());
-                        }
-                        return new W.Type.Concrete(ctor.FullName());
+                        var args = ctor.Arguments.Select(t => Resolve(env, t)).ToArray();
+                        return new W.Type.Concrete(ctor.FullName(), args);
+                    }
+                case A.Type.Record record:
+                    {
+                        Assert(false);
+                        break;
                     }
             }
             throw new NotImplementedException($"type not implemented: '{type.Resolved.GetType().FullName}({type})'");

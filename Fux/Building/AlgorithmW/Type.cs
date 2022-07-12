@@ -72,9 +72,9 @@
                 }
             }
 
-            public override string ToString() => $"{Name}{arguments}";
+            public override string ToString() => $"{Name}{StrArguments}";
 
-            private string arguments
+            private string StrArguments
             {
                 get
                 {
@@ -85,6 +85,12 @@
                     return "";
                 }
             }
+        }
+
+        public sealed record Field(string Name, Type Type);
+
+        public sealed record Record(IReadOnlyList<Field> Fields) : Type
+        {
         }
 
         public abstract record Primitive(string Name) : Type

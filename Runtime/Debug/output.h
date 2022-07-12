@@ -36,15 +36,15 @@ extern void (*Z_envZ_sweepJsRefsZ_vi)(u32);
 /* import: 'env' 'abort' */
 extern void (*Z_envZ_abortZ_vv)(void);
 /* import: 'env' 'pow' */
-extern u32 (*Z_envZ_powZ_idd)(f64, f64);
+extern f64 (*Z_envZ_powZ_ddd)(f64, f64);
 /* import: 'env' 'round' */
-extern u32 (*Z_envZ_roundZ_id)(f64);
+extern f64 (*Z_envZ_roundZ_dd)(f64);
 /* import: 'env' 'floor' */
-extern u32 (*Z_envZ_floorZ_id)(f64);
+extern f64 (*Z_envZ_floorZ_dd)(f64);
 /* import: 'env' 'ceil' */
-extern u32 (*Z_envZ_ceilZ_id)(f64);
+extern f64 (*Z_envZ_ceilZ_dd)(f64);
 /* import: 'env' 'log' */
-extern u32 (*Z_envZ_logZ_id)(f64);
+extern f64 (*Z_envZ_logZ_dd)(f64);
 /* import: 'env' 'applyJsRef' */
 extern u32 (*Z_envZ_applyJsRefZ_iiii)(u32, u32, u32);
 /* import: 'env' 'jsStepper' */
@@ -138,6 +138,8 @@ extern wasm_rt_memory_t (*WASM_RT_ADD_PREFIX(Z_memory));
 extern void (*WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv))(void);
 /* export: 'square' */
 extern u32 (*WASM_RT_ADD_PREFIX(Z_squareZ_ii))(u32);
+/* export: 'duple' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_dupleZ_ii))(u32);
 /* export: 'sum' */
 extern u32 (*WASM_RT_ADD_PREFIX(Z_sumZ_ii))(u32);
 /* export: 'stbsp_set_separators' */
