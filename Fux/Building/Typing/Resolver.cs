@@ -6,7 +6,6 @@ namespace Fux.Building.Typing
     {
         private readonly TypeBuilder typeBuilder;
         private readonly ExprBuilder exprBuilder;
-        private readonly BindBuilder bindBuilder;
 
         public Resolver(Writer writer, Package package, Module module)
         {
@@ -17,7 +16,6 @@ namespace Fux.Building.Typing
 
             typeBuilder = new();
             exprBuilder = new(module, typeBuilder);
-            bindBuilder = new(module, exprBuilder);
         }
 
         public Writer Writer { get; }

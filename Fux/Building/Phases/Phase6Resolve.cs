@@ -85,6 +85,10 @@ namespace Fux.Building.Phases
 
                     case A.Decl.Custom type:
                         {
+                            if (type.Name.Text == "Array")
+                            {
+                                Assert(true);
+                            }
                             if (Investigated)
                             {
                                 Assert(true);
@@ -288,6 +292,12 @@ namespace Fux.Building.Phases
                                             }
                                         }
                                     }
+                                }
+                                else if (resolved is A.Decl.Alias alias)
+                                {
+                                    Assert(true);
+                                    ctor.Resolved = alias.Declaration.Resolved.Resolved;
+                                    break;
                                 }
                             }
                             break;
