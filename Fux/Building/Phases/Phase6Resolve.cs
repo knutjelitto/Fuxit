@@ -203,19 +203,19 @@ namespace Fux.Building.Phases
                                         switch (concrete.Name.Text)
                                         {
                                             case Lex.Primitive.Int:
-                                                concrete.Resolved = new A.Type.Primitive.Int(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Primitive.Int(concrete.Name);
                                                 break;
                                             case Lex.Primitive.Float:
-                                                concrete.Resolved = new A.Type.Primitive.Float(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Primitive.Float(concrete.Name);
                                                 break;
                                             case Lex.Primitive.Bool:
-                                                concrete.Resolved = new A.Type.Primitive.Bool(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Primitive.Bool(concrete.Name);
                                                 break;
                                             case Lex.Primitive.String:
-                                                concrete.Resolved = new A.Type.Primitive.String(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Primitive.String(concrete.Name);
                                                 break;
                                             case Lex.Primitive.Char:
-                                                concrete.Resolved = new A.Type.Primitive.Char(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Primitive.Char(concrete.Name);
                                                 break;
                                         }
                                     }
@@ -249,7 +249,7 @@ namespace Fux.Building.Phases
 
                                 if (resolved is A.Decl.Custom custom)
                                 {
-                                    ctor.Resolved = custom.Type;
+                                    ctor.Resolver = () => custom.Type;
 
                                     if (resolved.InModule.IsCore)
                                     {
@@ -266,19 +266,19 @@ namespace Fux.Building.Phases
                                             switch (ctor.Name.Text)
                                             {
                                                 case Lex.Primitive.Int:
-                                                    ctor.Resolved = new A.Type.Primitive.Int(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Primitive.Int(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.Float:
-                                                    ctor.Resolved = new A.Type.Primitive.Float(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Primitive.Float(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.Bool:
-                                                    ctor.Resolved = new A.Type.Primitive.Bool(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Primitive.Bool(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.String:
-                                                    ctor.Resolved = new A.Type.Primitive.String(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Primitive.String(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.Char:
-                                                    ctor.Resolved = new A.Type.Primitive.Char(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Primitive.Char(ctor.Name);
                                                     break;
                                             }
                                         }
@@ -287,7 +287,7 @@ namespace Fux.Building.Phases
                                             switch (ctor.Name.Text)
                                             {
                                                 case Lex.Primitive.List:
-                                                    ctor.Resolved = new A.Type.Primitive.List(ctor.Name, ctor.Arguments[0]);
+                                                    ctor.Resolver = () => new A.Type.Primitive.List(ctor.Name, ctor.Arguments[0]);
                                                     break;
                                             }
                                         }
@@ -296,7 +296,7 @@ namespace Fux.Building.Phases
                                 else if (resolved is A.Decl.Alias alias)
                                 {
                                     Assert(true);
-                                    ctor.Resolved = alias.Declaration.Resolved.Resolved;
+                                    ctor.Resolver = () => alias.Declaration.Resolved;
                                     break;
                                 }
                             }

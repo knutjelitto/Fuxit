@@ -2,11 +2,21 @@
 {
     public abstract class Type : Expr.ExprImpl
     {
-        public new Type Resolved { get; set; }
+        private Type? resolved;
+
+        public Func<Type>? Resolver { get; set; }
+
+        public new Type Resolved => resolved ??= GetResolved();
+
+        private Type GetResolved()
+        {
+            Assert(Resolver != null);
+            return Resolver();
+        }
 
         protected Type()
         {
-            Resolved = this;
+            Resolver = () => this;
         }
 
         public override void PP(Writer writer)
@@ -42,11 +52,36 @@
             public Identifier Name { get; }
             public string Text { get; }
 
-            public sealed class Int : Primitive { public Int(Identifier name) : base(name, Lex.Primitive.Int) { } }
-            public sealed class Float : Primitive { public Float(Identifier name) : base(name, Lex.Primitive.Float) { } }
-            public sealed class Bool : Primitive { public Bool(Identifier name) : base(name, Lex.Primitive.Bool) { } }
-            public sealed class String : Primitive { public String(Identifier name) : base(name, Lex.Primitive.String) { } }
-            public sealed class Char : Primitive { public Char(Identifier name) : base(name, Lex.Primitive.Char) { } }
+            public sealed class Int : Primitive
+            { 
+                public Int(Identifier name) : base(name, Lex.Primitive.Int)
+                { }
+            }
+            
+            public sealed class Float : Primitive
+            {
+                public Float(Identifier name) : base(name, Lex.Primitive.Float)
+                { }
+            }
+            
+            public sealed class Bool : Primitive
+            { 
+                public Bool(Identifier name) : base(name, Lex.Primitive.Bool)
+                { }
+            }
+
+            public sealed class String : Primitive
+            {
+                public String(Identifier name) : base(name, Lex.Primitive.String)
+                { }
+            }
+            
+            public sealed class Char : Primitive
+            {
+                public Char(Identifier name) : base(name, Lex.Primitive.Char)
+                { }
+            }
+
             public sealed class List : Primitive
             {
                 public List(Identifier name, Type argument)
