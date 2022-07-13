@@ -47,10 +47,10 @@ namespace Fux
                 if (false)
                 {
                     builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
+                    //builder.Load(new ElmPackage("fux/tests/typing", "1.0.0"));
                 }
                 else
                 {
-                    builder.Load(new ElmPackage("fux/tests/typing", "1.0.0"));
                     builder.Load(ElmPackage.Latest("elm/core"));
                     builder.Load(ElmPackage.Latest("elm/bytes"));
                     builder.Load(ElmPackage.Latest("elm/file"));
@@ -66,14 +66,12 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("elm/virtual-dom"));
                     builder.Load(ElmPackage.Latest("elm/browser"));
 
-                    //TODO: resolve-error
-                    //builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
+                    builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
                     builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
                     builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
                     builder.Load(ElmPackage.Latest("elm-explorations/test"));
                     builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
 
-#if false
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-iso8601-date-strings"));
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-hex"));
@@ -81,7 +79,6 @@ namespace Fux
                     builder.Load(ElmPackage.Latest("rtfeldman/elm-sorter-experiment"));
                     builder.Load(ElmPackage.Latest("rtfeldman/count"));
                     builder.Load(ElmPackage.Latest("rtfeldman/console-print"));
-#endif
 
                     builder.Load(ElmPackage.Latest("elm-community/list-extra"));
                     builder.Load(ElmPackage.Latest("elm-community/maybe-extra"));

@@ -107,6 +107,7 @@ namespace Fux.Input
             return cursor.Scope(cursor =>
             {
                 var effect = false;
+                var port = false;
                 if (cursor.IsWeak(Lex.Weak.Effect))
                 {
                     //TODO: what's an effect?
@@ -115,8 +116,9 @@ namespace Fux.Input
                 }
                 else if (cursor.IsWeak(Lex.Weak.Port))
                 {
-                    Assert(false);
-                    throw new NotImplementedException();
+                    //TODO: what's an port?
+                    cursor.Advance();
+                    port = true;
                 }
                 cursor.Swallow(Lex.KwModule);
 
@@ -152,7 +154,7 @@ namespace Fux.Input
                     exposing = Exposing(cursor);
                 }
 
-                return new A.Decl.Module(path, effect, where, exposing);
+                return new A.Decl.Module(path, effect, port, where, exposing);
             });
         }
 

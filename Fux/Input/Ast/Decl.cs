@@ -7,7 +7,6 @@ namespace Fux.Input.Ast
     public interface NamedDecl : Decl
     {
         Identifier Name { get; }
-        new Identifier? Alias { get; set; }
     }
 
     public interface Decl : Node
@@ -24,20 +23,21 @@ namespace Fux.Input.Ast
             }
 
             public Identifier Name { get; }
-            public Identifier? Alias { get; set; }
         }
 
         public sealed class Module : NamedDeclImpl
         {
-            public Module(Identifier name, bool isEffect, IEnumerable<Var> where, Exposing? exposing)
+            public Module(Identifier name, bool isEffect, bool isPort, IEnumerable<Var> where, Exposing? exposing)
                 : base(name)
             {
                 IsEffect = isEffect;
+                IsPort = isPort;
                 Where = where.ToArray();
                 Exposing = exposing;
             }
 
             public bool IsEffect { get; }
+            public bool IsPort { get; }
             public IReadOnlyList<Var> Where { get; }
             public Exposing? Exposing { get; }
 
@@ -124,6 +124,7 @@ namespace Fux.Input.Ast
                 Exposing = exposing;
             }
 
+            public Identifier? Alias { get; set; }
             public Exposing? Exposing { get; }
 
             public override string ToString()
