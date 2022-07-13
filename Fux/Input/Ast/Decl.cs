@@ -8,7 +8,6 @@ namespace Fux.Input.Ast
     {
         Identifier Name { get; }
         new Identifier? Alias { get; set; }
-
     }
 
     public interface Decl : Node

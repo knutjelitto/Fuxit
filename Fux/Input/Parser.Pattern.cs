@@ -15,6 +15,8 @@
             return new A.Pattern.Lambda(CollectAtomic(cursor));
         }
 
+        // ----- private -----
+
         public A.Pattern Pattern(Cursor cursor)
         {
             var pattern = PatternX(cursor);
