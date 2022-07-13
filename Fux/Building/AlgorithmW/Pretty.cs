@@ -128,6 +128,9 @@ namespace Fux.Building.AlgorithmW
                 case Expr.DeCtor deCtor:
                     Write($"{Str(deCtor)}");
                     break;
+                case Expr.Record record:
+                    Write($"{Str(record)}");
+                    break;
                 default:
                     Assert(false);
                     throw new NotImplementedException();
@@ -258,7 +261,20 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.WithAlias withAlias:
                     {
-                        return $"({withAlias.Expr} as {withAlias.Alias})";
+                        return $"({Str(withAlias.Expr)} as {Str(withAlias.Alias)})";
+                    }
+
+                case Expr.Record record:
+                    {
+                        var @base = record.Base == null ? "" : $"{record.Base} | ";
+                        var fields = string.Join(", ", record.Fields.Select(f => Str(f)));
+
+                        return $"{{{@base}{fields}}}";
+                    }
+
+                case Expr.Field field:
+                    {
+                        return $"{field.Name} = {Str(field.Value)}";
                     }
 
                 default:

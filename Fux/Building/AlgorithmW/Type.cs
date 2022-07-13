@@ -87,10 +87,21 @@
             }
         }
 
-        public sealed record Field(string Name, Type Type);
+        public sealed record Field(string Name, Type Type)
+        {
+            public override string ToString()
+            {
+                return $"{Name} : {Type}";
+            }
+        }
 
         public sealed record Record(IReadOnlyList<Field> Fields) : Type
         {
+            public override string ToString()
+            {
+                var fields = string.Join(", ", Fields);
+                return $"{{{fields}}}";
+            }
         }
 
         public abstract record Primitive(string Name) : Type

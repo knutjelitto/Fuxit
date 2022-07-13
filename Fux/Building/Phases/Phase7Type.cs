@@ -13,7 +13,7 @@ namespace Fux.Building.Phases
         private const int underInvestigation = 224;
         private static int numero = 0;
         private const int numeroFrom = 1;
-        private const int numeroTo = 250;
+        private const int numeroTo = 260;
 
         //private static Func<int, bool> QualifyNumero = (no => no == underInvestigation);
         private static readonly Func<int, bool> QualifyNumero = numero => true;

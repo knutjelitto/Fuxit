@@ -245,9 +245,7 @@ namespace Fux.Building.AlgorithmW
 
                         foreach (var cheese in cases)
                         {
-                            var cenv = env;
-
-                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(cenv, s1));
+                            var (s2, t2) = InferType(cheese.Pattern, ApplySubstitution(env, s1));
 
                             var s3 = MostGeneralUnifier(t1, t2);
 
@@ -256,7 +254,7 @@ namespace Fux.Building.AlgorithmW
 
                             s1 = ComposeSubstitutions(s3, s2, s1);
 
-                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(cenv, s1));
+                            var (s4, t4) = InferType(cheese.Expr, ApplySubstitution(env, s1));
 
                             s1 = ComposeSubstitutions(s4, s1);
 
@@ -295,6 +293,7 @@ namespace Fux.Building.AlgorithmW
                         var type = env.GetNext();
                         return (Substitution.Empty(), type);
                     }
+
                 case Expr.DeVariable({ } var):
                     {
                         Assert(var is Expr.Variable);
@@ -348,6 +347,30 @@ namespace Fux.Building.AlgorithmW
 
                         return (Substitution.Empty(), type);
                     }
+                case Expr.Record record:
+                    {
+                        //TODO: @base
+                        Assert(record.Base == null);
+
+                        var typeFields = new List<Type.Field>();
+
+                        var subst = Substitution.Empty();
+
+                        foreach (var field in record.Fields)
+                        {
+                            var name = field.Name;
+
+                            var (s, type) = InferType(field.Value, ApplySubstitution(env, subst));
+                            var typeField = new Type.Field(name, type);
+
+                            subst = ComposeSubstitutions(subst, s);
+                            typeFields.Add(typeField);
+                        }
+
+                        var recordType = new Type.Record(typeFields);
+
+                        return (subst, recordType);
+                    }
             }
 
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");
@@ -381,6 +404,19 @@ namespace Fux.Building.AlgorithmW
 
                 case Type.List({ } tl):
                     return new Type.List(ApplySubstitution(tl, substitution));
+
+                case Type.Record({ } fields):
+                    {
+                        var newFields = new List<Type.Field>();
+
+                        foreach (var field in fields)
+                        {
+                            var newField = new Type.Field(field.Name, ApplySubstitution(field.Type, substitution));
+                            newFields.Add(newField);
+                        }
+
+                        return new Type.Record(newFields);
+                    }
 
                 // A primitive type is not changed by a substitution.
                 case Type.Integer:
@@ -535,6 +571,27 @@ namespace Fux.Building.AlgorithmW
                         break;
                     }
 
+                case (Type.Record rec1, Type.Record rec2):
+                    {
+                        var matchingNames = new HashSet<string>();
+                        matchingNames.UnionWith(rec1.Fields.Select(f => f.Name));
+                        matchingNames.UnionWith(rec2.Fields.Select(f => f.Name));
+                        Assert(rec1.Fields.Count == matchingNames.Count);
+                        Assert(rec2.Fields.Count == matchingNames.Count);
+
+                        var subst = Substitution.Empty();
+
+                        foreach (var name in matchingNames)
+                        {
+                            var field1 = rec1.Fields.Where(f => f.Name == name).Single();
+                            var field2 = rec2.Fields.Where(f => f.Name == name).Single();
+
+                            subst = ComposeSubstitutions(subst, MostGeneralUnifier(field1.Type, field2.Type));
+                        }
+
+                        return subst;
+                    }
+
                 case (Type.List({ } typ1) c1, Type.List({ } typ2) c2):
                     {
 #if true
@@ -631,6 +688,16 @@ namespace Fux.Building.AlgorithmW
                 case Type.List list:
                     {
                         return new HashSet<TypeVariable>(GetFreeTypeVariables(list.Type));
+                    }
+
+                case Type.Record({ } fields):
+                    {
+                        var free = new HashSet<TypeVariable>();
+                        foreach (var field in fields)
+                        {
+                            free = union(free, GetFreeTypeVariables(field.Type));
+                        }
+                        return free;
                     }
 
                 default:

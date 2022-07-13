@@ -112,6 +112,16 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
+        public sealed record Field(string Name, Expr Value) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
+        public sealed record Record(string? Base, IEnumerable<Field> Fields) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
         public sealed record Wildcard(string Text) : Expr
         {
             public override string ToString() => Pretty.Expr(this);

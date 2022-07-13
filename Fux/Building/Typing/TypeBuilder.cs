@@ -118,8 +118,21 @@ namespace Fux.Building.Typing
                     }
                 case A.Type.Record record:
                     {
-                        Assert(false);
-                        break;
+                        Assert(record.BaseRecord == null);
+
+                        var fields = new List<W.Type.Field>();
+                        foreach (var f in record.Fields)
+                        {
+                            var name = f.Name.Text;
+                            var ty = Resolve(env, f.TypeDef);
+
+                            var field = new W.Type.Field(name, ty);
+                            fields.Add(field);
+                        }
+
+                        var rec = new W.Type.Record(fields);
+
+                        return rec;
                     }
             }
             throw new NotImplementedException($"type not implemented: '{type.Resolved.GetType().FullName}({type})'");

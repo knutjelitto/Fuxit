@@ -151,9 +151,27 @@ namespace Fux.Building.Typing
                     {
                         return BuildPattern(ref env, pattern);
                     }
+
+                case A.Expr.Record record:
+                    {
+                        Assert(record.BaseRecord == null);
+
+                        var fields = new List<W.Expr.Field>();
+
+                        foreach (var f in record.Fields)
+                        {
+                            var name = f.Name.Text;
+                            var value = Build(ref env, f.Expression);
+                            var field = new W.Expr.Field(name, value);
+                            fields.Add(field);
+                        }
+
+                        var baseName = record.BaseRecord?.Text;
+
+                        return new W.Expr.Record(baseName, fields);
+                    }
             
                 default:
-                    Assert(false);
                     break;
             }
 
