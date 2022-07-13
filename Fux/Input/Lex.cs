@@ -9,14 +9,14 @@
             bool startsAtomic = false, 
             bool terminatesSomething = false,
             bool isIdentifier = false,
-            bool isParent = false)
+            bool isBracket = false)
         {
             Name = string.Intern(name);
             IsKeyword = isKeyword;
             StartsAtomic = startsAtomic;
             TerminatesSomething = terminatesSomething;
             IsIdentifier = isIdentifier;
-            IsParent = isParent;
+            IsBracket = isBracket;
         }
 
         public string Name { get; }
@@ -24,7 +24,7 @@
         public bool StartsAtomic { get; }
         public bool TerminatesSomething { get; }
         public bool IsIdentifier { get; }
-        public bool IsParent { get; }
+        public bool IsBracket { get; }
 
         public static IReadOnlyList<Lex> AllLex => allLex;
 
@@ -80,12 +80,12 @@
             Arrow = Add(new("->", terminatesSomething: true));
             Bar = Add(new("|", terminatesSomething: true));
             Lambda = Add(new("\\", startsAtomic: true));
-            LParent = Add(new("(", startsAtomic: true, isParent: true));
-            RParent = Add(new(")", terminatesSomething: true, isParent: true));
-            LBrace = Add(new("{", startsAtomic: true, isParent: true));
-            RBrace = Add(new("}", terminatesSomething: true, isParent: true));
-            LBracket = Add(new("[", startsAtomic: true, isParent: true));
-            RBracket = Add(new("]", terminatesSomething: true, isParent: true));
+            LParent = Add(new("(", startsAtomic: true, isBracket: true));
+            RParent = Add(new(")", terminatesSomething: true, isBracket: true));
+            LBrace = Add(new("{", startsAtomic: true, isBracket: true));
+            RBrace = Add(new("}", terminatesSomething: true, isBracket: true));
+            LeftSquareBracket = Add(new("[", startsAtomic: true, isBracket: true));
+            RightSquareBracket = Add(new("]", terminatesSomething: true, isBracket: true));
             KwIf = Add(new("if", isKeyword: true, startsAtomic: true));
             KwThen = Add(new("then", isKeyword: true));
             KwElse = Add(new("else", isKeyword: true));
@@ -129,8 +129,8 @@
         public static readonly Lex RParent;
         public static readonly Lex LBrace;
         public static readonly Lex RBrace;
-        public static readonly Lex LBracket;
-        public static readonly Lex RBracket;
+        public static readonly Lex LeftSquareBracket;
+        public static readonly Lex RightSquareBracket;
         public static readonly Lex KwIf;
         public static readonly Lex KwThen;
         public static readonly Lex KwElse;
@@ -143,13 +143,14 @@
         public static readonly Lex KwImport;
         public static readonly Lex KwAs;
         public static readonly Lex KwInfix;
+        public static readonly Lex KwAlias = Add(new("alias", isKeyword: true));
+        public static readonly Lex KwEffect = Add(new("effect", isKeyword: true));
+        public static readonly Lex KwExposing = Add(new("exposing", isKeyword: true));
+        public static readonly Lex KwPort = Add(new("port", isKeyword: true));
+        public static readonly Lex KwWhere = Add(new("where", isKeyword: true));
 
         public static class Weak
         {
-            public const string Exposing = "exposing";
-            public const string Effect = "effect";
-            public const string Port = "port";
-            public const string Where = "where";
             public const string ExposeAll = "(..)";
         }
 

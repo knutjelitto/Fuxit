@@ -594,34 +594,7 @@ namespace Fux.Building.AlgorithmW
 
                 case (Type.List({ } typ1) c1, Type.List({ } typ2) c2):
                     {
-#if true
                         return MostGeneralUnifier(typ1, typ2);
-#else
-                        if (typ1 == typ2)
-                        {
-                            return Substitution.Empty();
-                        }
-                        else if (typ1 is Type.Variable v1 && typ2 is Type.Variable v2)
-                        {
-                            if (v1.TypeVar.ID > v2.TypeVar.ID)
-                            {
-                                return Substitution.Solo(v1.TypeVar, typ2);
-                            }
-                            else
-                            {
-                                return Substitution.Solo(v2.TypeVar, typ1);
-                            }
-                        }
-                        else if (typ2 is Type.Variable v3)
-                        {
-                            return Substitution.Solo(v3.TypeVar, typ1);
-                        }
-                        else if (typ1 is Type.Variable v4)
-                        {
-                            return Substitution.Solo(v4.TypeVar, typ2);
-                        }
-                        break;
-#endif
                     }
 
                 // Otherwise, the types cannot be unified.

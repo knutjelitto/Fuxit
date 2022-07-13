@@ -16,6 +16,7 @@ namespace Fux.Input
         public ErrorBag Errors => Parser.Errors;
 
         public Parser Parser { get; }
+        public PatternParser Pattern => Parser.Pattern;
 
         public A.Expr Expression(Cursor cursor)
         {
@@ -212,7 +213,7 @@ namespace Fux.Input
             {
                 Assert(cursor.StartsAtomic);
 
-                A.Expr atom = ParseAtom(cursor);
+                var atom = ParseAtom(cursor);
 
                 while (cursor.Is(Lex.Dot) && !cursor.WhitesBefore())
                 {
@@ -277,17 +278,17 @@ namespace Fux.Input
                     {
                         return RecordLiteral(cursor);
                     }
-                    else if (cursor.Is(Lex.LBracket))
+                    else if (cursor.Is(Lex.LeftSquareBracket))
                     {
                         return ListLiteral(cursor);
                     }
                     else if (cursor.Is(Lex.Lambda))
                     {
-                        return Lambda(cursor);
+                        return LambdaLiteral(cursor);
                     }
                     else if (cursor.Is(Lex.Dot))
                     {
-                        return Dot(cursor);
+                        return DotSelector(cursor);
                     }
 
                     throw Errors.Parser.NotImplemented(cursor.At());
@@ -404,27 +405,27 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.LBracket);
+                cursor.Swallow(Lex.LeftSquareBracket);
 
                 var expressions = new List<A.Expr>();
 
-                while (cursor.At().Lex != Lex.RBracket)
+                while (cursor.At().Lex != Lex.RightSquareBracket)
                 {
                     expressions.Add(Expression(cursor));
 
-                    if (cursor.IsNot(Lex.RBracket))
+                    if (cursor.IsNot(Lex.RightSquareBracket))
                     {
                         cursor.Swallow(Lex.Comma);
                     }
                 }
 
-                cursor.Swallow(Lex.RBracket);
+                cursor.Swallow(Lex.RightSquareBracket);
 
                 return new A.Expr.List(expressions);
             });
         }
 
-        private A.Expr Dot(Cursor cursor)
+        private A.Expr DotSelector(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -499,7 +500,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var pattern = Parser.Pattern.Pattern(cursor);
+                var pattern = Pattern.Pattern(cursor);
 
                 cursor.Swallow(Lex.Arrow);
 
@@ -509,13 +510,13 @@ namespace Fux.Input
             });
         }
 
-        public A.Expr.Lambda Lambda(Cursor cursor)
+        public A.Expr.Lambda LambdaLiteral(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
-                    cursor.Swallow(Lex.Lambda);
+                cursor.Swallow(Lex.Lambda);
 
-                var pattern = Parser.Pattern.Lambda(cursor);
+                var pattern = Pattern.Lambda(cursor);
 
                 cursor.Swallow(Lex.Arrow);
 

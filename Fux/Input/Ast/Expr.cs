@@ -278,12 +278,12 @@ namespace Fux.Input.Ast
             public override string ToString()
             {
                 var joined = string.Join(", ", this);
-                return $"{Lex.LBracket}{joined}{Lex.RBracket}";
+                return $"{Lex.LeftSquareBracket}{joined}{Lex.RightSquareBracket}";
             }
 
             public override void PP(Writer writer)
             {
-                writer.Write($"{Lex.LBracket}");
+                writer.Write($"{Lex.LeftSquareBracket}");
                 var more = false;
                 foreach (var expression in this)
                 {
@@ -294,7 +294,7 @@ namespace Fux.Input.Ast
                     more = true;
                     expression.PP(writer);
                 }
-                writer.Write($"{Lex.RBracket}");
+                writer.Write($"{Lex.RightSquareBracket}");
             }
         }
 

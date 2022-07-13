@@ -73,9 +73,9 @@ namespace Fux.Input
                 case '}':
                     return Build(Lex.RBrace, 1);
                 case '[':
-                    return Build(Lex.LBracket, 1);
+                    return Build(Lex.LeftSquareBracket, 1);
                 case ']':
-                    return Build(Lex.RBracket, 1);
+                    return Build(Lex.RightSquareBracket, 1);
                 case '.' when !Next.IsSymbol():
                     return Build(Lex.Dot, 1);
                 case ':' when !Next.IsSymbol():
@@ -90,10 +90,6 @@ namespace Fux.Input
                     return Build(Lex.Lambda, 1);
                 case '-' when Next == '-':
                     return LineComment();
-#if false
-                case '-' when Next.IsDigit():
-                    return Build(Number());
-#endif
                 case '-' when Next == '>' && !NextNext.IsSymbol():
                     return Build(Lex.Arrow, 2);
                 case '"' when Next == '"' && NextNext == '"':

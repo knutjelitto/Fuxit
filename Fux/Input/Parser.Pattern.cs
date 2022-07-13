@@ -15,8 +15,6 @@
             return new A.Pattern.Lambda(CollectAtomic(cursor));
         }
 
-        // ----- private -----
-
         public A.Pattern Pattern(Cursor cursor)
         {
             var pattern = PatternX(cursor);
@@ -32,6 +30,8 @@
 
             return pattern;
         }
+
+        // ----- private -----
 
         private A.Pattern PatternX(Cursor cursor)
         {
@@ -94,7 +94,7 @@
             {
                 return RecordPattern(cursor);
             }
-            else if (cursor.Is(Lex.LBracket))
+            else if (cursor.Is(Lex.LeftSquareBracket))
             {
                 return ListPattern(cursor);
             }
@@ -200,11 +200,11 @@
 
         private A.Pattern.List ListPattern(Cursor cursor)
         {
-            cursor.Swallow(Lex.LBracket);
+            cursor.Swallow(Lex.LeftSquareBracket);
 
             var patterns = new List<A.Pattern>();
 
-            if (cursor.IsNot(Lex.RBracket))
+            if (cursor.IsNot(Lex.RightSquareBracket))
             {
                 do
                 {
@@ -215,7 +215,7 @@
                 while (cursor.SwallowIf(Lex.Comma));
             }
 
-            cursor.Swallow(Lex.RBracket);
+            cursor.Swallow(Lex.RightSquareBracket);
 
             return new A.Pattern.List(patterns);
         }

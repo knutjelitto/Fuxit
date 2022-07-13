@@ -45,7 +45,7 @@ namespace Fux.Input
                     Current.Text == "-" &&
                     !Next.WhitesBefore &&
                     this.IsOperator() &&
-                    (Current.WhitesBefore || (hasPrev && Prev.Lex.IsParent));
+                    (Current.WhitesBefore || (hasPrev && Prev.Lex.IsBracket));
             }
         }
 

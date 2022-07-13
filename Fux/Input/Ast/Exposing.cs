@@ -19,7 +19,7 @@ namespace Fux.Input.Ast
 
         public override string ToString()
         {
-            return $"{Lex.Weak.Exposing} {Lex.Weak.ExposeAll}";
+            return $"{Lex.KwExposing} {Lex.Weak.ExposeAll}";
         }
     }
 
@@ -68,7 +68,7 @@ namespace Fux.Input.Ast
 
         public override string ToString()
         {
-            return $"{Lex.Weak.Exposing} ({string.Join(", ", Exposed)})";
+            return $"{Lex.KwExposing} ({string.Join(", ", Exposed)})";
         }
     }
 }

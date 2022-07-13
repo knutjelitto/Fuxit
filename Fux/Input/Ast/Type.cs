@@ -17,6 +17,7 @@
         protected Type()
         {
             Resolver = () => this;
+            //Resolver = null;
         }
 
         public override void PP(Writer writer)
