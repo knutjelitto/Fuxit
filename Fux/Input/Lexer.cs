@@ -65,13 +65,13 @@ namespace Fux.Input
                 case '(':
                     return LeftParentOrSymbol();
                 case ')':
-                    return Build(Lex.RParent, 1);
+                    return Build(Lex.RightRoundBracket, 1);
                 case '{' when Next == '-':
                     return BlockComment();
                 case '{':
-                    return Build(Lex.LBrace, 1);
+                    return Build(Lex.LeftCurlyBracket, 1);
                 case '}':
-                    return Build(Lex.RBrace, 1);
+                    return Build(Lex.RCurlyBracket, 1);
                 case '[':
                     return Build(Lex.LeftSquareBracket, 1);
                 case ']':
@@ -150,7 +150,7 @@ namespace Fux.Input
                 }
             }
 
-            return Build(Lex.LParent, 1);
+            return Build(Lex.LeftRoundBracket, 1);
         }
 
         private Token Wildcard()

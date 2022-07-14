@@ -127,7 +127,7 @@ namespace Fux.Input
                 if (cursor.SwallowIf(Lex.KwWhere))
                 {
                     //TODO: what's a where?
-                    cursor.Swallow(Lex.LBrace);
+                    cursor.Swallow(Lex.LeftCurlyBracket);
 
                     do
                     {
@@ -139,7 +139,7 @@ namespace Fux.Input
                     }
                     while (cursor.SwallowIf(Lex.Comma));
 
-                    cursor.Swallow(Lex.RBrace);
+                    cursor.Swallow(Lex.RCurlyBracket);
                 }
 
                 A.Exposing? exposing = null;
@@ -192,7 +192,7 @@ namespace Fux.Input
                     return new A.ExposingAll();
                 }
 
-                cursor.Swallow(Lex.LParent);
+                cursor.Swallow(Lex.LeftRoundBracket);
 
                 var exposed = new List<A.Exposed>();
 
@@ -227,7 +227,7 @@ namespace Fux.Input
                 }
                 while (cursor.SwallowIf(Lex.Comma));
 
-                cursor.Swallow(Lex.RParent);
+                cursor.Swallow(Lex.RightRoundBracket);
 
                 return new A.ExposingSome(exposed);
             });
@@ -374,7 +374,7 @@ namespace Fux.Input
 
                 var name = Identifier(cursor).SingleUpper();
 
-                var arguments = new List<A.Type>();
+                var arguments = new A.TypeArgumentList();
 
                 do
                 {
@@ -387,7 +387,7 @@ namespace Fux.Input
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-                var ctor = new A.Decl.Ctor(custom, name, new A.TypeArgumentList(arguments));
+                var ctor = new A.Decl.Ctor(custom, name, arguments);
 
                 custom.Ctors.Add(ctor);
 

@@ -23,11 +23,6 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Def(Expr.Variable Var, Expr Expr) : Expr
-        {
-            public override string ToString() => Pretty.Expr(this);
-        }
-
         public sealed record Let(TermVariable Term, Expr Expr1, Expr Expr2) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
@@ -130,14 +125,14 @@
         /// <summary>
         /// A literal value of some primitive
         /// </summary>
-        public abstract record Literal : Expr
+        public abstract record Literal(Type Type) : Expr
         {
-            public sealed record Integer(long Value) : Literal
+            public sealed record Integer(long Value) : Literal(new Type.Integer())
             {
                 public override string ToString() => Value.ToString();
             }
 
-            public sealed record Float(double Value) : Literal
+            public sealed record Float(double Value) : Literal(new Type.Float())
             {
                 public override string ToString()
                 {
@@ -149,17 +144,17 @@
                 }
             }
 
-            public sealed record Bool(bool Value) : Literal
+            public sealed record Bool(bool Value) : Literal(new Type.Bool())
             {
                 public override string ToString() => Value.ToString();
             }
 
-            public sealed record String(string Value) : Literal
+            public sealed record String(string Value) : Literal(new Type.String())
             {
                 public override string ToString() => $"\"{Value}\"";
             }
 
-            public sealed record Char(string Value) : Literal
+            public sealed record Char(string Value) : Literal(new Type.Char())
             {
                 public override string ToString() => $"\'{Value}\'";
             }

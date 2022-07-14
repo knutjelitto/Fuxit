@@ -1,31 +1,38 @@
 ﻿namespace Fux.Input.Ast
 {
-    public abstract class Type : Expr.ExprImpl
+    public interface Type : Node
     {
-        private Type? resolved;
+        Func<Type>? Resolver { get; set; }
+        public Type Resolved { get; }
 
-        public Func<Type>? Resolver { get; set; }
-
-        public new Type Resolved => resolved ??= GetResolved();
-
-        private Type GetResolved()
+        public abstract class TypeImpl : NodeImpl, Type
         {
-            Assert(Resolver != null);
-            return Resolver();
+            private Type? resolved;
+
+            protected TypeImpl()
+            {
+                Resolver = () => this;
+                //Resolver = null;
+            }
+
+            public Func<Type>? Resolver { get; set; }
+
+            public Type Resolved => resolved ??= GetResolved();
+
+            private Type GetResolved()
+            {
+                Assert(Resolver != null);
+                return Resolver();
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write($"{this}");
+            }
+
         }
 
-        protected Type()
-        {
-            Resolver = () => this;
-            //Resolver = null;
-        }
-
-        public override void PP(Writer writer)
-        {
-            writer.Write($"{this}");
-        }
-
-        public class Concrete : Type
+        public class Concrete : TypeImpl
         {
             public Concrete(Identifier name)
             {
@@ -36,13 +43,10 @@
 
             public Identifier Name { get; }
 
-            public override string ToString()
-            {
-                return $"{Name}";
-            }
+            public override string ToString() => $"{Name}";
         }
 
-        public abstract class Primitive : Type
+        public abstract class Primitive : TypeImpl
         {
             public Primitive(Identifier name, string text)
             {
@@ -52,60 +56,57 @@
 
             public Identifier Name { get; }
             public string Text { get; }
+            public override string ToString() => Text;
+        }
 
-            public sealed class Int : Primitive
-            { 
-                public Int(Identifier name) : base(name, Lex.Primitive.Int)
-                { }
-            }
-            
-            public sealed class Float : Primitive
+
+        public sealed class Integer : Primitive
+        {
+            public Integer(Identifier name) : base(name, Lex.Primitive.Int)
+            { }
+        }
+
+        public sealed class Float : Primitive
+        {
+            public Float(Identifier name) : base(name, Lex.Primitive.Float)
+            { }
+        }
+
+        public sealed class Bool : Primitive
+        {
+            public Bool(Identifier name) : base(name, Lex.Primitive.Bool)
+            { }
+        }
+
+        public sealed class String : Primitive
+        {
+            public String(Identifier name) : base(name, Lex.Primitive.String)
+            { }
+        }
+
+        public sealed class Char : Primitive
+        {
+            public Char(Identifier name) : base(name, Lex.Primitive.Char)
+            { }
+        }
+
+        public sealed class List : Primitive
+        {
+            public List(Identifier name, Type argument)
+                : base(name, Lex.Primitive.List)
             {
-                public Float(Identifier name) : base(name, Lex.Primitive.Float)
-                { }
-            }
-            
-            public sealed class Bool : Primitive
-            { 
-                public Bool(Identifier name) : base(name, Lex.Primitive.Bool)
-                { }
+                Argument = argument;
             }
 
-            public sealed class String : Primitive
-            {
-                public String(Identifier name) : base(name, Lex.Primitive.String)
-                { }
-            }
-            
-            public sealed class Char : Primitive
-            {
-                public Char(Identifier name) : base(name, Lex.Primitive.Char)
-                { }
-            }
-
-            public sealed class List : Primitive
-            {
-                public List(Identifier name, Type argument)
-                    : base(name, Lex.Primitive.List)
-                {
-                    Argument = argument;
-                }
-
-                public Type Argument { get; }
-
-                public override string ToString()
-                {
-                    return $"{Name}<{Argument}>";
-                }
-            }
+            public Type Argument { get; }
 
             public override string ToString()
             {
-                return Text;
+                return $"{Name}<{Argument}>";
             }
         }
 
-        public sealed class Parameter : Type
+        public sealed class Parameter : TypeImpl
         {
             public Parameter(Identifier name)
             {
@@ -121,7 +122,7 @@
             }
         }
 
-        public sealed class Function : Type
+        public sealed class Function : TypeImpl
         {
             public Function(Type inType, Type outType)
             {
@@ -138,7 +139,7 @@
             }
         }
 
-        public abstract class Tuple : Type
+        public abstract class Tuple : TypeImpl
         {
             public Tuple(params Type[] types)
             {
@@ -183,7 +184,7 @@
             public Type Type3 { get; }
         }
 
-        public sealed class Unit : Type
+        public sealed class Unit : TypeImpl
         {
             public override string ToString()
             {
@@ -191,7 +192,7 @@
             }
         }
 
-        public sealed class Custom : Type
+        public sealed class Custom : TypeImpl
         {
             public Custom(Identifier name, Decl.TypeParameterList parameters)
             {
@@ -213,7 +214,7 @@
             }
         }
 
-        public class Ctor : Type
+        public class Ctor : TypeImpl
         {
             public Ctor(Identifier name, TypeArgumentList arguments)
             {
@@ -241,7 +242,7 @@
             }
         }
 
-        public abstract class TypeClass : Type
+        public abstract class TypeClass : TypeImpl
         {
             protected TypeClass(Identifier identifier)
             {
@@ -285,7 +286,7 @@
             }
         }
 
-        public sealed class Record : Type
+        public sealed class Record : TypeImpl
         {
             public Record(Type? baseRecord, IEnumerable<FieldDefine> fields)
             {
@@ -300,12 +301,12 @@
             public override string ToString()
             {
                 var joined = string.Join(", ", Fields);
-                return $"{Lex.LBrace} {joined} {Lex.RBrace}";
+                return $"{Lex.LeftCurlyBracket} {joined} {Lex.RCurlyBracket}";
             }
 
             public override void PP(Writer writer)
             {
-                writer.Write($"{Lex.LBrace} ");
+                writer.Write($"{Lex.LeftCurlyBracket} ");
                 var more = false;
                 foreach (var field in Fields)
                 {
@@ -321,7 +322,15 @@
                 {
                     writer.WriteLine();
                 }
-                writer.WriteLine($"{Lex.RBrace}");
+                writer.WriteLine($"{Lex.RCurlyBracket}");
+            }
+        }
+
+        public sealed class Argument : TypeImpl
+        {
+            public override void PP(Writer writer)
+            {
+                throw new NotImplementedException();
             }
         }
     }

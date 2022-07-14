@@ -203,19 +203,19 @@ namespace Fux.Building.Phases
                                         switch (concrete.Name.Text)
                                         {
                                             case Lex.Primitive.Int:
-                                                concrete.Resolver = () => new A.Type.Primitive.Int(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Integer(concrete.Name);
                                                 break;
                                             case Lex.Primitive.Float:
-                                                concrete.Resolver = () => new A.Type.Primitive.Float(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Float(concrete.Name);
                                                 break;
                                             case Lex.Primitive.Bool:
-                                                concrete.Resolver = () => new A.Type.Primitive.Bool(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Bool(concrete.Name);
                                                 break;
                                             case Lex.Primitive.String:
-                                                concrete.Resolver = () => new A.Type.Primitive.String(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.String(concrete.Name);
                                                 break;
                                             case Lex.Primitive.Char:
-                                                concrete.Resolver = () => new A.Type.Primitive.Char(concrete.Name);
+                                                concrete.Resolver = () => new A.Type.Char(concrete.Name);
                                                 break;
                                         }
                                     }
@@ -266,19 +266,19 @@ namespace Fux.Building.Phases
                                             switch (ctor.Name.Text)
                                             {
                                                 case Lex.Primitive.Int:
-                                                    ctor.Resolver = () => new A.Type.Primitive.Int(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Integer(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.Float:
-                                                    ctor.Resolver = () => new A.Type.Primitive.Float(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Float(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.Bool:
-                                                    ctor.Resolver = () => new A.Type.Primitive.Bool(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Bool(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.String:
-                                                    ctor.Resolver = () => new A.Type.Primitive.String(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.String(ctor.Name);
                                                     break;
                                                 case Lex.Primitive.Char:
-                                                    ctor.Resolver = () => new A.Type.Primitive.Char(ctor.Name);
+                                                    ctor.Resolver = () => new A.Type.Char(ctor.Name);
                                                     break;
                                             }
                                         }
@@ -287,7 +287,7 @@ namespace Fux.Building.Phases
                                             switch (ctor.Name.Text)
                                             {
                                                 case Lex.Primitive.List:
-                                                    ctor.Resolver = () => new A.Type.Primitive.List(ctor.Name, ctor.Arguments[0]);
+                                                    ctor.Resolver = () => new A.Type.List(ctor.Name, ctor.Arguments[0]);
                                                     break;
                                             }
                                         }
@@ -303,7 +303,11 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Type.Parameter:
+                    case A.Type.Parameter parameter:
+                        {
+                            Assert(parameter.Name.IsSingleLower);
+                            break;
+                        }
                     case A.Type.NumberClass:
                     case A.Type.AppendableClass:
                     case A.Type.ComparableClass:

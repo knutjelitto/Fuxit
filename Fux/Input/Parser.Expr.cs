@@ -270,11 +270,11 @@ namespace Fux.Input
                     {
                         return CharLiteral(cursor);
                     }
-                    else if (cursor.Is(Lex.LParent))
+                    else if (cursor.Is(Lex.LeftRoundBracket))
                     {
                         return TupleLiteral(cursor);
                     }
-                    else if (cursor.Is(Lex.LBrace))
+                    else if (cursor.Is(Lex.LeftCurlyBracket))
                     {
                         return RecordLiteral(cursor);
                     }
@@ -300,11 +300,11 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                cursor.Swallow(Lex.LParent);
+                cursor.Swallow(Lex.LeftRoundBracket);
 
                 var expressions = new List<A.Expr>();
 
-                while (cursor.IsNot(Lex.RParent))
+                while (cursor.IsNot(Lex.RightRoundBracket))
                 {
                     expressions.Add(Expression(cursor));
 
@@ -316,7 +316,7 @@ namespace Fux.Input
                     }
                 }
 
-                cursor.Swallow(Lex.RParent);
+                cursor.Swallow(Lex.RightRoundBracket);
 
                 if (expressions.Count == 0)
                 {
@@ -337,11 +337,11 @@ namespace Fux.Input
         {
             return cursor.Scope<A.Expr>(cursor =>
             {
-                var left = cursor.Swallow(Lex.LBrace);
+                var left = cursor.Swallow(Lex.LeftCurlyBracket);
 
-                if (cursor.Is(Lex.RBrace))
+                if (cursor.Is(Lex.RCurlyBracket))
                 {
-                    cursor.Swallow(Lex.RBrace);
+                    cursor.Swallow(Lex.RCurlyBracket);
 
                     return new A.RecordPattern(Enumerable.Empty<A.FieldPattern>());
                 }
@@ -366,7 +366,7 @@ namespace Fux.Input
                 }
                 while (cursor.SwallowIf(Lex.Comma));
 
-                cursor.Swallow(Lex.RBrace);
+                cursor.Swallow(Lex.RCurlyBracket);
 
                 if (fields.All(f => f is A.FieldAssign))
                 {
