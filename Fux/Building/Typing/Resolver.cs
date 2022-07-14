@@ -29,6 +29,11 @@
                 Writer.WriteLine();
                 Writer.Indent(() =>
                 {
+                    if (investigated)
+                    {
+                        Writer.WriteLine($"<<<investigated>>>");
+                        Writer.WriteLine();
+                    }
                     Writer.Write($"{var.Name}");
                     if (var.Parameters.Count > 0)
                     {

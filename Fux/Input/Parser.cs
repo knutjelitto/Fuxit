@@ -74,23 +74,27 @@ namespace Fux.Input
                 }
                 else if (cursor.Is(Lex.KwImport))
                 {
-                    outer = Import(cursor);
+                    outer = ImportDecl(cursor);
                 }
                 else if (cursor.Is(Lex.KwInfix))
                 {
-                    outer = TopInfixDecl(cursor);
+                    outer = InfixDecl(cursor);
                 }
                 else if (cursor.Is(Lex.KwType))
                 {
-                    outer = TopType(cursor);
+                    outer = TypeDecl(cursor);
                 }
                 else if (cursor.Is(Lex.EOF))
                 {
                     outer = new A.Eof(cursor.Advance());
                 }
+                else if (cursor.StartsTypeAnnotation)
+                {
+                    outer = TypeAnnotation(cursor);
+                }
                 else
                 {
-                    outer = DeclarationOrTypeAnnotation(cursor);
+                    outer = VarDecl(cursor);
                 }
 
                 if (cursor.More())
@@ -153,7 +157,7 @@ namespace Fux.Input
             });
         }
 
-        public A.Decl.Import Import(Cursor cursor)
+        public A.Decl.Import ImportDecl(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -233,7 +237,7 @@ namespace Fux.Input
             });
         }
 
-        public A.Decl.Infix TopInfixDecl(Cursor cursor)
+        public A.Decl.Infix InfixDecl(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -254,7 +258,7 @@ namespace Fux.Input
             });
         }
 
-        public A.NamedDecl TopType(Cursor cursor)
+        public A.NamedDecl TypeDecl(Cursor cursor)
         {
             return cursor.Scope<A.NamedDecl>(cursor =>
             {
@@ -293,11 +297,11 @@ namespace Fux.Input
                 var custom = new A.Decl.Custom(name, new A.Decl.TypeParameterList(parameterList));
                 var ctors = new A.CtorList();
 
-                ctors.Add(Constructor(custom, cursor));
+                ctors.Add(Ctor(custom, cursor));
 
                 while (cursor.SwallowIf(Lex.Bar))
                 {
-                    ctors.Add(Constructor(custom, cursor));
+                    ctors.Add(Ctor(custom, cursor));
                 }
 
                 Assert(custom.Ctors.Count >= 1);
@@ -311,6 +315,47 @@ namespace Fux.Input
             return cursor.Scope(cursor =>
             {
                 return new A.Decl.TypeParameter(SingleIdentifier(cursor).SingleLower());
+            });
+        }
+
+        public A.Decl VarDeclOrTypeAnnotation(Cursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                if (cursor.StartsTypeAnnotation)
+                {
+                    return TypeAnnotation(cursor);
+                }
+                else
+                {
+                    return VarDecl(cursor);
+                }
+            });
+        }
+
+        private A.Decl VarDecl(Cursor cursor)
+        {
+            return cursor.Scope<A.Decl>(cursor =>
+            {
+                var pattern = Pattern.Pattern(cursor);
+
+                cursor.Swallow(Lex.Assign);
+
+                var expression = Expr.Expression(cursor);
+
+                if (pattern is A.Pattern.Signature sign)
+                {
+                    var name = sign.Name.SingleLower();
+                    var prms = sign.Parameters;
+
+                    var parameters = new A.Parameters(prms.Select(pattern => new A.Decl.Parameter(pattern)));
+
+                    return new A.Decl.Var(name, parameters, expression);
+                }
+                else
+                {
+                    return new A.Decl.LetAssign(pattern, expression);
+                }
             });
         }
 
@@ -328,40 +373,7 @@ namespace Fux.Input
             });
         }
 
-        public A.Decl DeclarationOrTypeAnnotation(Cursor cursor)
-        {
-            return cursor.Scope<A.Decl>(cursor =>
-            {
-                if (cursor.StartsTypeAnnotation)
-                {
-                    return TypeAnnotation(cursor);
-                }
-                else
-                {
-                    var pattern = Pattern.Pattern(cursor);
-
-                    cursor.SwallowIf(Lex.Assign);
-
-                    var expression = Expr.Expression(cursor);
-
-                    if (pattern is A.Pattern.Signature sign)
-                    {
-                        var name = sign.Name.SingleLower();
-                        var prms = sign.Parameters;
-
-                        var parameters = new A.Parameters(prms.Select(pattern => new A.Decl.Parameter(pattern)));
-
-                        return new A.Decl.Var(name, parameters, expression);
-                    }
-                    else
-                    {
-                        return new A.Decl.LetAssign(pattern, expression);
-                    }
-                }
-            });
-        }
-
-        private A.Decl.Ctor Constructor(A.Decl.Custom custom, Cursor cursor)
+        private A.Decl.Ctor Ctor(A.Decl.Custom custom, Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
