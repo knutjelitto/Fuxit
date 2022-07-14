@@ -278,12 +278,12 @@ namespace Fux.Input.Ast
             public override string ToString()
             {
                 var joined = string.Join(", ", this);
-                return $"{Lex.LBracket}{joined}{Lex.RBracket}";
+                return $"{Lex.LeftSquareBracket}{joined}{Lex.RightSquareBracket}";
             }
 
             public override void PP(Writer writer)
             {
-                writer.Write($"{Lex.LBracket}");
+                writer.Write($"{Lex.LeftSquareBracket}");
                 var more = false;
                 foreach (var expression in this)
                 {
@@ -294,7 +294,7 @@ namespace Fux.Input.Ast
                     more = true;
                     expression.PP(writer);
                 }
-                writer.Write($"{Lex.RBracket}");
+                writer.Write($"{Lex.RightSquareBracket}");
             }
         }
 
@@ -386,7 +386,7 @@ namespace Fux.Input.Ast
             {
                 var joined = string.Join(", ", Fields);
                 var baser = BaseRecord == null ? "" : $" {BaseRecord}, ";
-                return $"{Lex.LBrace} {baser}{joined} {Lex.RBrace}";
+                return $"{Lex.LeftCurlyBracket} {baser}{joined} {Lex.RCurlyBracket}";
             }
 
             public override void PP(Writer writer)
@@ -412,7 +412,7 @@ namespace Fux.Input.Ast
 
                 void Write()
                 {
-                    writer.Write($"{Lex.LBrace} ");
+                    writer.Write($"{Lex.LeftCurlyBracket} ");
                     var more = false;
                     if (BaseRecord != null)
                     {
@@ -430,7 +430,7 @@ namespace Fux.Input.Ast
                         expression.PP(writer);
                     }
                     writer.EndLine();
-                    writer.Write($"{Lex.RBrace}");
+                    writer.Write($"{Lex.RCurlyBracket}");
                 }
             }
         }
@@ -506,12 +506,12 @@ namespace Fux.Input.Ast
 
             public override string ToString()
             {
-                return $"{Lex.LParent}{string.Join(", ", this)}{Lex.RParent}";
+                return $"{Lex.LeftRoundBracket}{string.Join(", ", this)}{Lex.RightRoundBracket}";
             }
 
             public override void PP(Writer writer)
             {
-                writer.Write($"{Lex.LParent}");
+                writer.Write($"{Lex.LeftRoundBracket}");
                 var more = false;
                 foreach (var expression in this)
                 {
@@ -522,7 +522,7 @@ namespace Fux.Input.Ast
                     more = true;
                     expression.PP(writer);
                 }
-                writer.Write($"{Lex.RParent}");
+                writer.Write($"{Lex.RightRoundBracket}");
             }
         }
 

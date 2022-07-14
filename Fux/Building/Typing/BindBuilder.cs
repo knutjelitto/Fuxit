@@ -1,6 +1,4 @@
-﻿using W = Fux.Building.AlgorithmW;
-
-#pragma warning disable IDE0079 // Remove unnecessary suppression
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE0051 // Remove unused private members
 
 namespace Fux.Building.Typing

@@ -1,6 +1,4 @@
-﻿using W = Fux.Building.AlgorithmW;
-
-namespace Fux.Building.Typing
+﻿namespace Fux.Building.Typing
 {
     public static class NamingExtensions
     {

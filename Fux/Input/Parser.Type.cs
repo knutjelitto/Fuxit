@@ -24,11 +24,11 @@ namespace Fux.Input
 
                     return new A.Type.Concrete(name);
                 }
-                else if (cursor.Is(Lex.LParent))
+                else if (cursor.Is(Lex.LeftRoundBracket))
                 {
                     return BaseType(cursor);
                 }
-                else if (cursor.Is(Lex.LBrace))
+                else if (cursor.Is(Lex.LeftCurlyBracket))
                 {
                     return Type(cursor);
                 }
@@ -78,13 +78,13 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                if (cursor.Is(Lex.LParent))
+                if (cursor.Is(Lex.LeftRoundBracket))
                 {
-                    cursor.Swallow(Lex.LParent);
+                    cursor.Swallow(Lex.LeftRoundBracket);
 
                     var types = new List<A.Type>();
 
-                    if (cursor.IsNot(Lex.RParent))
+                    if (cursor.IsNot(Lex.RightRoundBracket))
                     {
                         do
                         {
@@ -95,7 +95,7 @@ namespace Fux.Input
                         while (cursor.SwallowIf(Lex.Comma));
                     }
 
-                    cursor.Swallow(Lex.RParent);
+                    cursor.Swallow(Lex.RightRoundBracket);
 
                     if (types.Count == 0)
                     {
@@ -117,7 +117,7 @@ namespace Fux.Input
                     Assert(false);
                     throw new NotImplementedException();
                 }
-                else if (cursor.Is(Lex.LBrace))
+                else if (cursor.Is(Lex.LeftCurlyBracket))
                 {
                     return RecordType(cursor);
                 }
@@ -156,13 +156,13 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var left = cursor.Swallow(Lex.LBrace);
+                var left = cursor.Swallow(Lex.LeftCurlyBracket);
 
                 var fields = new List<A.FieldDefine>();
 
                 A.Type? baseType = null;
 
-                if (cursor.IsNot(Lex.RBrace))
+                if (cursor.IsNot(Lex.RCurlyBracket))
                 {
                     var state = cursor.State;
 
@@ -187,7 +187,7 @@ namespace Fux.Input
                     while (cursor.SwallowIf(Lex.Comma));
                 }
 
-                cursor.Swallow(Lex.RBrace);
+                cursor.Swallow(Lex.RCurlyBracket);
 
                 return new A.Type.Record(baseType, fields.Cast<A.FieldDefine>());
 

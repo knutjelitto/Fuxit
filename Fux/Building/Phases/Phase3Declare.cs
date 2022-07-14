@@ -121,6 +121,12 @@ namespace Fux.Building.Phases
                             break;
                         }
 
+                    case A.Decl.Ctor ctor:
+                        {
+                            Assert(false);
+                            break;
+                        }
+
                     case A.Decl.Custom type:
                         {
                             Collector.Custom.Add(type);
@@ -148,6 +154,14 @@ namespace Fux.Building.Phases
                             Declarations.Add(alias);
 
                             Module.Scope.AddAlias(alias);
+
+                            alias.Scope.Parent = Module.Scope;
+
+                            foreach (var parameter in alias.Parameters)
+                            {
+                                alias.Scope.Add(parameter);
+                            }
+
                             break;
                         }
 

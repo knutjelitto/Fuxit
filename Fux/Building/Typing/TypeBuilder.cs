@@ -1,4 +1,4 @@
-﻿using W = Fux.Building.AlgorithmW;
+﻿#pragma warning disable IDE0066 // Convert switch statement to expression
 
 namespace Fux.Building.Typing
 {
@@ -50,19 +50,19 @@ namespace Fux.Building.Typing
                 case A.Type.Unit:
                     return new W.Type.Unit();
 
-                case A.Type.Primitive.Bool:
+                case A.Type.Bool:
                     return new W.Type.Bool();
 
-                case A.Type.Primitive.Int:
+                case A.Type.Integer:
                     return new W.Type.Integer();
 
-                case A.Type.Primitive.Float:
+                case A.Type.Float:
                     return new W.Type.Float();
 
-                case A.Type.Primitive.String:
+                case A.Type.String:
                     return new W.Type.String();
 
-                case A.Type.Primitive.Char:
+                case A.Type.Char:
                     return new W.Type.Char();
 
                 case A.Type.Concrete concrete:
@@ -83,7 +83,7 @@ namespace Fux.Building.Typing
                         return new W.Type.Concrete(concrete.FullName());
                     }
 
-                case A.Type.Primitive.List list:
+                case A.Type.List list:
                     return new W.Type.List(Resolve(env, list.Argument));
 
                 case A.Type.Custom custom:

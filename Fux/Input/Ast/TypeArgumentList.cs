@@ -19,7 +19,7 @@
 
         public override string ToString()
         {
-            return String.Join(' ', this);
+            return String.Join(" ", this);
         }
     }
 }

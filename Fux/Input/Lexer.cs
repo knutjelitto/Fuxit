@@ -65,17 +65,17 @@ namespace Fux.Input
                 case '(':
                     return LeftParentOrSymbol();
                 case ')':
-                    return Build(Lex.RParent, 1);
+                    return Build(Lex.RightRoundBracket, 1);
                 case '{' when Next == '-':
                     return BlockComment();
                 case '{':
-                    return Build(Lex.LBrace, 1);
+                    return Build(Lex.LeftCurlyBracket, 1);
                 case '}':
-                    return Build(Lex.RBrace, 1);
+                    return Build(Lex.RCurlyBracket, 1);
                 case '[':
-                    return Build(Lex.LBracket, 1);
+                    return Build(Lex.LeftSquareBracket, 1);
                 case ']':
-                    return Build(Lex.RBracket, 1);
+                    return Build(Lex.RightSquareBracket, 1);
                 case '.' when !Next.IsSymbol():
                     return Build(Lex.Dot, 1);
                 case ':' when !Next.IsSymbol():
@@ -90,10 +90,6 @@ namespace Fux.Input
                     return Build(Lex.Lambda, 1);
                 case '-' when Next == '-':
                     return LineComment();
-#if false
-                case '-' when Next.IsDigit():
-                    return Build(Number());
-#endif
                 case '-' when Next == '>' && !NextNext.IsSymbol():
                     return Build(Lex.Arrow, 2);
                 case '"' when Next == '"' && NextNext == '"':
@@ -154,7 +150,7 @@ namespace Fux.Input
                 }
             }
 
-            return Build(Lex.LParent, 1);
+            return Build(Lex.LeftRoundBracket, 1);
         }
 
         private Token Wildcard()

@@ -10,6 +10,6 @@ global using Fux.Errors;
 global using Fux.Input;
 global using Fux.Tools;
 global using A = Fux.Input.Ast;
+global using W = Fux.Building.AlgorithmW;
 
 global using static System.Diagnostics.Debug;
-//global using Type = Fux.Input.Ast.Type;

@@ -68,7 +68,7 @@ namespace Fux.Input
             {
                 A.Decl? outer = null;
 
-                if (cursor.Is(Lex.KwModule) || cursor.IsWeak(Lex.Weak.Effect) || cursor.IsWeak(Lex.Weak.Port))
+                if (cursor.Is(Lex.KwModule, Lex.KwEffect, Lex.KwPort))
                 {
                     outer = ModuleHeader(cursor);
                 }
@@ -108,16 +108,14 @@ namespace Fux.Input
             {
                 var effect = false;
                 var port = false;
-                if (cursor.IsWeak(Lex.Weak.Effect))
+                if (cursor.SwallowIf(Lex.KwEffect))
                 {
                     //TODO: what's an effect?
-                    cursor.Advance();
                     effect = true;
                 }
-                else if (cursor.IsWeak(Lex.Weak.Port))
+                else if (cursor.SwallowIf(Lex.KwPort))
                 {
                     //TODO: what's an port?
-                    cursor.Advance();
                     port = true;
                 }
                 cursor.Swallow(Lex.KwModule);
@@ -126,13 +124,10 @@ namespace Fux.Input
 
                 var where = new List<A.Decl.Var>();
 
-                if (cursor.IsWeak(Lex.Weak.Where))
+                if (cursor.SwallowIf(Lex.KwWhere))
                 {
                     //TODO: what's a where?
-
-                    cursor.Advance();
-
-                    cursor.Swallow(Lex.LBrace);
+                    cursor.Swallow(Lex.LeftCurlyBracket);
 
                     do
                     {
@@ -144,12 +139,12 @@ namespace Fux.Input
                     }
                     while (cursor.SwallowIf(Lex.Comma));
 
-                    cursor.Swallow(Lex.RBrace);
+                    cursor.Swallow(Lex.RCurlyBracket);
                 }
 
                 A.Exposing? exposing = null;
 
-                if (cursor.IsWeak(Lex.Weak.Exposing))
+                if (cursor.Is(Lex.KwExposing))
                 {
                     exposing = Exposing(cursor);
                 }
@@ -175,7 +170,7 @@ namespace Fux.Input
 
                 A.Exposing? exposing = null;
 
-                if (cursor.IsWeak(Lex.Weak.Exposing))
+                if (cursor.Is(Lex.KwExposing))
                 {
                     exposing = Exposing(cursor);
                 }
@@ -188,8 +183,7 @@ namespace Fux.Input
         {
             return cursor.Scope<A.Exposing>(cursor =>
             {
-                Assert(cursor.IsWeak(Lex.Weak.Exposing));
-                cursor.Swallow(Lex.LowerId);
+                cursor.Swallow(Lex.KwExposing);
 
                 if (cursor.IsWeak(Lex.Weak.ExposeAll))
                 {
@@ -198,7 +192,7 @@ namespace Fux.Input
                     return new A.ExposingAll();
                 }
 
-                cursor.Swallow(Lex.LParent);
+                cursor.Swallow(Lex.LeftRoundBracket);
 
                 var exposed = new List<A.Exposed>();
 
@@ -233,7 +227,7 @@ namespace Fux.Input
                 }
                 while (cursor.SwallowIf(Lex.Comma));
 
-                cursor.Swallow(Lex.RParent);
+                cursor.Swallow(Lex.RightRoundBracket);
 
                 return new A.ExposingSome(exposed);
             });
@@ -267,9 +261,8 @@ namespace Fux.Input
                 var kwType = cursor.Swallow(Lex.KwType);
 
                 var alias = false;
-                if (cursor.IsWeak("alias"))
+                if (cursor.SwallowIf(Lex.KwAlias))
                 {
-                    cursor.Swallow(Lex.LowerId);
                     alias = true;
                 }
 
@@ -376,7 +369,7 @@ namespace Fux.Input
 
                 var name = Identifier(cursor).SingleUpper();
 
-                var arguments = new List<A.Type>();
+                var arguments = new A.TypeArgumentList();
 
                 do
                 {
@@ -389,7 +382,7 @@ namespace Fux.Input
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-                var ctor = new A.Decl.Ctor(custom, name, new A.TypeArgumentList(arguments));
+                var ctor = new A.Decl.Ctor(custom, name, arguments);
 
                 custom.Ctors.Add(ctor);
 

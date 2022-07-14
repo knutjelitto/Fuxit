@@ -49,6 +49,12 @@ namespace Fux.Building.AlgorithmW
             );
         }
 
+        private (Substitution, TType) InferType<TType>(Expr expression, Environment env)
+            where TType : Type
+        {
+            return ((Substitution, TType))InferType(expression, env);
+        }
+
         /// <summary>
         /// The meat of the type inference algorithm.
         /// </summary>
@@ -71,14 +77,6 @@ namespace Fux.Building.AlgorithmW
                         var (s1, type2) = InferType(expr, env);
                         var s2 = MostGeneralUnifier(type, type2);
                         return (ComposeSubstitutions(s2, s1), ApplySubstitution(type, s2));
-                    }
-
-                case Expr.Def({ } variable, { } expr):
-                    {
-                        var (s1, t1) = InferType(variable, env);
-                        var (s2, t2) = InferType(expr, env);
-                        var s3 = MostGeneralUnifier(t1, t2);
-                        return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(t1, s3));
                     }
 
                 case Expr.Tuple2({ } expr1, { } expr2):
@@ -148,17 +146,7 @@ namespace Fux.Building.AlgorithmW
                 //
                 case Expr.Literal literal:
                     {
-                        return (
-                            Substitution.Empty(),
-                            literal switch
-                            {
-                                Expr.Literal.Integer(_) => new Type.Integer(),
-                                Expr.Literal.Float(_) => new Type.Float(),
-                                Expr.Literal.Bool(_) => new Type.Bool(),
-                                Expr.Literal.String(_) => new Type.String(),
-                                Expr.Literal.Char(_) => new Type.Char(),
-                                _ => throw new WError($"can not infer - unknown literal type '{literal}'"),
-                            });
+                        return (Substitution.Empty(), literal.Type);
                     }
 
                 case Expr.Iff({ } cond, { } expr1, { } expr2):
@@ -186,11 +174,11 @@ namespace Fux.Building.AlgorithmW
                 // * Inserting a new type variable for the argument.
                 // * Inferring the type of the expression in the new environment to define the type of the expression.
                 // * Applying the resulting substitution to the argument to define the type of the argument.
-                case Expr.Lambda({ } term, { } exp):
+                case Expr.Lambda({ } term, { } expr):
                     {
                         var typeVariable = env.GetNext();
                         var nenv = env.Remove(term).Insert(term, new Polytype(typeVariable));
-                        var (substitution, type) = InferType(exp, nenv);
+                        var (substitution, type) = InferType(expr, nenv);
                         return (substitution, new Type.Function(ApplySubstitution(typeVariable, substitution), type));
                     }
 
@@ -225,7 +213,7 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Cons({ } first, { } rest):
                     {
                         var (s1, firstType) = InferType(first, env);
-                        var (s2, restType) = ((Substitution, Type.List))InferType(rest, ApplySubstitution(env, s1));
+                        var (s2, restType) = InferType<Type.List>(rest, ApplySubstitution(env, s1));
 
                         var s3 = MostGeneralUnifier(restType.Type, firstType);
 
@@ -446,8 +434,8 @@ namespace Fux.Building.AlgorithmW
 
         private Polytype ApplySubstitution(Polytype polytype, Substitution substitution)
         {
-            var sub = substitution.RemoveRange(polytype.TypeVariables);
-            return new Polytype(ApplySubstitution(polytype.Type, sub), polytype.TypeVariables);
+            var subst = substitution.RemoveRange(polytype.TypeVariables);
+            return new Polytype(ApplySubstitution(polytype.Type, subst), polytype.TypeVariables);
         }
 
         private Polytype GeneralizePolytype(Environment typeEnv, Type type)
@@ -594,34 +582,7 @@ namespace Fux.Building.AlgorithmW
 
                 case (Type.List({ } typ1) c1, Type.List({ } typ2) c2):
                     {
-#if true
                         return MostGeneralUnifier(typ1, typ2);
-#else
-                        if (typ1 == typ2)
-                        {
-                            return Substitution.Empty();
-                        }
-                        else if (typ1 is Type.Variable v1 && typ2 is Type.Variable v2)
-                        {
-                            if (v1.TypeVar.ID > v2.TypeVar.ID)
-                            {
-                                return Substitution.Solo(v1.TypeVar, typ2);
-                            }
-                            else
-                            {
-                                return Substitution.Solo(v2.TypeVar, typ1);
-                            }
-                        }
-                        else if (typ2 is Type.Variable v3)
-                        {
-                            return Substitution.Solo(v3.TypeVar, typ1);
-                        }
-                        else if (typ1 is Type.Variable v4)
-                        {
-                            return Substitution.Solo(v4.TypeVar, typ2);
-                        }
-                        break;
-#endif
                     }
 
                 // Otherwise, the types cannot be unified.
@@ -677,6 +638,9 @@ namespace Fux.Building.AlgorithmW
                 case Type.Tuple2({ } type1, { } type2):
                     return union(GetFreeTypeVariables(type1), GetFreeTypeVariables(type2));
 
+                case Type.Tuple3({ } type1, { } type2, { } type3):
+                    return union(union(GetFreeTypeVariables(type1), GetFreeTypeVariables(type2)), GetFreeTypeVariables(type3));
+
                 // Primitive types have no free variables
                 case Type.Primitive:
                     return new HashSet<TypeVariable>();
@@ -714,7 +678,8 @@ namespace Fux.Building.AlgorithmW
         }
 
         /// <summary>
-        /// The free type variables in a polytype are those that are free in the internal type and not bound by the variable mapping.
+        /// The free type variables in a polytype are those that are free in the internal type and
+        /// not bound by the variable mapping.
         /// </summary>
         private HashSet<TypeVariable> GetFreeTypeVariables(Polytype polytype)
         {
@@ -725,7 +690,8 @@ namespace Fux.Building.AlgorithmW
         }
 
         /// <summary>
-        /// The free type variables of a type environment is the union of the free type variables of each polytype in the environment.
+        /// The free type variables of a type environment is the union of the free type variables
+        /// of each polytype in the environment.
         /// </summary>
         private HashSet<TypeVariable> GetFreeTypeVariables(Environment typeEnv)
         {
@@ -733,7 +699,8 @@ namespace Fux.Building.AlgorithmW
         }
 
         /// <summary>
-        /// The free type variables of a vector of types is the union of the free type variables of each of the types in the vector.
+        /// The free type variables of a vector of types is the union of the free type variables of
+        /// each of the types in the vector.
         /// </summary>
         private HashSet<TypeVariable> GetFreeTypeVariables(IEnumerable<Polytype> polytypes)
         {
@@ -746,7 +713,8 @@ namespace Fux.Building.AlgorithmW
         }
 
         /// <summary>
-        /// Instantiates a polytype into a type. Replaces all bound type variables with fresh type variables and return the resulting type.
+        /// Instantiates a polytype into a type. Replaces all bound type variables with fresh type
+        /// variables and return the resulting type.
         /// </summary>
         private Type InstantiateType(Polytype polytype, Environment env)
         {

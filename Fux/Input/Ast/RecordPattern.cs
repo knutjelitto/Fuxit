@@ -12,12 +12,12 @@
         public override string ToString()
         {
             var joined = string.Join(", ", Fields);
-            return $"{Lex.LBrace} {joined} {Lex.RBrace}";
+            return $"{Lex.LeftCurlyBracket} {joined} {Lex.RCurlyBracket}";
         }
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{Lex.LBrace} ");
+            writer.Write($"{Lex.LeftCurlyBracket} ");
             var more = false;
             foreach (var field in Fields)
             {
@@ -33,7 +33,7 @@
             {
                 writer.WriteLine();
             }
-            writer.WriteLine($"{Lex.RBrace}");
+            writer.WriteLine($"{Lex.RCurlyBracket}");
         }
     }
 }

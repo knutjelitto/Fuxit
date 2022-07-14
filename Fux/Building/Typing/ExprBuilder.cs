@@ -1,9 +1,4 @@
-﻿using System;
-using System.Xml.Linq;
-
-using W = Fux.Building.AlgorithmW;
-
-namespace Fux.Building.Typing
+﻿namespace Fux.Building.Typing
 {
     public sealed class ExprBuilder
     {

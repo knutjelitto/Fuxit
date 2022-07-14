@@ -161,6 +161,7 @@ namespace Fux.Input.Ast
 
             public TypeParameterList Parameters { get; }
             public Type Declaration { get; }
+            public TypeScope Scope { get; } = new();
 
             public override string ToString()
             {
@@ -295,9 +296,9 @@ namespace Fux.Input.Ast
 
                 Type type = custom.Type;
 
-                for (var i = arguments.Count - 1;  i >= 0; i--)
+                foreach (var argument in Arguments.Reverse())
                 {
-                    type = new Type.Function(arguments[i], type);
+                    type = new Type.Function(argument, type);
                 }
 
                 Type = type;
