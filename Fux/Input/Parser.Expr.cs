@@ -117,15 +117,15 @@ namespace Fux.Input
             {
                 if (cursor.Is(Lex.KwIf))
                 {
-                    return InlineIf(cursor);
+                    return IfExpr(cursor);
                 }
                 else if (cursor.Is(Lex.KwLet))
                 {
-                    return InlineLet(cursor);
+                    return LetExpr(cursor);
                 }
                 else if (cursor.Is(Lex.KwCase))
                 {
-                    return InlineCase(cursor);
+                    return CaseExpr(cursor);
                 }
                 else
                 {
@@ -143,7 +143,7 @@ namespace Fux.Input
             });
         }
 
-        private A.Expr InlineIf(Cursor cursor)
+        private A.Expr IfExpr(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -158,7 +158,7 @@ namespace Fux.Input
             });
         }
 
-        private A.Expr InlineLet(Cursor cursor)
+        private A.Expr LetExpr(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -179,7 +179,7 @@ namespace Fux.Input
             });
         }
 
-        private A.Expr InlineCase(Cursor cursor)
+        private A.Expr CaseExpr(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -347,7 +347,7 @@ namespace Fux.Input
 
                 var fields = new List<A.Field>();
                 var state = cursor.State;
-                A.Identifier? baseName = Parser.SingleLowerIdentifier(cursor);
+                A.Identifier? baseName = Parser.SingleIdentifier(cursor).SingleLower();
 
                 if (cursor.IsNot(Lex.Bar))
                 {
@@ -383,7 +383,7 @@ namespace Fux.Input
 
                 A.Field Field(Cursor cursor)
                 {
-                    var name = Parser.SingleLowerIdentifier(cursor);
+                    var name = Parser.SingleIdentifier(cursor).SingleLower();
 
                     if (cursor.Is(Lex.Assign))
                     {

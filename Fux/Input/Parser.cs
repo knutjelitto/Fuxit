@@ -325,12 +325,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var name = SingleLowerIdentifier(cursor);
-
-                if (name.Text == "concat")
-                {
-                    Assert(true);
-                }
+                var name = SingleIdentifier(cursor).SingleLower();
 
                 cursor.Swallow(Lex.Colon);
 
@@ -439,16 +434,6 @@ namespace Fux.Input
                 Assert(cursor.Is(Lex.LowerId, Lex.UpperId, Lex.OperatorId));
 
                 return new A.Identifier(cursor.Advance());
-            });
-        }
-
-        public A.Identifier SingleLowerIdentifier(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                Assert(cursor.Is(Lex.LowerId));
-
-                return new A.Identifier(cursor.Advance()).SingleLower();
             });
         }
     }

@@ -39,7 +39,7 @@
 
             if (cursor.SwallowIf(Lex.KwAs))
             {
-                var alias = new A.Pattern.LowerId(Parser.SingleLowerIdentifier(cursor));
+                var alias = new A.Pattern.LowerId(Parser.SingleIdentifier(cursor).SingleLower());
 
                 pattern = new A.Pattern.WithAlias(pattern, alias);
             }
