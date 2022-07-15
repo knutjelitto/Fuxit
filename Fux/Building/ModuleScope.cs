@@ -181,14 +181,14 @@ namespace Fux.Building
                     expr = type;
                     return true;
                 }
-                else if (LookupConstructor(identifier, out var ctor))
-                {
-                    expr = ctor;
-                    return true;
-                }
                 else if (LookupAlias(identifier, out var alias))
                 {
                     expr = alias;
+                    return true;
+                }
+                else if (LookupConstructor(identifier, out var ctor))
+                {
+                    expr = ctor;
                     return true;
                 }
             }

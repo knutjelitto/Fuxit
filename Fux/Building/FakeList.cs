@@ -21,8 +21,7 @@ namespace Fux.Building
 
             var arg = new A.Type.Parameter(paraId);
             arg.InModule = module;
-            var args = new A.TypeArgumentList(arg);
-            args.InModule = module;
+            var args = new List<A.Type> { arg };
 
             var type = new A.Decl.Custom(listId, parameters);
             type.InModule = module;

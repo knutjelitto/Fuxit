@@ -3,7 +3,7 @@
     public interface Type : Node
     {
         Func<Type>? Resolver { get; set; }
-        public Type Resolved { get; }
+        Type Resolved { get; }
 
         public abstract class TypeImpl : NodeImpl, Type
         {
@@ -30,20 +30,6 @@
                 writer.Write($"{this}");
             }
 
-        }
-
-        public class Concrete : TypeImpl
-        {
-            public Concrete(Identifier name)
-            {
-                Name = name;
-
-                Assert(Name.IsMultiUpper);
-            }
-
-            public Identifier Name { get; }
-
-            public override string ToString() => $"{Name}";
         }
 
         public abstract class Primitive : TypeImpl
@@ -130,8 +116,8 @@
                 OutType = outType;
             }
 
-            public Type InType { get; }
-            public Type OutType { get; }
+            public Type InType { get; set; }
+            public Type OutType { get; set; }
 
             public override string ToString()
             {
@@ -143,12 +129,12 @@
         {
             public Tuple(params Type[] types)
             {
-                Types = types;
+                Types = types.ToList();
 
                 Assert(Types.Count >= 2 && Types.Count <= 3);
             }
 
-            public IReadOnlyList<Type> Types { get; }
+            public List<Type> Types { get; }
 
             public override string ToString()
             {
@@ -161,12 +147,10 @@
             public Tuple2(Type type1, Type type2)
                 : base(type1, type2)
             {
-                Type1 = type1;
-                Type2 = type2;
             }
 
-            public Type Type1 { get; }
-            public Type Type2 { get; }
+            public Type Type1 => Types[0];
+            public Type Type2 => Types[1];
         }
 
         public sealed class Tuple3 : Tuple
@@ -174,14 +158,11 @@
             public Tuple3(Type type1, Type type2, Type type3)
                 : base(type1, type2, type3)
             {
-                Type1 = type1;
-                Type2 = type2;
-                Type3 = type3;
             }
 
-            public Type Type1 { get; }
-            public Type Type2 { get; }
-            public Type Type3 { get; }
+            public Type Type1 => Types[0];
+            public Type Type2 => Types[1];
+            public Type Type3 => Types[2];
         }
 
         public sealed class Unit : TypeImpl
@@ -189,6 +170,29 @@
             public override string ToString()
             {
                 return Lex.Symbol.Unit;
+            }
+        }
+
+        public sealed class Alias : TypeImpl
+        {
+            public Alias(Identifier name, Decl.TypeParameterList parameters, Decl.Alias decl)
+            {
+                Name = name;
+                Parameters = parameters;
+                Decl = decl;
+            }
+
+            public Identifier Name { get; }
+            public Decl.TypeParameterList Parameters { get; }
+            public Decl.Alias Decl { get; }
+
+            public override string ToString()
+            {
+                if (Parameters.Count > 0)
+                {
+                    return $"{Name}<{string.Join(",", Parameters)}>";
+                }
+                return $"{Name}";
             }
         }
 
@@ -207,16 +211,20 @@
             {
                 if (Parameters.Count > 0)
                 {
-                    var parameters = string.Join(",", Parameters);
-                    return $"{Name}<{Parameters}>";
+                    return $"{Name}<{string.Join(",", Parameters)}>";
                 }
                 return $"{Name}";
             }
         }
 
-        public class Ctor : TypeImpl
+        public sealed class Ctor : TypeImpl
         {
-            public Ctor(Identifier name, TypeArgumentList arguments)
+            public Ctor(Identifier name)
+                : this(name, new List<Type>())
+            {
+            }
+
+            public Ctor(Identifier name, List<Type> arguments)
             {
                 Name = name;
                 Arguments = arguments;
@@ -225,7 +233,7 @@
             }
 
             public Identifier Name { get; }
-            public TypeArgumentList Arguments { get; }
+            public List<Type> Arguments { get; }
 
             public override void PP(Writer writer)
             {
@@ -234,11 +242,7 @@
 
             public override string ToString()
             {
-                if (Arguments.Count == 0)
-                {
-                    return Protected($"{Name}");
-                }
-                return Protected($"{Name} {Arguments}");
+                return Protected($"{Name}{Arguments.Join(" ")}");
             }
         }
 
@@ -286,17 +290,39 @@
             }
         }
 
-        public sealed class Record : TypeImpl
+        public sealed class Field : NodeImpl
         {
-            public Record(Type? baseRecord, IEnumerable<FieldDefine> fields)
+            public Field(Identifier name, Type type)
             {
-                BaseRecord = baseRecord;
-                Fields = fields.ToArray();
+                Name = name;
+                Type = type;
             }
 
-            public Type? BaseRecord { get; }
+            public Identifier Name { get; }
+            public Type Type { get; set; }
 
-            public IReadOnlyList<FieldDefine> Fields { get; }
+            public override string ToString()
+            {
+                return $"{Name} : {Type}";
+            }
+
+            public override void PP(Writer writer)
+            {
+                writer.Write($"{Name} : {Type}");
+            }
+        }
+
+        public sealed class Record : TypeImpl
+        {
+            public Record(Type? baseRecord, List<Field> fields)
+            {
+                BaseRecord = baseRecord;
+                Fields = fields;
+            }
+
+            public Type? BaseRecord { get; set; }
+
+            public List<Field> Fields { get; }
 
             public override string ToString()
             {
@@ -323,14 +349,6 @@
                     writer.WriteLine();
                 }
                 writer.WriteLine($"{Lex.RCurlyBracket}");
-            }
-        }
-
-        public sealed class Argument : TypeImpl
-        {
-            public override void PP(Writer writer)
-            {
-                throw new NotImplementedException();
             }
         }
     }

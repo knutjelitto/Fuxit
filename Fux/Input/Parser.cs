@@ -289,9 +289,9 @@ namespace Fux.Input
 
                 if (alias)
                 {
-                    var def = Type(cursor);
+                    var definition = Type(cursor);
 
-                    return new A.Decl.Alias(name, new A.Decl.TypeParameterList(parameterList), def);
+                    return new A.Decl.Alias(name, new A.Decl.TypeParameterList(parameterList), definition);
                 }
 
                 var custom = new A.Decl.Custom(name, new A.Decl.TypeParameterList(parameterList));
@@ -381,7 +381,7 @@ namespace Fux.Input
 
                 var name = Identifier(cursor).SingleUpper();
 
-                var arguments = new A.TypeArgumentList();
+                var arguments = new List<A.Type>();
 
                 do
                 {

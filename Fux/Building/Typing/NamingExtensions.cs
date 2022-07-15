@@ -33,16 +33,5 @@
 
             return name;
         }
-
-        public static string FullName(this A.Type.Concrete named)
-        {
-            Assert(named.InModule != null);
-
-            var name = $"{named.InModule.Name}.{named.Name}";
-
-            Assert(!name.StartsWith("Set.Dict."));
-
-            return name;
-        }
     }
 }

@@ -83,9 +83,9 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Decl.Custom type:
+                    case A.Decl.Custom custom:
                         {
-                            if (type.Name.Text == "Array")
+                            if (custom.Name.Text == "Array")
                             {
                                 Assert(true);
                             }
@@ -94,8 +94,8 @@ namespace Fux.Building.Phases
                                 Assert(true);
                             }
 
-                            ResolveType(Module.Scope, type.Type);
-                            foreach (var ctor in type.Ctors)
+                            ResolveType(Module.Scope, custom.Type);
+                            foreach (var ctor in custom.Ctors)
                             {
                                 Resolve(ctor);
                             }
@@ -152,7 +152,7 @@ namespace Fux.Building.Phases
                 }
             }
 
-            private void ResolveType(Scope scope, A.Type type)
+            private A.Type ResolveType(Scope scope, A.Type type)
             {
                 if (Investigated)
                 {
@@ -163,160 +163,154 @@ namespace Fux.Building.Phases
                 {
                     case A.Type.Function function:
                         {
-                            ResolveType(scope, function.InType);
-                            ResolveType(scope, function.OutType);
-                            break;
+                            function.InType = ResolveType(scope, function.InType);
+                            function.OutType = ResolveType(scope, function.OutType);
+
+                            return function;
                         }
 
                     case A.Type.Tuple tuple:
                         {
-                            foreach (var item in tuple.Types)
+                            for (var i = 0; i < tuple.Types.Count; i++)
                             {
-                                ResolveType(scope, item);
+                                tuple.Types[i] = ResolveType(scope, tuple.Types[i]);
                             }
-                            break;
+                            
+                            return tuple;
                         }
 
                     case A.Type.Record record:
                         {
                             if (record.BaseRecord != null)
                             {
-                                ResolveType(scope, record.BaseRecord);
+                                record.BaseRecord = ResolveType(scope, record.BaseRecord);
                             }
                             foreach (var field in record.Fields)
                             {
-                                ResolveType(scope, field.TypeDef);
+                                field.Type = ResolveType(scope, field.Type);
                             }
-                            break;
-                        }
 
-                    case A.Type.Concrete concrete:
-                        {
-                            if (scope.Resolve(concrete.Name, out var resolved))
-                            {
-                                if (resolved is A.Decl.Custom typeDecl)
-                                {
-                                    Assert(typeDecl.InModule != null);
-
-                                    if (typeDecl.InModule.IsCore)
-                                    {
-                                        switch (concrete.Name.Text)
-                                        {
-                                            case Lex.Primitive.Int:
-                                                concrete.Resolver = () => new A.Type.Integer(concrete.Name);
-                                                break;
-                                            case Lex.Primitive.Float:
-                                                concrete.Resolver = () => new A.Type.Float(concrete.Name);
-                                                break;
-                                            case Lex.Primitive.Bool:
-                                                concrete.Resolver = () => new A.Type.Bool(concrete.Name);
-                                                break;
-                                            case Lex.Primitive.String:
-                                                concrete.Resolver = () => new A.Type.String(concrete.Name);
-                                                break;
-                                            case Lex.Primitive.Char:
-                                                concrete.Resolver = () => new A.Type.Char(concrete.Name);
-                                                break;
-                                        }
-                                    }
-                                }
-                                Assert(true);
-                            }
-                            break;
+                            return record;
                         }
 
                     case A.Type.Primitive primitive:
                         {
-                            if (scope.Resolve(primitive.Name, out _))
-                            {
-
-                            }
-                            break;
+                            return primitive;
                         }
 
-                    case A.Type.Custom:
+                    case A.Type.Custom custom:
                         {
-                            break;
+                            return custom;
                         }
 
                     case A.Type.Ctor ctor:
                         {
                             Assert(ctor.InModule != null);
 
-                            if (scope.Resolve(ctor.Name, out var resolved))
+                            if (!scope.Resolve(ctor.Name, out var resolved))
                             {
-                                Assert(resolved.InModule != null);
-
-                                if (resolved is A.Decl.Custom custom)
-                                {
-                                    ctor.Resolver = () => custom.Type;
-
-                                    if (resolved.InModule.IsCore)
-                                    {
-                                        foreach (var argument in ctor.Arguments)
-                                        {
-                                            ResolveType(scope, argument);
-                                        }
-
-                                        if (ctor.Arguments.Count == 0)
-                                        {
-                                            Assert(ctor.Arguments.Count == 0);
-                                            //Assert(union.Name.Text == decl.Name.Text);
-
-                                            switch (ctor.Name.Text)
-                                            {
-                                                case Lex.Primitive.Int:
-                                                    ctor.Resolver = () => new A.Type.Integer(ctor.Name);
-                                                    break;
-                                                case Lex.Primitive.Float:
-                                                    ctor.Resolver = () => new A.Type.Float(ctor.Name);
-                                                    break;
-                                                case Lex.Primitive.Bool:
-                                                    ctor.Resolver = () => new A.Type.Bool(ctor.Name);
-                                                    break;
-                                                case Lex.Primitive.String:
-                                                    ctor.Resolver = () => new A.Type.String(ctor.Name);
-                                                    break;
-                                                case Lex.Primitive.Char:
-                                                    ctor.Resolver = () => new A.Type.Char(ctor.Name);
-                                                    break;
-                                            }
-                                        }
-                                        else if (ctor.Arguments.Count == 1)
-                                        {
-                                            switch (ctor.Name.Text)
-                                            {
-                                                case Lex.Primitive.List:
-                                                    ctor.Resolver = () => new A.Type.List(ctor.Name, ctor.Arguments[0]);
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (resolved is A.Decl.Alias alias)
-                                {
-                                    Assert(true);
-                                    ctor.Resolver = () => alias.Declaration.Resolved;
-                                    break;
-                                }
+                                Assert(false); // not found
+                                throw new NotImplementedException();
                             }
-                            break;
+
+                            Assert(resolved.InModule != null);
+                            Assert(resolved is A.Decl.Custom || resolved is A.Decl.Alias);
+
+                            switch (resolved)
+                            {
+                                case A.Decl.Custom custom:
+                                    {
+                                        if (custom.Parameters.Count >= 2)
+                                        {
+                                            Assert(true);
+                                        }
+
+                                        ctor.Resolver = () => custom.Type;
+
+                                        for (var i = 0; i < ctor.Arguments.Count; i++)
+                                        {
+                                            var argument = ctor.Arguments[i];
+
+                                            if (argument is A.Type.Parameter)
+                                            {
+                                                Assert(true);
+                                            }
+
+                                            ctor.Arguments[i] = ResolveType(scope, ctor.Arguments[i]);
+                                        }
+
+                                        if (resolved.InModule.IsCore)
+                                        {
+                                            if (ctor.Arguments.Count == 0)
+                                            {
+                                                switch (ctor.Name.Text)
+                                                {
+                                                    case Lex.Primitive.Int:
+                                                        return new A.Type.Integer(ctor.Name);
+                                                    case Lex.Primitive.Float:
+                                                        return new A.Type.Float(ctor.Name);
+                                                    case Lex.Primitive.Bool:
+                                                        return new A.Type.Bool(ctor.Name);
+                                                    case Lex.Primitive.String:
+                                                        return new A.Type.String(ctor.Name);
+                                                    case Lex.Primitive.Char:
+                                                        return new A.Type.Char(ctor.Name);
+                                                }
+                                            }
+                                            else if (ctor.Arguments.Count == 1)
+                                            {
+                                                switch (ctor.Name.Text)
+                                                {
+                                                    case Lex.Primitive.List:
+                                                        return new A.Type.List(ctor.Name, ctor.Arguments[0]);
+                                                }
+                                            }
+                                        }
+
+                                        return ctor;
+                                    }
+                                case A.Decl.Alias alias:
+                                    {
+                                        Assert(true);
+                                        ctor.Resolver = () => alias.Declaration.Resolved;
+
+                                        for (var i = 0; i < ctor.Arguments.Count; i++)
+                                        {
+                                            var argument = ctor.Arguments[i];
+
+                                            if (argument is A.Type.Parameter)
+                                            {
+                                                Assert(true);
+                                            }
+
+                                            ctor.Arguments[i] = ResolveType(scope, ctor.Arguments[i]);
+                                        }
+
+                                        var result = new A.Type.Alias(alias.Name, alias.Parameters, alias);
+
+                                        return result;
+                                    }
+
+                                default:
+                                    {
+                                        Assert(false); // not found
+                                        throw new NotImplementedException();
+                                    }
+                            }
                         }
 
-                    case A.Type.Parameter parameter:
-                        {
-                            Assert(parameter.Name.IsSingleLower);
-                            break;
-                        }
+                    case A.Type.Parameter:
                     case A.Type.NumberClass:
                     case A.Type.AppendableClass:
                     case A.Type.ComparableClass:
                     case A.Type.Unit:
-                        break;
-                    default:
-                        Assert(false);
-                        throw new NotImplementedException();
+                        {
+                            return type;
+                        }
                 }
+                
+                Assert(false);
+                throw new NotImplementedException();
             }
 
             private void ResolveExpr(Scope scope, A.Expr expression)

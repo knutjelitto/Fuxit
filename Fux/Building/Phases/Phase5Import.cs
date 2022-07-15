@@ -52,7 +52,7 @@ namespace Fux.Building.Phases
             Assert(module.Ast != null);
             var ast = module.Ast ?? throw new InvalidOperationException();
 
-            foreach (var import in ast.Imports)
+            foreach (var import in ast.ImportDeclarations)
             {
                 Import(module, import);
             }
