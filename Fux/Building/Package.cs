@@ -24,7 +24,7 @@ namespace Fux.Building
         public IReadOnlyList<Module> Exposed => exposed;
         public IReadOnlyList<Module> Intern => intern;
         public IEnumerable<Module> Modules => exposed.Concat(intern);
-        public bool IsCore => Name == "elm/core";
+        public bool IsCore => Name == "fux/fux/core";
 
         public void AddDependency(Package dependency)
         {

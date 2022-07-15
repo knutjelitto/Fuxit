@@ -365,4 +365,5 @@ FodyWeavers.xsd
 /Temp
 /Elm
 
-!/Runtime/**/debug
+Runtime/Debug/
+Runtime/Release/

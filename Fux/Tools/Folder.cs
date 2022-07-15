@@ -18,5 +18,7 @@
         {
             return new Folder(parts);
         }
+
+        public override string ToString() => Name;
     }
 }

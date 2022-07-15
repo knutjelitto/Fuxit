@@ -1,6 +1,7 @@
 #include "../core/core.h"
 
-void* eval_Test_runThunk(void* args[]) {
+void* eval_Test_runThunk(void* args[])
+{
   Closure* thunk = args[0];
 
   void* test_return_val = A1(thunk, &Unit);
@@ -8,7 +9,8 @@ void* eval_Test_runThunk(void* args[]) {
   return wrapped;
 }
 
-Closure Test_runThunk = {
+Closure Test_runThunk =
+{
     .header = HEADER_CLOSURE(0),
     .max_values = 1,
     .evaluator = &eval_Test_runThunk,

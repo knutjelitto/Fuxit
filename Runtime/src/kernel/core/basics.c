@@ -7,14 +7,16 @@
  * Elm version of Basics_negate ends up being self-referential!
  * Have to break the cycle using a kernel version
  */
-void* eval_negate(void* args[]) {
+void* eval_negate(void* args[])
+{
   ElmFloat* x = args[0];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
   result->header = x->header;
   result->value = -x->value;
   return result;
 }
-Closure Basics_negate = {
+Closure Basics_negate =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_negate,
     .max_values = 1,
@@ -23,7 +25,8 @@ Closure Basics_negate = {
 /**
  * add
  */
-void* eval_add(void* args[]) {
+void* eval_add(void* args[])
+{
   ElmFloat* x = args[0];
   ElmFloat* y = args[1];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
@@ -31,7 +34,8 @@ void* eval_add(void* args[]) {
   result->value = x->value + y->value;
   return result;
 }
-Closure Basics_add = {
+Closure Basics_add =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_add,
     .max_values = 2,
@@ -40,7 +44,8 @@ Closure Basics_add = {
 /**
  * sub
  */
-void* eval_sub(void* args[]) {
+void* eval_sub(void* args[])
+{
   ElmFloat* x = args[0];
   ElmFloat* y = args[1];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
@@ -48,7 +53,8 @@ void* eval_sub(void* args[]) {
   result->value = x->value - y->value;
   return result;
 }
-Closure Basics_sub = {
+Closure Basics_sub =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_sub,
     .max_values = 2,
@@ -57,7 +63,8 @@ Closure Basics_sub = {
 /**
  * mul
  */
-void* eval_mul(void* args[]) {
+void* eval_mul(void* args[])
+{
   ElmFloat* x = args[0];
   ElmFloat* y = args[1];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
@@ -65,7 +72,8 @@ void* eval_mul(void* args[]) {
   result->value = x->value * y->value;
   return result;
 }
-Closure Basics_mul = {
+Closure Basics_mul =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_mul,
     .max_values = 2,
@@ -74,7 +82,8 @@ Closure Basics_mul = {
 /**
  * fdiv
  */
-void* eval_fdiv(void* args[]) {
+void* eval_fdiv(void* args[])
+{
   ElmFloat* x = args[0];
   ElmFloat* y = args[1];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
@@ -82,7 +91,8 @@ void* eval_fdiv(void* args[]) {
   result->value = x->value / y->value;
   return result;
 }
-Closure Basics_fdiv = {
+Closure Basics_fdiv =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_fdiv,
     .max_values = 2,
@@ -91,13 +101,15 @@ Closure Basics_fdiv = {
 /**
  * idiv
  */
-void* eval_idiv(void* args[]) {
+void* eval_idiv(void* args[])
+{
   ElmInt* x = args[0];
   ElmInt* y = args[1];
   i64 result = (i64)x->value / (i64)y->value;
   return newElmInt((f64)result);
 }
-Closure Basics_idiv = {
+Closure Basics_idiv =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_idiv,
     .max_values = 2,
@@ -139,7 +151,8 @@ static i32 ipow(i32 base, i32 ex) {
 /**
  * pow
  */
-static void* eval_pow(void* args[]) {
+static void* eval_pow(void* args[])
+{
   ElmFloat* x = args[0];
   ElmFloat* y = args[1];
   ElmFloat* result = GC_allocate(true, SIZE_FLOAT);
@@ -147,7 +160,8 @@ static void* eval_pow(void* args[]) {
   result->value = pow(x->value, y->value);
   return result;
 }
-Closure Basics_pow = {
+Closure Basics_pow =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_pow,
     .max_values = 2,
@@ -156,11 +170,13 @@ Closure Basics_pow = {
 /*
  * toFloat
  */
-void* eval_toFloat(void* args[]) {
+void* eval_toFloat(void* args[])
+{
   ElmInt* i = args[0];
   return newElmFloat(i->value);
 }
-Closure Basics_toFloat = {
+Closure Basics_toFloat =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_toFloat,
     .max_values = 1,
@@ -169,12 +185,14 @@ Closure Basics_toFloat = {
 /*
  * round
  */
-void* eval_round(void* args[]) {
+void* eval_round(void* args[])
+{
   ElmFloat* f = args[0];
   f64 result = round(f->value);
   return newElmInt(result);
 }
-Closure Basics_round = {
+Closure Basics_round =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_round,
     .max_values = 1,
@@ -183,7 +201,8 @@ Closure Basics_round = {
 /*
  * floor
  */
-void* eval_floor(void* args[]) {
+void* eval_floor(void* args[])
+{
   ElmFloat* f = args[0];
   f64 result = floor(f->value);
   return newElmInt(result);
@@ -197,12 +216,14 @@ Closure Basics_floor = {
 /*
  * ceiling
  */
-void* eval_ceiling(void* args[]) {
+void* eval_ceiling(void* args[])
+{
   ElmFloat* f = args[0];
   f64 result = ceil(f->value);
   return newElmInt(result);
 }
-Closure Basics_ceiling = {
+Closure Basics_ceiling =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_ceiling,
     .max_values = 1,
@@ -211,10 +232,12 @@ Closure Basics_ceiling = {
 /**
  * not
  */
-void* eval_not(void* args[]) {
+void* eval_not(void* args[])
+{
   return (args[0] == &False) ? &True : &False;
 }
-Closure Basics_not = {
+Closure Basics_not =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_not,
     .max_values = 1,
@@ -223,10 +246,12 @@ Closure Basics_not = {
 /**
  * and
  */
-void* eval_and(void* args[]) {
+void* eval_and(void* args[])
+{
   return (args[0] == &True && args[1] == &True) ? &True : &False;
 }
-Closure Basics_and = {
+Closure Basics_and =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_and,
     .max_values = 2,
@@ -235,10 +260,12 @@ Closure Basics_and = {
 /**
  * or
  */
-void* eval_or(void* args[]) {
+void* eval_or(void* args[])
+{
   return (args[0] == &True || args[1] == &True) ? &True : &False;
 }
-Closure Basics_or = {
+Closure Basics_or =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_or,
     .max_values = 2,
@@ -247,10 +274,12 @@ Closure Basics_or = {
 /**
  * xor
  */
-void* eval_xor(void* args[]) {
+void* eval_xor(void* args[])
+{
   return (args[0] != args[1]) ? &True : &False;
 }
-Closure Basics_xor = {
+Closure Basics_xor =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_xor,
     .max_values = 2,
@@ -259,12 +288,14 @@ Closure Basics_xor = {
 /**
  * modBy
  */
-void* eval_remainderBy(void* args[]) {
+void* eval_remainderBy(void* args[])
+{
   ElmInt* den = args[0];
   ElmInt* num = args[1];
   return newElmInt((i64)num->value % (i64)den->value);
 }
-Closure Basics_remainderBy = {
+Closure Basics_remainderBy =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_remainderBy,
     .max_values = 2,
@@ -274,7 +305,8 @@ Closure Basics_remainderBy = {
  * modBy
  * https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
  */
-void* eval_modBy(void* args[]) {
+void* eval_modBy(void* args[])
+{
   ElmInt* a0 = args[0];
   ElmInt* a1 = args[1];
   i32 modulus = a0->value;
@@ -287,7 +319,8 @@ void* eval_modBy(void* args[]) {
                        ? answer + modulus
                        : answer);
 }
-Closure Basics_modBy = {
+Closure Basics_modBy =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_modBy,
     .max_values = 2,
@@ -296,7 +329,8 @@ Closure Basics_modBy = {
 /**
  * log
  */
-void* eval_log(void* args[]) {
+void* eval_log(void* args[])
+{
   ElmFloat* x = args[0];
   // Type uncertainty due to Number literals generated as Int. Resolved by int-as-float
   return newElmFloat(log(x->value));
@@ -310,10 +344,12 @@ Closure Basics_log = {
 /**
  * identity
  */
-void* eval_identity(void* args[]) {
+void* eval_identity(void* args[])
+{
   return args[0];
 }
-Closure Basics_identity = {
+Closure Basics_identity =
+{
     .header = HEADER_CLOSURE(0),
     .evaluator = &eval_identity,
     .max_values = 1,

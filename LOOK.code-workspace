@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "Elm"
+		},
+		{
+			"path": "Fux/Fux"
 		}
 	],
 	"settings": {

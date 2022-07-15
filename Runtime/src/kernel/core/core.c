@@ -1,5 +1,6 @@
 #include "core.h"
 
+/*
 #include "../../lib/stb/stb_sprintf.c"
 
 #include "basics.c"
@@ -19,6 +20,7 @@
 #include "debug/debug.c"
 #include "gc/gc.c"
 #include "string-builder.c"
+*/
 
 #if PERF_TIMER_ENABLED
 PerfCounter perf_counters[__COUNTER__];

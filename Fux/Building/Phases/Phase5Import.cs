@@ -171,16 +171,19 @@ namespace Fux.Building.Phases
 
         private void ListPrelude(Module module)
         {
+#if false
             Import(module,
                 new Decl.Import(
                     Identifier.Artificial(module, Lex.Primitive.List), null,
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, Lex.Primitive.List), false),
                         new Exposed.Var(Identifier.Artificial(module, Lex.Symbol.ListCons)))));
+#endif
         }
 
         private void Prelude(Module module)
         {
+#if false
             Assert(Package.FindImport("Basics") != null);
             Import(module,
                 new Decl.Import(Identifier.Artificial(module, "Basics"), null,
@@ -227,6 +230,7 @@ namespace Fux.Building.Phases
                     Identifier.Artificial(module, "Platform.Sub"), Identifier.Artificial(module, "Sub"),
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, "Sub"), false))));
+#endif
         }
     }
 }

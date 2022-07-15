@@ -78,6 +78,7 @@ namespace Fux.Building.Phases
                     module.Scope.AddVar(where);
                 }
 
+#if false
                 if (module.IsCore && module.Name == Lex.Primitive.List)
                 {
                     if (!module.Scope.LookupType(A.Identifier.Artificial(module, Lex.CoreModule.List), out _))
@@ -85,6 +86,7 @@ namespace Fux.Building.Phases
                         Declare(Module, FakeList.MakeType(module));
                     }
                 }
+#endif
 
                 foreach (var declaration in ast.Declarations)
                 {

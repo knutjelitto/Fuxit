@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable CA1822 // Mark members as static
 #pragma warning disable IDE0066 // Convert switch statement to expression
 #pragma warning disable IDE0059 // Unnecessary assignment of a value

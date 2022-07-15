@@ -1,7 +1,6 @@
 ﻿using Fux.Building;
 using Fux.Building.Phases;
 using Fux.ElmPackages;
-using Fux.Tests;
 
 using Semver;
 
@@ -44,10 +43,10 @@ namespace Fux
 
                 var builder = new Builder();
 
-                if (false)
+                if (true)
                 {
-                    builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
-                    //builder.Load(new ElmPackage("fux/tests/typing", "1.0.0"));
+                    //builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
+                    builder.Load(new ElmPackage("fux/fux/core", "1.0.0"));
                 }
                 else
                 {
