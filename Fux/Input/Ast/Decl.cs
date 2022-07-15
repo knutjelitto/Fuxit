@@ -286,7 +286,7 @@ namespace Fux.Input.Ast
 
         public sealed class Ctor : NamedDeclImpl
         {
-            public Ctor(Custom custom, Identifier name, TypeArgumentList arguments)
+            public Ctor(Custom custom, Identifier name, List<Type> arguments)
                 : base(name)
             {
                 Assert(name.IsMultiUpper);
@@ -296,7 +296,7 @@ namespace Fux.Input.Ast
 
                 Type type = custom.Type;
 
-                foreach (var argument in Arguments.Reverse())
+                foreach (var argument in Enumerable.Reverse(arguments))
                 {
                     type = new Type.Function(argument, type);
                 }
@@ -305,7 +305,7 @@ namespace Fux.Input.Ast
             }
 
             public Custom Custom { get; }
-            public TypeArgumentList Arguments { get; }
+            public List<Type> Arguments { get; }
             public Type Type { get; }
 
             public override void PP(Writer writer)
@@ -315,11 +315,7 @@ namespace Fux.Input.Ast
 
             public override string ToString()
             {
-                if (Arguments.Count == 0)
-                {
-                    return Protected($"{Name}");
-                }
-                return Protected($"{Name} {Arguments}");
+                return Protected($"{Name}{Arguments.Join(" ")}");
             }
         }
 

@@ -65,24 +65,6 @@ namespace Fux.Building.Typing
                 case A.Type.Char:
                     return new W.Type.Char();
 
-                case A.Type.Concrete concrete:
-                    {
-                        switch (concrete.Name.Text)
-                        {
-                            case Lex.Primitive.Int:
-                                return new W.Type.Integer();
-                            case Lex.Primitive.Float:
-                                return new W.Type.Float();
-                            case Lex.Primitive.Bool:
-                                return new W.Type.Bool();
-                            case Lex.Primitive.String:
-                                return new W.Type.String();
-                            case Lex.Primitive.Char:
-                                return new W.Type.Char  ();
-                        }
-                        return new W.Type.Concrete(concrete.FullName());
-                    }
-
                 case A.Type.List list:
                     return new W.Type.List(Resolve(env, list.Argument));
 
@@ -124,7 +106,7 @@ namespace Fux.Building.Typing
                         foreach (var f in record.Fields)
                         {
                             var name = f.Name.Text;
-                            var ty = Resolve(env, f.TypeDef);
+                            var ty = Resolve(env, f.Type);
 
                             var field = new W.Type.Field(name, ty);
                             fields.Add(field);

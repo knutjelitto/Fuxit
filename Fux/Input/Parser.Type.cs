@@ -22,7 +22,7 @@ namespace Fux.Input
                 {
                     var name = Identifier(cursor).MultiUpper();
 
-                    return new A.Type.Concrete(name);
+                    return new A.Type.Ctor(name);
                 }
                 else if (cursor.Is(Lex.LeftRoundBracket))
                 {
@@ -44,7 +44,7 @@ namespace Fux.Input
             {
                 var name = Identifier(cursor).MultiUpper();
 
-                var arguments = new A.TypeArgumentList();
+                var arguments = new List<A.Type>();
 
                 do
                 {
@@ -158,7 +158,7 @@ namespace Fux.Input
             {
                 var left = cursor.Swallow(Lex.LeftCurlyBracket);
 
-                var fields = new List<A.FieldDefine>();
+                var fields = new List<A.Type.Field>();
 
                 A.Type? baseType = null;
 
@@ -189,15 +189,15 @@ namespace Fux.Input
 
                 cursor.Swallow(Lex.RCurlyBracket);
 
-                return new A.Type.Record(baseType, fields.Cast<A.FieldDefine>());
+                return new A.Type.Record(baseType, fields);
 
-                A.FieldDefine Field(Cursor cursor)
+                A.Type.Field Field(Cursor cursor)
                 {
                     var name = Identifier(cursor);
                     cursor.Swallow(Lex.Colon);
                     var type = Type(cursor);
 
-                    return new A.FieldDefine(name, type);
+                    return new A.Type.Field(name, type);
                 }
             });
         }

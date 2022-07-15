@@ -97,7 +97,7 @@
         private void PrintEnv(W.Environment env)
         {
             Writer.WriteLine();
-            foreach (var (var, polytype) in env.Enumerate())
+            foreach (var (var, polytype) in env.Enumerate().OrderBy(v => v.var.Name))
             {
                 Writer.WriteLine($"{var}: {polytype}");
             }

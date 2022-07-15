@@ -11,7 +11,9 @@
         public Decl.Module Header { get; }
         public IReadOnlyList<Decl> Declarations { get; }
 
-        public IEnumerable<Decl.Import> Imports => Declarations.OfType<Decl.Import>();
+        public IEnumerable<Decl.Import> ImportDeclarations => Declarations.OfType<Decl.Import>();
+        public IEnumerable<Decl> TypeDeclarations => Declarations.Where(d => d is Decl.Custom || d is Decl.Alias);
+        public IEnumerable<Decl.Var> VarDeclarations => Declarations.OfType<Decl.Var>();
 
         public override string ToString()
         {
