@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "Runtime"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.make": "makefile",
+			"*.m++": "cpp",
+			"*.cpp": "cpp",
+			"*.six": "ceylon",
+			"*.sax": "ceylon",
+			"*.fux": "elm",
+			"stdint.h": "c"
+		}
+	}
+}

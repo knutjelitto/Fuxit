@@ -31,18 +31,27 @@ typedef double f64;
 
 extern void WASM_RT_ADD_PREFIX(init)(void);
 
+/* import: 'env' 'floor' */
+extern f64 (*Z_envZ_floorZ_dd)(f64);
+
 /* export: 'memory' */
 extern wasm_rt_memory_t (*WASM_RT_ADD_PREFIX(Z_memory));
 /* export: '__wasm_call_ctors' */
 extern void (*WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv))(void);
-/* export: 'square' */
-extern u32 (*WASM_RT_ADD_PREFIX(Z_squareZ_ii))(u32);
-/* export: 'duple' */
-extern u32 (*WASM_RT_ADD_PREFIX(Z_dupleZ_ii))(u32);
-/* export: 'sum' */
-extern u32 (*WASM_RT_ADD_PREFIX(Z_sumZ_ii))(u32);
-/* export: '__cos' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z___cosZ_ddd))(f64, f64);
+/* export: 'scalbn' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_scalbnZ_ddi))(f64, u32);
+/* export: '__math_cos' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z___math_cosZ_ddd))(f64, f64);
+/* export: '__math_sin' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z___math_sinZ_dddi))(f64, f64, u32);
+/* export: '__rem_pio2_large' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
+/* export: '__rem_pio2' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z___rem_pio2Z_idi))(f64, u32);
+/* export: 'cos' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_cosZ_dd))(f64);
+/* export: 'sin' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_sinZ_dd))(f64);
 /* export: '__dso_handle' */
 extern u32 (*WASM_RT_ADD_PREFIX(Z___dso_handleZ_i));
 /* export: '__data_end' */

@@ -33,7 +33,7 @@ WASM2WAT	= wasm-dis
 WASM2C		= wasm2c
 
 EXPORTS = square sum
-SOURCES = $(wildcard *.c) src/kernel/core/core.c src/kernel/math/math.c
+SOURCES = $(wildcard *.c) src/Object.cpp src/kernel/core/core.c src/kernel/math/math.c
 BUILD   = DEBUG
 
 #------------------------------------------------------------------------------------------------------
@@ -52,7 +52,7 @@ endif
 
 # Global compiler flags
 CXXFLAGS := $(DBGCFLAGS) -Ofast -std=c++11 -fno-rtti -Wno-writable-strings -Wno-unknown-pragmas
-CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c2x -Isrc/include
+CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c2x -Isrc/include -Isrc/kernel/math
 
 # Global compiler flags for Wasm targeting
 CLANGFLAGS := -target wasm32 -nostdinc
