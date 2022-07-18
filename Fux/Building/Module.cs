@@ -35,7 +35,7 @@ namespace Fux.Building
         
         public Source GetSource()
         {
-            var fullFileName = Folder.Combine(Package.RootPath, FileName);
+            var fullFileName = Path.Combine(Package.RootPath, FileName);
 
             return new StringSource(NickName, fullFileName, IO.File.ReadAllText(fullFileName, Encoding.UTF8));
         }

@@ -305,7 +305,7 @@ namespace Fux.Building.AlgorithmW
                         }
                         var (s1, t1) = InferType(expr, env);
 
-                        if (t1 is Type.Concrete concrete)
+                        if (t1 is Type.Custom concrete)
                         {
                             var type = InstantiateType(typeGen(env), env);
 
@@ -417,7 +417,7 @@ namespace Fux.Building.AlgorithmW
                     return type;
 
                 // A concrete type is not changed by a substitution.
-                case Type.Concrete:
+                case Type.Custom:
                     return type;
 
                 default:
@@ -468,10 +468,11 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private Substitution MostGeneralUnifier(Type type1, Type type2)
         {
-            if (type1 is Type.List && type2 is Type.List)
+            if (Investigated)
             {
                 Assert(true);
             }
+
             switch (type1, type2)
             {
                 // For functions, we find the most general unifier for the inputs, apply the resulting
@@ -499,6 +500,11 @@ namespace Fux.Building.AlgorithmW
                 // This also handles the case where they are both variables.
                 case (Type.Variable({ } v1) t1, Type.Variable({ } v2) t2):
                     {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
                         if (v1.ID > v2.ID)
                         {
                             return BindVariable(v1, t2);
@@ -539,7 +545,7 @@ namespace Fux.Building.AlgorithmW
                         return Substitution.Empty();
                     }
 
-                case (Type.Concrete c1, Type.Concrete c2):
+                case (Type.Custom c1, Type.Custom c2):
                     {
                         if (Investigated)
                         {
@@ -647,7 +653,7 @@ namespace Fux.Building.AlgorithmW
                     return new HashSet<TypeVariable>();
 
                 // Concrete types have no free variables
-                case Type.Concrete:
+                case Type.Custom:
                     return new HashSet<TypeVariable>();
 
                 case Type.List list:

@@ -1,7 +1,6 @@
-﻿#pragma warning disable IDE1006 // Naming Styles
+﻿using Fux.TypeSystem.Abstract;
 
-
-using Fux.TypeSystem.Abstract;
+#pragma warning disable IDE1006 // Naming Styles
 
 namespace Fux.TypeSystem.Evaluate
 {

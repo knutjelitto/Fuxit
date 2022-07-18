@@ -131,6 +131,9 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Record record:
                     Write($"{Str(record)}");
                     break;
+                case Expr.Variable variable:
+                    Write($"{Str(variable)}");
+                    break;
                 default:
                     Assert(false);
                     throw new NotImplementedException();

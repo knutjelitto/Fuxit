@@ -1,10 +1,10 @@
 ﻿using Fux.Building.Phases;
-using Fux.ElmPackages;
 using Fux.Input;
 using Fux.Tools;
 
 using Semver;
 
+#pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
 
 namespace Fux.Building
@@ -33,9 +33,19 @@ namespace Fux.Building
         public IEnumerable<Package> Packages => loaded;
         public IEnumerable<Module> Modules => loaded.SelectMany(p => p.Modules);
 
-        public void Load(ElmPackage elmPackage)
+        public void Load(Elm.Package elmPackage)
         {
             var _ = loaded.Register(elmPackage);
+        }
+
+        public void Load(Pack.Package pack)
+        {
+            var _ = loaded.Register(pack);
+        }
+
+        public void Load(string name)
+        {
+            Load(new Pack.Package(name));
         }
 
         public void Build()
@@ -84,7 +94,7 @@ namespace Fux.Building
             }
         }
 
-        private void Build(string prefix, int no, Package package, Phase phase)
+        private static void Build(string prefix, int no, Package package, Phase phase)
         {
             Terminal.ClearToEol();
             Terminal.Write($"building {no,-2} {phase.Package,-40} {prefix}");

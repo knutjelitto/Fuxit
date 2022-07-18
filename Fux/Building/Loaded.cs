@@ -1,7 +1,4 @@
 ﻿using System.Collections;
-
-using Fux.ElmPackages;
-
 using Semver;
 
 namespace Fux.Building
@@ -14,14 +11,69 @@ namespace Fux.Building
 
         public IEnumerator<Package> GetEnumerator() => packages.GetEnumerator();
 
-        public Package Register(ElmPackage elm)
+        public Package Register(Pack.Package pack)
+        {
+            if (index.TryGetValue(pack.FullName, out var package))
+            {
+                return package;
+            }
+
+            var pak = pack.Json as Pack.FuxPackageJson;
+
+            if (pak != null)
+            {
+                package = new Package(pack);
+
+                foreach (var exposed in pak.ExposedModules)
+                {
+                    package.AddExposed(new Module(package, exposed.Name));
+                }
+
+                foreach (var intern in pak.InternModules)
+                {
+                    package.AddIntern(new Module(package, intern.Name));
+                }
+
+                var root = new Path(package.RootPath, "src");
+
+                foreach (var file in IO.Directory.GetFiles(root, "*.fux", IO.SearchOption.AllDirectories).Select(f => f.Replace('\\', '/')))
+                {
+                    if (file.Contains("/src/Examples/") || file.Contains("/src/Tests/"))
+                    {
+                        continue;
+                    }
+
+                    var name = file[(root.Name.Length + 1)..^4].Replace('/', '.');
+
+                    var module = package.TryGetExposed(name);
+
+                    if (module != null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        package.AddIntern(new Module(package, name));
+                        Assert(true);
+                    }
+                }
+
+                return Add(package);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public Package Register(Elm.Package elm)
         {
             if (index.TryGetValue(elm.FullName, out var package))
             {
                 return package;
             }
 
-            var pak = elm.Elm as ElmPak;
+            var pak = elm.Elm as Elm.ElmPackageJson;
 
             if (pak != null)
             {
@@ -29,7 +81,7 @@ namespace Fux.Building
 
                 foreach (var dependency in pak.Dependencies)
                 {
-                    var found = Catalog.Instance.Find(dependency);
+                    var found = Elm.Catalog.Instance.Find(dependency);
 
                     package.AddDependency(Register(found));
                 }
@@ -39,7 +91,7 @@ namespace Fux.Building
                     package.AddExposed(new Module(package, exposed.Name));
                 }
 
-                var root = Folder.Combine(package.RootPath, "src");
+                var root = Path.Combine(package.RootPath, "src");
 
                 foreach (var file in IO.Directory.GetFiles(root, "*.elm", IO.SearchOption.AllDirectories).Select(f => f.Replace('\\', '/')))
                 {

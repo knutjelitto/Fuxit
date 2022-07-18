@@ -27,48 +27,76 @@ namespace Fux.Building.Typing
             switch (type.Resolved)
             {
                 case A.Type.Function function:
-                    return new W.Type.Function(Resolve(env, function.InType), Resolve(env, function.OutType));
+                    {
+                        return new W.Type.Function(Resolve(env, function.InType), Resolve(env, function.OutType));
+                    }
 
                 case A.Type.Tuple2 tuple2:
-                    return new W.Type.Tuple2(Resolve(env, tuple2.Type1), Resolve(env, tuple2.Type2));
+                    {
+                        return new W.Type.Tuple2(Resolve(env, tuple2.Type1), Resolve(env, tuple2.Type2));
+                    }
 
                 case A.Type.Tuple3 tuple3:
-                    return new W.Type.Tuple3(Resolve(env, tuple3.Type1), Resolve(env, tuple3.Type2), Resolve(env, tuple3.Type3));
+                    {
+                        return new W.Type.Tuple3(Resolve(env, tuple3.Type1), Resolve(env, tuple3.Type2), Resolve(env, tuple3.Type3));
+                    }
 
                 case A.Type.NumberClass number:
-                    return VarType(number.Text);
+                    {
+                        return VarType(number.Text);
+                    }
 
                 case A.Type.ComparableClass comparable:
-                    return VarType(comparable.Text);
+                    {
+                        return VarType(comparable.Text);
+                    }
 
                 case A.Type.AppendableClass appendable:
-                    return VarType(appendable.Text);
+                    {
+                        return VarType(appendable.Text);
+                    }
 
                 case A.Type.Parameter parameter:
-                    return VarType(parameter.Text);
+                    {
+                        return VarType(parameter.Text);
+                    }
 
                 case A.Type.Unit:
-                    return new W.Type.Unit();
+                    {
+                        return new W.Type.Unit();
+                    }
 
                 case A.Type.Bool:
-                    return new W.Type.Bool();
+                    {
+                        return new W.Type.Bool();
+                    }
 
                 case A.Type.Integer:
-                    return new W.Type.Integer();
+                    {
+                        return new W.Type.Integer();
+                    }
 
                 case A.Type.Float:
-                    return new W.Type.Float();
+                    {
+                        return new W.Type.Float();
+                    }
 
                 case A.Type.String:
-                    return new W.Type.String();
+                    {
+                        return new W.Type.String();
+                    }
 
                 case A.Type.Char:
-                    return new W.Type.Char();
+                    {
+                        return new W.Type.Char();
+                    }
 
                 case A.Type.List list:
-                    return new W.Type.List(Resolve(env, list.Argument));
+                    {
+                        return new W.Type.List(Resolve(env, list.Argument));
+                    }
 
-                case A.Type.Custom custom:
+                case A.Type.CustomX custom:
                     {
                         Assert(custom.InModule != null);
 
@@ -87,17 +115,18 @@ namespace Fux.Building.Typing
                         }
 
                         var args = custom.Parameters.Select(t => VarType(t.Text)).ToList();
-                        return new W.Type.Concrete(custom.FullName(), args.ToArray());
+                        return new W.Type.Custom(custom.FullName(), args.ToArray());
                     }
 
-                case A.Type.Ctor ctor:
+                case A.Type.Custom ctor:
                     {
                         Assert(ctor.InModule != null);
                         Assert(ctor.Resolved.InModule != null);
 
                         var args = ctor.Arguments.Select(t => Resolve(env, t)).ToArray();
-                        return new W.Type.Concrete(ctor.FullName(), args);
+                        return new W.Type.Custom(ctor.FullName(), args);
                     }
+
                 case A.Type.Record record:
                     {
                         Assert(record.BaseRecord == null);

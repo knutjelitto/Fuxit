@@ -12,7 +12,7 @@
             return variable;
         }
 
-        public static string FullName(this A.Type.Ctor named)
+        public static string FullName(this A.Type.Custom named)
         {
             Assert(named.InModule != null);
 
@@ -23,7 +23,7 @@
             return name;
         }
 
-        public static string FullName(this A.Type.Custom named)
+        public static string FullName(this A.Type.CustomX named)
         {
             Assert(named.InModule != null);
 

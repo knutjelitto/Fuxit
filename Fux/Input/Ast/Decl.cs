@@ -327,7 +327,7 @@ namespace Fux.Input.Ast
                 Parameters = parameters;
                 Ctors = new CtorList();
 
-                Type = new Type.Custom(Name, parameters)
+                Type = new Type.CustomX(Name, parameters)
                 {
                     InModule = Name.InModule
                 };
@@ -337,7 +337,7 @@ namespace Fux.Input.Ast
             public CtorList Ctors { get; }
             public TypeScope Scope { get; } = new();
 
-            public Type.Custom Type { get; }
+            public Type.CustomX Type { get; }
 
             public override string ToString()
             {

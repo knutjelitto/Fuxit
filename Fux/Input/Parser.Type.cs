@@ -22,7 +22,7 @@ namespace Fux.Input
                 {
                     var name = Identifier(cursor).MultiUpper();
 
-                    return new A.Type.Ctor(name);
+                    return new A.Type.Custom(name);
                 }
                 else if (cursor.Is(Lex.LeftRoundBracket))
                 {
@@ -38,7 +38,7 @@ namespace Fux.Input
             });
         }
 
-        private A.Type.Ctor Construction(Cursor cursor)
+        private A.Type.Custom Custom(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -55,7 +55,7 @@ namespace Fux.Input
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-                return new A.Type.Ctor(name, arguments);
+                return new A.Type.Custom(name, arguments);
             });
         }
 
@@ -123,7 +123,7 @@ namespace Fux.Input
                 }
                 else if (cursor.Is(Lex.UpperId))
                 {
-                    return Construction(cursor);
+                    return Custom(cursor);
                 }
                 else if (cursor.Is(Lex.LowerId))
                 {

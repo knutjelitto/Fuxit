@@ -11,5 +11,7 @@ global using Fux.Input;
 global using Fux.Tools;
 global using A = Fux.Input.Ast;
 global using W = Fux.Building.AlgorithmW;
+global using Elm = Fux.ElmPackages;
+global using Pack = Fux.FuxPackages;
 
 global using static System.Diagnostics.Debug;

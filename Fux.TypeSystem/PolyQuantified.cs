@@ -8,8 +8,7 @@ using Fux.TypeSystem.Abstract;
 
 namespace Fux.TypeSystem
 {
-    public sealed
-        class PolyQuantified : Poly
+    public sealed class PolyQuantified : Poly
     {
         public PolyQuantified(MonoVariable α, Poly σ)
         {

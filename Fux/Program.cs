@@ -1,6 +1,5 @@
 ﻿using Fux.Building;
 using Fux.Building.Phases;
-using Fux.ElmPackages;
 
 using Semver;
 
@@ -46,58 +45,59 @@ namespace Fux
                 if (true)
                 {
                     //builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
-                    builder.Load(new ElmPackage("fux/fux/core", "1.0.0"));
+                    //builder.Load(new ElmPackage("fux/fux/core", "1.0.0"));
+                    builder.Load("fux/core");
                 }
                 else
                 {
-                    builder.Load(ElmPackage.Latest("elm/core"));
-                    builder.Load(ElmPackage.Latest("elm/bytes"));
-                    builder.Load(ElmPackage.Latest("elm/file"));
-                    builder.Load(ElmPackage.Latest("elm/html"));
-                    builder.Load(ElmPackage.Latest("elm/http"));
-                    builder.Load(ElmPackage.Latest("elm/json"));
-                    builder.Load(ElmPackage.Latest("elm/parser")); //TODO: didn't get it with scoping of (|.) (|=)
-                    builder.Load(ElmPackage.Latest("elm/project-metadata-utils"));
-                    builder.Load(ElmPackage.Latest("elm/random"));
-                    builder.Load(ElmPackage.Latest("elm/regex"));
-                    builder.Load(ElmPackage.Latest("elm/svg"));
-                    builder.Load(ElmPackage.Latest("elm/url"));
-                    builder.Load(ElmPackage.Latest("elm/virtual-dom"));
-                    builder.Load(ElmPackage.Latest("elm/browser"));
+                    builder.Load(Elm.Package.Latest("elm/core"));
+                    builder.Load(Elm.Package.Latest("elm/bytes"));
+                    builder.Load(Elm.Package.Latest("elm/file"));
+                    builder.Load(Elm.Package.Latest("elm/html"));
+                    builder.Load(Elm.Package.Latest("elm/http"));
+                    builder.Load(Elm.Package.Latest("elm/json"));
+                    builder.Load(Elm.Package.Latest("elm/parser")); //TODO: didn't get it with scoping of (|.) (|=)
+                    builder.Load(Elm.Package.Latest("elm/project-metadata-utils"));
+                    builder.Load(Elm.Package.Latest("elm/random"));
+                    builder.Load(Elm.Package.Latest("elm/regex"));
+                    builder.Load(Elm.Package.Latest("elm/svg"));
+                    builder.Load(Elm.Package.Latest("elm/url"));
+                    builder.Load(Elm.Package.Latest("elm/virtual-dom"));
+                    builder.Load(Elm.Package.Latest("elm/browser"));
 
-                    builder.Load(ElmPackage.Latest("elm-explorations/benchmark"));                    
-                    builder.Load(ElmPackage.Latest("elm-explorations/linear-algebra"));
-                    builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
-                    builder.Load(ElmPackage.Latest("elm-explorations/test"));
-                    builder.Load(ElmPackage.Latest("elm-explorations/webgl"));
+                    builder.Load(Elm.Package.Latest("elm-explorations/benchmark"));                    
+                    builder.Load(Elm.Package.Latest("elm-explorations/linear-algebra"));
+                    builder.Load(Elm.Package.Latest("elm-explorations/markdown"));
+                    builder.Load(Elm.Package.Latest("elm-explorations/test"));
+                    builder.Load(Elm.Package.Latest("elm-explorations/webgl"));
 
-                    builder.Load(ElmPackage.Latest("rtfeldman/elm-css"));
-                    builder.Load(ElmPackage.Latest("rtfeldman/elm-iso8601-date-strings"));
-                    builder.Load(ElmPackage.Latest("rtfeldman/elm-hex"));
-                    builder.Load(ElmPackage.Latest("rtfeldman/elm-validate"));
-                    builder.Load(ElmPackage.Latest("rtfeldman/elm-sorter-experiment"));
-                    builder.Load(ElmPackage.Latest("rtfeldman/count"));
-                    builder.Load(ElmPackage.Latest("rtfeldman/console-print"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/elm-css"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/elm-iso8601-date-strings"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/elm-hex"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/elm-validate"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/elm-sorter-experiment"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/count"));
+                    builder.Load(Elm.Package.Latest("rtfeldman/console-print"));
 
-                    builder.Load(ElmPackage.Latest("elm-community/list-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/maybe-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/random-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/json-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/string-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/result-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/dict-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/html-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/array-extra"));
-                    builder.Load(ElmPackage.Latest("elm-community/basics-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/list-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/maybe-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/random-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/json-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/string-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/result-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/dict-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/html-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/array-extra"));
+                    builder.Load(Elm.Package.Latest("elm-community/basics-extra"));
 
-                    builder.Load(ElmPackage.Latest("elm-community/typed-svg"));
-                    builder.Load(ElmPackage.Latest("elm-community/graph"));
-                    builder.Load(ElmPackage.Latest("elm-community/easing-functions"));
-                    builder.Load(ElmPackage.Latest("elm-community/intdict"));
-                    builder.Load(ElmPackage.Latest("elm-community/undo-redo"));
-                    builder.Load(ElmPackage.Latest("elm-community/list-split"));
+                    builder.Load(Elm.Package.Latest("elm-community/typed-svg"));
+                    builder.Load(Elm.Package.Latest("elm-community/graph"));
+                    builder.Load(Elm.Package.Latest("elm-community/easing-functions"));
+                    builder.Load(Elm.Package.Latest("elm-community/intdict"));
+                    builder.Load(Elm.Package.Latest("elm-community/undo-redo"));
+                    builder.Load(Elm.Package.Latest("elm-community/list-split"));
                     
-                    builder.Load(ElmPackage.Latest("elm-in-elm/compiler"));
+                    builder.Load(Elm.Package.Latest("elm-in-elm/compiler"));
                 }
 
                 var whole = new Stopwatch();

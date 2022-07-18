@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable IDE0017 // Simplify object initialization
+
 namespace Fux.Building
 {
     public sealed class ModuleScope : Scope
     {
         private readonly Dictionary<A.Identifier, A.Decl.Import> imports = new();
-        private readonly List<A.Decl.Infix> infixes = new();
         private readonly Dictionary<A.Identifier, A.Decl.Infix> infixesIndex = new();
         private readonly Dictionary<A.Identifier, A.Decl.Custom> types = new();
         private readonly Dictionary<A.Identifier, A.Decl.Alias> aliases = new();
@@ -35,7 +36,6 @@ namespace Fux.Building
 
             Assert(!infixesIndex.ContainsKey(name));
 
-            infixes.Add(decl);
             infixesIndex.Add(name, decl);
         }
 
@@ -99,15 +99,7 @@ namespace Fux.Building
 
         public bool ImportAddInfix(A.Decl.Infix decl)
         {
-            var name = decl.Name.SingleOp();
-
-            if (infixesIndex.TryAdd(name, decl))
-            {
-                infixes.Add(decl);
-
-                return true;
-            }
-            return false;
+            return infixesIndex.TryAdd(decl.Name.SingleOp(), decl);
         }
 
         public bool ImportAddConstructor(A.Decl.Ctor constructor)
@@ -212,7 +204,7 @@ namespace Fux.Building
                     {
                         if (!importModule.Scope.LookupNative(memberName, out var native))
                         {
-                            Assert(importName.Text.StartsWith("Elm.Kernel."));
+                            Assert(importName.Text.StartsWith("Fux.Core."));
                             native = new A.Decl.Native(importName, memberName);
                             native.InModule = importModule;
                             Collector.Instance.Native.Add(native);

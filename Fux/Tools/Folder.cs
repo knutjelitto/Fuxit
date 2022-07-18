@@ -1,22 +1,22 @@
 ﻿namespace Fux.Tools
 {
-    public sealed class Folder
+    public sealed class Path
     {
-        public Folder(params string[] parts)
+        public Path(params string[] parts)
         {
             Name = IO.Path.Combine(parts).Replace('\\', '/');
         }
 
         public string Name { get; }
 
-        public static implicit operator string(Folder folder)
+        public static implicit operator string(Path folder)
         {
             return folder.Name;
         }
 
-        public static Folder Combine(params string[] parts)
+        public static Path Combine(params string[] parts)
         {
-            return new Folder(parts);
+            return new Path(parts);
         }
 
         public override string ToString() => Name;

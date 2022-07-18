@@ -196,9 +196,9 @@
             }
         }
 
-        public sealed class Custom : TypeImpl
+        public sealed class CustomX : TypeImpl
         {
-            public Custom(Identifier name, Decl.TypeParameterList parameters)
+            public CustomX(Identifier name, Decl.TypeParameterList parameters)
             {
                 Name = name;
                 Parameters = parameters;
@@ -217,14 +217,14 @@
             }
         }
 
-        public sealed class Ctor : TypeImpl
+        public sealed class Custom : TypeImpl
         {
-            public Ctor(Identifier name)
+            public Custom(Identifier name)
                 : this(name, new List<Type>())
             {
             }
 
-            public Ctor(Identifier name, List<Type> arguments)
+            public Custom(Identifier name, List<Type> arguments)
             {
                 Name = name;
                 Arguments = arguments;

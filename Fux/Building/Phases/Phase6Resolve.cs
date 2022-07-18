@@ -198,12 +198,12 @@ namespace Fux.Building.Phases
                             return primitive;
                         }
 
-                    case A.Type.Custom custom:
+                    case A.Type.CustomX custom:
                         {
                             return custom;
                         }
 
-                    case A.Type.Ctor ctor:
+                    case A.Type.Custom ctor:
                         {
                             Assert(ctor.InModule != null);
 
@@ -269,6 +269,7 @@ namespace Fux.Building.Phases
 
                                         return ctor;
                                     }
+
                                 case A.Decl.Alias alias:
                                     {
                                         Assert(true);
@@ -320,9 +321,11 @@ namespace Fux.Building.Phases
                     case A.Expr.Literal:
                     case A.Expr.Unit:
                     case A.Wildcard:
-                        break;
                     case A.Expr.Dot:
-                        break; //TODO: what to do here
+                        {
+                            break; //TODO: what to do at DOT
+                        }
+
                     case A.Identifier identifier:
                         {
                             if (scope.Resolve(identifier, out var resolved))
@@ -375,21 +378,29 @@ namespace Fux.Building.Phases
                             }
                         }
                     case A.Expr.If iff:
-                        ResolveExpr(scope, iff.Condition);
-                        ResolveExpr(scope, iff.IfTrue);
-                        ResolveExpr(scope, iff.IfFalse);
-                        break;
-                    case A.Expr.Matcher match:
-                        ResolveExpr(scope, match.Expression);
-                        foreach (var matchCase in match.Cases)
                         {
-                            ResolveExpr(scope, matchCase);
+                            ResolveExpr(scope, iff.Condition);
+                            ResolveExpr(scope, iff.IfTrue);
+                            ResolveExpr(scope, iff.IfFalse);
+                            break;
                         }
-                        break;
+                    case A.Expr.Matcher match:
+                        {
+                            ResolveExpr(scope, match.Expression);
+                            foreach (var matchCase in match.Cases)
+                            {
+                                ResolveExpr(scope, matchCase);
+                            }
+                            break;
+                        }
+
                     case A.Expr.Case matchCase:
-                        ResolveExpr(matchCase.Scope, matchCase.Pattern);
-                        ResolveExpr(matchCase.Scope, matchCase.Expression);
-                        break;
+                        {
+                            ResolveExpr(matchCase.Scope, matchCase.Pattern);
+                            ResolveExpr(matchCase.Scope, matchCase.Expression);
+                            break;
+                        }
+
                     case A.Expr.Let let:
                         {
                             foreach (var expr in let.LetDecls)
@@ -399,10 +410,14 @@ namespace Fux.Building.Phases
                             ResolveExpr(let.Scope, let.InExpression);
                             break;
                         }
+
                     case A.Expr.Lambda lambda:
-                        ResolveExpr(lambda.Scope, lambda.Parameters);
-                        ResolveExpr(lambda.Scope, lambda.Expression);
-                        break;
+                        {
+                            ResolveExpr(lambda.Scope, lambda.Parameters);
+                            ResolveExpr(lambda.Scope, lambda.Expression);
+                            break;
+                        }
+
                     case A.Expr.Sequence sequence:
                         {
                             foreach (var expr in sequence)
@@ -411,52 +426,78 @@ namespace Fux.Building.Phases
                             }
                             break;
                         }
+
                     case A.Expr.Tuple tuple:
-                        foreach (var expr in tuple)
                         {
-                            ResolveExpr(scope, expr);
+                            foreach (var expr in tuple)
+                            {
+                                ResolveExpr(scope, expr);
+                            }
+                            break;
                         }
-                        break;
+
                     case A.Expr.List list:
-                        foreach (var expr in list)
                         {
-                            ResolveExpr(scope, expr);
+                            foreach (var expr in list)
+                            {
+                                ResolveExpr(scope, expr);
+                            }
+                            break;
                         }
-                        break;
+
                     case A.Expr.Record record:
-                        if (record.BaseRecord != null)
                         {
-                            ResolveExpr(scope, record.BaseRecord);
+                            if (record.BaseRecord != null)
+                            {
+                                ResolveExpr(scope, record.BaseRecord);
+                            }
+                            foreach (var field in record.Fields)
+                            {
+                                ResolveExpr(scope, field);
+                            }
+                            break;
                         }
-                        foreach (var field in record.Fields)
-                        {
-                            ResolveExpr(scope, field);
-                        }
-                        break;
+
                     case A.FieldAssign fieldAssign:
-                        ResolveExpr(scope, fieldAssign.Expression);
-                        break;
-                    case A.Expr.Prefix prefix:
-                        //TODO: prefix operator
-                        //ResolveExpr(scope, prefix.Op);
-                        ResolveExpr(scope, prefix.Rhs);
-                        break;
-                    case A.OpChain chain:
-                        Assert(chain.Resolved is A.OpChain);
-                        ResolveInfix(scope, chain);
-                        break;
-                    case A.Expr.Select select:
-                        ResolveExpr(scope, select.Lhs);
-                        break;
-                    case A.RecordPattern recordPattern:
-                        foreach (var field in recordPattern.Fields)
                         {
-                            ResolveExpr(scope, field);
+                            ResolveExpr(scope, fieldAssign.Expression);
+                            break;
                         }
-                        break;
+
+                    case A.Expr.Prefix prefix:
+                        {
+                            //TODO: prefix operator
+                            //ResolveExpr(scope, prefix.Op);
+                            ResolveExpr(scope, prefix.Rhs);
+                            break;
+                        }
+
+                    case A.OpChain chain:
+                        {
+                            Assert(chain.Resolved is A.OpChain);
+                            ResolveInfix(scope, chain);
+                            break;
+                        }
+                    case A.Expr.Select select:
+                        {
+                            ResolveExpr(scope, select.Lhs);
+                            break;
+                        }
+
+                    case A.RecordPattern recordPattern:
+                        {
+                            foreach (var field in recordPattern.Fields)
+                            {
+                                ResolveExpr(scope, field);
+                            }
+                            break;
+                        }
+
                     case A.FieldPattern fieldPattern:
-                        ResolveExpr(scope, fieldPattern.Pattern);
-                        break;
+                        {
+                            ResolveExpr(scope, fieldPattern.Pattern);
+                            break;
+                        }
 
                     case A.Parameters parameters:
                         {

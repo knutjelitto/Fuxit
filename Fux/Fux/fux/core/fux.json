@@ -1,0 +1,44 @@
+{
+    "type": "package",
+    "name": "fux/core",
+    "summary": "Fux core library",
+    "exposed-modules": {
+        "Primitives": [
+            "Basics",
+            "String",
+            "Char",
+            "Bitwise",
+            "Tuple"
+        ],
+        "Collections": [
+            "List",
+            "Dict",
+            "Set"
+        ],
+        "Error Handling": [
+            "Maybe",
+            "Result"
+        ],
+        "Debug": [
+            "Debug"
+        ]
+    },
+    "waiting-modules": {
+        "Collections": [
+            "Array"
+        ],
+        "Effects": [
+            "Platform.Cmd",
+            "Platform.Sub",
+            "Platform",
+            "Process",
+            "Task"
+        ]
+    },
+    "internal-modules": {
+        "Array": [
+            "Intern.JsArray"
+        ]
+    },
+    "dependencies": {}
+}

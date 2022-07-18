@@ -6,18 +6,18 @@ namespace Fux.ElmPackages
     {
         public static readonly string Filename = "archive.zip";
 
-        public Archive(Endpoint endpoint)
+        public Archive(EndpointJson endpoint)
         {
             Endpoint = endpoint;
         }
 
-        public Endpoint Endpoint { get; }
+        public EndpointJson Endpoint { get; }
 
-        public static string Get(Endpoint endpoint)
+        public static string Get(EndpointJson endpoint)
         {
             byte[] bytes;
 
-            var filePath = IO.Path.Combine(ElmCache.FilePath(endpoint.Reference.ToString(), Filename));
+            var filePath = IO.Path.Combine(Cache.FilePath(endpoint.Reference.ToString(), Filename));
 
             if (!IO.File.Exists(filePath))
             {
@@ -29,7 +29,7 @@ namespace Fux.ElmPackages
             return filePath;
         }
 
-        public static byte[] Download(Endpoint endpoint)
+        public static byte[] Download(EndpointJson endpoint)
         {
             var requestUri = endpoint.Url;
 

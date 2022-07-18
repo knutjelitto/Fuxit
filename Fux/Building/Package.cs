@@ -1,30 +1,28 @@
-﻿using Fux.ElmPackages;
-
-namespace Fux.Building
+﻿namespace Fux.Building
 {
     public class Package
     {
-        private readonly ElmPackage elm;
+        private readonly IPackage pack;
         private readonly List<Package> dependencies = new();
         private readonly List<Module> exposed = new();
         private readonly Dictionary<string, Module> exposedIndex = new();
         private readonly List<Module> intern = new();
         private readonly Dictionary<string, Module> internIndex = new();
 
-        public Package(ElmPackage elm)
+        public Package(IPackage pack)
         {
-            this.elm = elm;
+            this.pack = pack;
         }
 
-        public string Name => elm.Name;
-        public string FullName => elm.FullName;
-        public string RootPath => elm.IsFux ? Temp.FuxPath(FullName) : Temp.ElmPath(FullName);
+        public string Name => pack.Name;
+        public string FullName => pack.FullName;
+        public string RootPath => pack.RootPath;
 
         public IReadOnlyList<Package> Dependencies => dependencies;
         public IReadOnlyList<Module> Exposed => exposed;
         public IReadOnlyList<Module> Intern => intern;
         public IEnumerable<Module> Modules => exposed.Concat(intern);
-        public bool IsCore => Name == "fux/fux/core";
+        public bool IsCore => Name == "fux/core";
 
         public void AddDependency(Package dependency)
         {
@@ -63,19 +61,24 @@ namespace Fux.Building
                         break;
                     }
                 }
+            }
 
-                if (module == null)
+            if (module == null)
+            {
+                foreach (var dependency in dependencies)
                 {
-                    foreach (var dependency in dependencies)
-                    {
-                        module = dependency.FindIntern(importPath);
+                    module = dependency.FindIntern(importPath);
 
-                        if (module != null)
-                        {
-                            break;
-                        }
+                    if (module != null)
+                    {
+                        break;
                     }
                 }
+            }
+
+            if (module == null && importPath.StartsWith("Fux.Core."))
+            {
+                module = new Module(this, importPath, true);
             }
 
             return module;

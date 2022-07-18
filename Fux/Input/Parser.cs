@@ -82,7 +82,7 @@ namespace Fux.Input
                 }
                 else if (cursor.Is(Lex.KwType))
                 {
-                    outer = TypeDecl(cursor);
+                    outer = CustomOrAliasDecl(cursor);
                 }
                 else if (cursor.Is(Lex.EOF))
                 {
@@ -258,7 +258,7 @@ namespace Fux.Input
             });
         }
 
-        public A.NamedDecl TypeDecl(Cursor cursor)
+        public A.NamedDecl CustomOrAliasDecl(Cursor cursor)
         {
             return cursor.Scope<A.NamedDecl>(cursor =>
             {

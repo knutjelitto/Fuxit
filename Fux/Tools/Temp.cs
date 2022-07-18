@@ -29,9 +29,13 @@ namespace Fux.Tools
 
         public static string FuxPath(string paths)
         {
+#if true
+            return GetPath("Fux/Fux", paths);
+#else
             var path = IO.Path.Combine(IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, paths).Replace('\\', '/');
 
             return path;
+#endif
         }
     }
 }

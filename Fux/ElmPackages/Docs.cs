@@ -4,7 +4,7 @@ namespace Fux.ElmPackages
 {
     public sealed class Docs
     {
-        public static Docs Get(ElmPackage reference)
+        public static Docs Get(Package reference)
         {
             throw new NotImplementedException();
         }

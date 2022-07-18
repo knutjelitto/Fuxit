@@ -6,20 +6,20 @@ using Semver;
 
 namespace Fux.ElmPackages
 {
-    public sealed class Catalog : IReadOnlyList<ElmPackage>
+    public sealed class Catalog : IReadOnlyList<Package>
     {
-        private readonly List<ElmPackage> references;
+        private readonly List<Package> references;
 
         public static readonly string Filename = "catalog.json";
 
         private static Catalog? catalog = null;
 
-        private Catalog(List<ElmPackage> references)
+        private Catalog(List<Package> references)
         {
             this.references = references;
         }
 
-        public ElmPackage Find(Dependency dependency)
+        public Package Find(Dependency dependency)
         {
             if (dependency.Name == "elm/core")
             {
@@ -28,7 +28,7 @@ namespace Fux.ElmPackages
             return references.Where(p => p.Name == dependency.Name && dependency.Match(p.Version)).OrderByDescending(p => p.Version).First();
         }
 
-        public ElmPackage Latest(string packageName)
+        public Package Latest(string packageName)
         {
             return references
                 .Where(p => p.Name == packageName)
@@ -41,7 +41,7 @@ namespace Fux.ElmPackages
         {
             byte[] bytes;
 
-            var filePath = ElmCache.FilePath(Filename);
+            var filePath = Cache.FilePath(Filename);
 
             if (!IO.File.Exists(filePath))
             {
@@ -63,7 +63,7 @@ namespace Fux.ElmPackages
 
             Assert(element.ValueKind == JsonValueKind.Object);
 
-            var references = new List<ElmPackage>();
+            var references = new List<Package>();
 
             foreach (var item in element.EnumerateObject())
             {
@@ -71,7 +71,7 @@ namespace Fux.ElmPackages
 
                 foreach (var version in item.Value.EnumerateArray().Select(elem => elem.GetString()!))
                 {
-                    var reference = new ElmPackage(name, SemVersion.Parse(version, SemVersionStyles.Any));
+                    var reference = new Package(name, SemVersion.Parse(version, SemVersionStyles.Any));
 
                     references.Add(reference);
                 }
@@ -101,8 +101,8 @@ namespace Fux.ElmPackages
 
 
         public int Count => references.Count;
-        public ElmPackage this[int index] => references[index];
-        public IEnumerator<ElmPackage> GetEnumerator() => references.GetEnumerator();
+        public Package this[int index] => references[index];
+        public IEnumerator<Package> GetEnumerator() => references.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

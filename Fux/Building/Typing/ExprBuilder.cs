@@ -28,6 +28,11 @@
             Investigated = investigated;
             idGenerator.Clear();
 
+            if (Investigated)
+            {
+                Assert(true);
+            }
+
             var varType = typeBuilder.Build(env, var.Type);
 
             var variable = var.FullName();
