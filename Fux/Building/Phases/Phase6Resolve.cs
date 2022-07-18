@@ -94,7 +94,6 @@ namespace Fux.Building.Phases
                                 Assert(true);
                             }
 
-                            ResolveType(Module.Scope, custom.Type);
                             foreach (var ctor in custom.Ctors)
                             {
                                 Resolve(ctor);
@@ -105,6 +104,10 @@ namespace Fux.Building.Phases
                     case A.Decl.Var var:
                         {
                             ResolveExpr(var.Scope, var.Expression);
+                            if (var.Type != null)
+                            {
+                                var.Type = ResolveType(var.Scope, var.Type);
+                            }
                             foreach (var parameter in var.Parameters)
                             {
                                 ResolveExpr(var.Scope, parameter.Expression);
@@ -161,56 +164,56 @@ namespace Fux.Building.Phases
 
                 switch (type)
                 {
-                    case A.Type.Function function:
+                    case A.Type.Function functionType:
                         {
-                            function.InType = ResolveType(scope, function.InType);
-                            function.OutType = ResolveType(scope, function.OutType);
+                            functionType.InType = ResolveType(scope, functionType.InType);
+                            functionType.OutType = ResolveType(scope, functionType.OutType);
 
-                            return function;
+                            return functionType;
                         }
 
-                    case A.Type.Tuple tuple:
+                    case A.Type.Tuple tupleType:
                         {
-                            for (var i = 0; i < tuple.Types.Count; i++)
+                            for (var i = 0; i < tupleType.Types.Count; i++)
                             {
-                                tuple.Types[i] = ResolveType(scope, tuple.Types[i]);
+                                tupleType.Types[i] = ResolveType(scope, tupleType.Types[i]);
                             }
                             
-                            return tuple;
+                            return tupleType;
                         }
 
-                    case A.Type.Record record:
+                    case A.Type.Record recordType:
                         {
-                            if (record.BaseRecord != null)
+                            if (recordType.BaseRecord != null)
                             {
-                                record.BaseRecord = ResolveType(scope, record.BaseRecord);
+                                recordType.BaseRecord = ResolveType(scope, recordType.BaseRecord);
                             }
-                            foreach (var field in record.Fields)
+                            foreach (var field in recordType.Fields)
                             {
                                 field.Type = ResolveType(scope, field.Type);
                             }
 
-                            return record;
+                            return recordType;
                         }
 
-                    case A.Type.Primitive primitive:
+                    case A.Type.Primitive primitiveType:
                         {
-                            return primitive;
+                            return primitiveType;
                         }
 
-                    case A.Type.CustomX custom:
+                    case A.Type.CustomX customX:
                         {
-                            return custom;
+                            return customX;
                         }
 
-                    case A.Type.Custom ctor:
+                    case A.Type.Custom customType:
                         {
-                            Assert(ctor.InModule != null);
+                            Assert(customType.InModule != null);
 
-                            if (!scope.Resolve(ctor.Name, out var resolved))
+                            if (!scope.Resolve(customType.Name, out var resolved))
                             {
                                 Assert(false); // not found
-                                throw new NotImplementedException();
+                                throw new InvalidOperationException();
                             }
 
                             Assert(resolved.InModule != null);
@@ -220,74 +223,63 @@ namespace Fux.Building.Phases
                             {
                                 case A.Decl.Custom custom:
                                     {
-                                        if (custom.Parameters.Count >= 2)
+                                        for (var i = 0; i < customType.Arguments.Count; i++)
                                         {
-                                            Assert(true);
-                                        }
-
-                                        ctor.Resolver = () => custom.Type;
-
-                                        for (var i = 0; i < ctor.Arguments.Count; i++)
-                                        {
-                                            var argument = ctor.Arguments[i];
-
-                                            if (argument is A.Type.Parameter)
-                                            {
-                                                Assert(true);
-                                            }
-
-                                            ctor.Arguments[i] = ResolveType(scope, ctor.Arguments[i]);
+                                            customType.Arguments[i] = ResolveType(scope, customType.Arguments[i]);
                                         }
 
                                         if (resolved.InModule.IsCore)
                                         {
-                                            if (ctor.Arguments.Count == 0)
+                                            if (customType.Arguments.Count == 0)
                                             {
-                                                switch (ctor.Name.Text)
+                                                switch (customType.Name.Text)
                                                 {
                                                     case Lex.Primitive.Int:
-                                                        return new A.Type.Integer(ctor.Name);
+                                                        return new A.Type.Integer(customType.Name).With(resolved);
                                                     case Lex.Primitive.Float:
-                                                        return new A.Type.Float(ctor.Name);
+                                                        return new A.Type.Float(customType.Name).With(resolved);
                                                     case Lex.Primitive.Bool:
-                                                        return new A.Type.Bool(ctor.Name);
+                                                        return new A.Type.Bool(customType.Name).With(resolved);
                                                     case Lex.Primitive.String:
-                                                        return new A.Type.String(ctor.Name);
+                                                        return new A.Type.String(customType.Name).With(resolved);
                                                     case Lex.Primitive.Char:
-                                                        return new A.Type.Char(ctor.Name);
+                                                        return new A.Type.Char(customType.Name).With(resolved);
                                                 }
                                             }
-                                            else if (ctor.Arguments.Count == 1)
+                                            else if (customType.Arguments.Count == 1)
                                             {
-                                                switch (ctor.Name.Text)
+                                                switch (customType.Name.Text)
                                                 {
                                                     case Lex.Primitive.List:
-                                                        return new A.Type.List(ctor.Name, ctor.Arguments[0]);
+                                                        return new A.Type.List(customType.Name, customType.Arguments[0])
+                                                            .With(resolved);
                                                 }
                                             }
                                         }
 
-                                        return ctor;
+                                        //customType.Resolver = () => custom.Type;
+
+                                        return customType.With(resolved);
                                     }
 
-                                case A.Decl.Alias alias:
+                                case A.Decl.Alias aliasType:
                                     {
                                         Assert(true);
-                                        ctor.Resolver = () => alias.Declaration.Resolved;
+                                        customType.Resolver = () => aliasType.Declaration.Resolved;
 
-                                        for (var i = 0; i < ctor.Arguments.Count; i++)
+                                        for (var i = 0; i < customType.Arguments.Count; i++)
                                         {
-                                            var argument = ctor.Arguments[i];
+                                            var argument = customType.Arguments[i];
 
                                             if (argument is A.Type.Parameter)
                                             {
                                                 Assert(true);
                                             }
 
-                                            ctor.Arguments[i] = ResolveType(scope, ctor.Arguments[i]);
+                                            customType.Arguments[i] = ResolveType(scope, customType.Arguments[i]);
                                         }
 
-                                        var result = new A.Type.Alias(alias.Name, alias.Parameters, alias);
+                                        var result = new A.Type.Alias(aliasType.Name, aliasType.Parameters, aliasType).With(resolved);
 
                                         return result;
                                     }

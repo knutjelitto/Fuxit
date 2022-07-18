@@ -18,6 +18,7 @@ namespace Fux.Input
             Lexer = lexer;
             Pattern = new PatternParser(this);
             Expr = new ExprParser(this);
+            Typ = new TypeParser(this);
         }
 
         public Module Module { get; }
@@ -26,10 +27,11 @@ namespace Fux.Input
         public ILexer Lexer { get; }
         public PatternParser Pattern { get; }
         public ExprParser Expr { get; }
+        public TypeParser Typ { get; }
 
         public A.ModuleAst ParseModule()
         {
-            var header = (A.Decl.Module)Outer();
+            var header = (A.Decl.Header)Outer();
 
             var declarations = new List<A.Decl>();
 
@@ -106,7 +108,7 @@ namespace Fux.Input
             });
         }
 
-        private A.Decl.Module ModuleHeader(Cursor cursor)
+        private A.Decl.Header ModuleHeader(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -139,7 +141,7 @@ namespace Fux.Input
                         cursor.Swallow(Lex.Assign);
                         var expression = Expr.Expression(cursor);
 
-                        where.Add(new A.Decl.Var(name, new A.Parameters(), expression));
+                        where.Add(new A.Decl.Var(Module, name, new A.Parameters(), expression));
                     }
                     while (cursor.SwallowIf(Lex.Comma));
 
@@ -153,7 +155,7 @@ namespace Fux.Input
                     exposing = Exposing(cursor);
                 }
 
-                return new A.Decl.Module(path, effect, port, where, exposing);
+                return new A.Decl.Header(Module, path, effect, port, where, exposing);
             });
         }
 
@@ -179,7 +181,7 @@ namespace Fux.Input
                     exposing = Exposing(cursor);
                 }
 
-                return new A.Decl.Import(path, alias, exposing);
+                return new A.Decl.Import(Module, path, alias, exposing);
             });
         }
 
@@ -254,7 +256,7 @@ namespace Fux.Input
                 var defineTok = cursor.Swallow(Lex.Assign);
                 var definition = Identifier(cursor).SingleLower(); ;
 
-                return new A.Decl.Infix(assoc, power, operatorSymbol, definition);
+                return new A.Decl.Infix(Module, assoc, power, operatorSymbol, definition);
             });
         }
 
@@ -289,12 +291,12 @@ namespace Fux.Input
 
                 if (alias)
                 {
-                    var definition = Type(cursor);
+                    var definition = Typ.Type(cursor);
 
-                    return new A.Decl.Alias(name, new A.Decl.TypeParameterList(parameterList), definition);
+                    return new A.Decl.Alias(Module, name, new A.Decl.TypeParameterList(parameterList), definition);
                 }
 
-                var custom = new A.Decl.Custom(name, new A.Decl.TypeParameterList(parameterList));
+                var custom = new A.Decl.Custom(Module, name, new A.Decl.TypeParameterList(parameterList));
                 var ctors = new A.CtorList();
 
                 ctors.Add(Ctor(custom, cursor));
@@ -314,7 +316,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                return new A.Decl.TypeParameter(SingleIdentifier(cursor).SingleLower());
+                return new A.Decl.TypeParameter(Module, SingleIdentifier(cursor).SingleLower());
             });
         }
 
@@ -350,7 +352,7 @@ namespace Fux.Input
 
                     var parameters = new A.Parameters(prms.Select(pattern => new A.Decl.Parameter(pattern)));
 
-                    return new A.Decl.Var(name, parameters, expression);
+                    return new A.Decl.Var(Module, name, parameters, expression);
                 }
                 else
                 {
@@ -367,9 +369,9 @@ namespace Fux.Input
 
                 cursor.Swallow(Lex.Colon);
 
-                var type = Type(cursor);
+                var type = Typ.Type(cursor);
 
-                return new A.Decl.TypeAnnotation(name, type);
+                return new A.Decl.TypeAnnotation(Module, name, type);
             });
         }
 
@@ -387,14 +389,14 @@ namespace Fux.Input
                 {
                     while (cursor.More() && !cursor.TerminatesSomething)
                     {
-                        var argument = TypeArgument(cursor);
+                        var argument = Typ.TypeArgument(cursor);
 
                         arguments.Add(argument);
                     }
                 }
                 while (cursor.More() && !cursor.TerminatesSomething);
 
-                var ctor = new A.Decl.Ctor(custom, name, arguments);
+                var ctor = new A.Decl.Ctor(custom, Module, name, arguments);
 
                 custom.Ctors.Add(ctor);
 

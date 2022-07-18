@@ -11,11 +11,11 @@ namespace Fux.Input
             Parser = parser;
         }
 
+        public Parser Parser { get; }
         public Module Module => Parser.Module;
         public ISource Source => Parser.Source;
         public ErrorBag Errors => Parser.Errors;
 
-        public Parser Parser { get; }
         public PatternParser Pattern => Parser.Pattern;
 
         public A.Expr Expression(Cursor cursor)

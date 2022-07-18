@@ -1,5 +1,6 @@
 module List exposing
-  ( singleton, repeat, range, (::)
+  ( List
+  , singleton, repeat, range, (::)
   , map, indexedMap, foldl, foldr, filter, filterMap
   , length, reverse, member, all, any, maximum, minimum, sum, product
   , append, concat, concatMap, intersperse, map2, map3, map4, map5

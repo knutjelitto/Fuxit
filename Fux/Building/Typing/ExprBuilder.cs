@@ -12,10 +12,10 @@
         private readonly BindBuilder bind2;
         private readonly IdGenerator idGenerator;
 
-        public ExprBuilder(Module module, TypeBuilder typeBuilder)
+        public ExprBuilder(Module module)
         {
             Module = module;
-            this.typeBuilder = typeBuilder;
+            typeBuilder = new TypeBuilder();
             bind2 = new BindBuilder(Module, this);
             idGenerator = new(Module);
         }
@@ -25,6 +25,7 @@
 
         public W.Expr Build(ref W.Environment env, A.Decl.Var var, bool investigated)
         {
+            typeBuilder.Investigated = investigated;
             Investigated = investigated;
             idGenerator.Clear();
 

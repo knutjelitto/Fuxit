@@ -7,6 +7,8 @@ namespace Fux.Input.Ast
     public interface NamedDecl : Decl
     {
         Identifier Name { get; }
+        Module MyModule { get; }
+
     }
 
     public interface Decl : Node
@@ -15,20 +17,22 @@ namespace Fux.Input.Ast
         {
         }
 
-        public abstract class NamedDeclImpl : NodeImpl, NamedDecl
+        public abstract class NamedDeclImpl : DeclImpl, NamedDecl
         {
-            protected NamedDeclImpl(Identifier name)
+            protected NamedDeclImpl(Module module, Identifier name)
             {
+                MyModule = module;
                 Name = name;
             }
-
+            
+            public Module MyModule { get; }
             public Identifier Name { get; }
         }
 
-        public sealed class Module : NamedDeclImpl
+        public sealed class Header : NamedDeclImpl
         {
-            public Module(Identifier name, bool isEffect, bool isPort, IEnumerable<Var> where, Exposing? exposing)
-                : base(name)
+            public Header(Module module, Identifier name, bool isEffect, bool isPort, IEnumerable<Var> where, Exposing? exposing)
+                : base(module, name)
             {
                 IsEffect = isEffect;
                 IsPort = isPort;
@@ -44,9 +48,10 @@ namespace Fux.Input.Ast
             public override string ToString()
             {
                 var effect = IsEffect ? "effect " : "";
+                var port = IsPort ? "port " : "";
                 var where = Where.Count > 0 ? $" where {{ {string.Join(", ", Where)} }}" : "";
                 var exposing = Exposing == null ? "" : $" {Exposing}";
-                return $"{effect}module {Name}{where}{exposing}";
+                return $"{effect}{port}module {Name}{where}{exposing}";
             }
 
             public override void PP(Writer writer)
@@ -74,8 +79,8 @@ namespace Fux.Input.Ast
 
         public sealed class Var : NamedDeclImpl
         {
-            public Var(Identifier name, Parameters parameters, Expr expression)
-                : base(name)
+            public Var(Module module, Identifier name, Parameters parameters, Expr expression)
+                : base(module, name)
             {
                 Parameters = parameters;
                 Expression = expression;
@@ -117,8 +122,8 @@ namespace Fux.Input.Ast
 
         public sealed class Import : NamedDeclImpl
         {
-            public Import(Identifier name, Identifier? alias, Exposing? exposing)
-                : base(name)
+            public Import(Module module, Identifier name, Identifier? alias, Exposing? exposing)
+                : base(module, name)
             {
                 Alias = alias;
                 Exposing = exposing;
@@ -152,8 +157,8 @@ namespace Fux.Input.Ast
 
         public sealed class Alias : NamedDeclImpl
         {
-            public Alias(Identifier name, TypeParameterList parameters, Type declaration)
-                : base(name)
+            public Alias(Module module, Identifier name, TypeParameterList parameters, Type declaration)
+                : base(module, name)
             {
                 Parameters = parameters;
                 Declaration = declaration;
@@ -177,8 +182,8 @@ namespace Fux.Input.Ast
 
         public sealed class Infix : NamedDeclImpl
         {
-            public Infix(InfixAssoc assoc, InfixPower power, Identifier op, Identifier expression)
-                : base(op)
+            public Infix(Module module, InfixAssoc assoc, InfixPower power, Identifier op, Identifier expression)
+                : base(module, op)
             {
                 Assoc = assoc;
                 Precedence = power;
@@ -230,8 +235,8 @@ namespace Fux.Input.Ast
 
         public sealed class TypeAnnotation : NamedDeclImpl
         {
-            public TypeAnnotation(Identifier name, Type type)
-                : base(name.SingleLower())
+            public TypeAnnotation(Module module, Identifier name, Type type)
+                : base(module, name.SingleLower())
             {
 
                 Type = type;
@@ -253,8 +258,8 @@ namespace Fux.Input.Ast
 
         public sealed class TypeParameter : NamedDeclImpl
         {
-            public TypeParameter(Identifier name)
-                : base(name.SingleLower())
+            public TypeParameter(Module module, Identifier name)
+                : base(module, name.SingleLower())
             {
             }
 
@@ -286,8 +291,8 @@ namespace Fux.Input.Ast
 
         public sealed class Ctor : NamedDeclImpl
         {
-            public Ctor(Custom custom, Identifier name, List<Type> arguments)
-                : base(name)
+            public Ctor(Custom custom, Module module, Identifier name, List<Type> arguments)
+                : base(module, name)
             {
                 Assert(name.IsMultiUpper);
 
@@ -321,15 +326,16 @@ namespace Fux.Input.Ast
 
         public sealed class Custom : NamedDeclImpl
         {
-            public Custom(Identifier name, TypeParameterList parameters)
-                : base(name)
+            public Custom(Module module, Identifier name, TypeParameterList parameters)
+                : base(module, name)
             {
                 Parameters = parameters;
                 Ctors = new CtorList();
 
                 Type = new Type.CustomX(Name, parameters)
                 {
-                    InModule = Name.InModule
+                    InModule = Name.InModule,
+                    Declaration = this
                 };
             }
 

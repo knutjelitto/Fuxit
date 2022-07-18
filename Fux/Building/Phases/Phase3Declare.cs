@@ -78,16 +78,6 @@ namespace Fux.Building.Phases
                     module.Scope.AddVar(where);
                 }
 
-#if false
-                if (module.IsCore && module.Name == Lex.Primitive.List)
-                {
-                    if (!module.Scope.LookupType(A.Identifier.Artificial(module, Lex.CoreModule.List), out _))
-                    {
-                        Declare(Module, FakeList.MakeType(module));
-                    }
-                }
-#endif
-
                 foreach (var declaration in ast.Declarations)
                 {
                     Declare(Module, declaration);
@@ -129,21 +119,21 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Decl.Custom type:
+                    case A.Decl.Custom custom:
                         {
-                            Collector.Custom.Add(type);
-                            Declarations.Add(type);
+                            Collector.Custom.Add(custom);
+                            Declarations.Add(custom);
 
-                            Module.Scope.AddType(type);
+                            Module.Scope.AddType(custom);
 
-                            type.Scope.Parent = Module.Scope;
+                            custom.Scope.Parent = Module.Scope;
 
-                            foreach (var parameter in type.Parameters)
+                            foreach (var parameter in custom.Parameters)
                             {
-                                type.Scope.Add(parameter);
+                                custom.Scope.Add(parameter);
                             }
 
-                            foreach (var constructor in type.Ctors)
+                            foreach (var constructor in custom.Ctors)
                             {
                                 Module.Scope.AddConstructor(constructor);
                             }

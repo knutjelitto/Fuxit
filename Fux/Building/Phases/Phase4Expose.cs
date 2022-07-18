@@ -37,12 +37,14 @@ namespace Fux.Building.Phases
 
             var header = ast.Header;
 
+#if false
             if (Package.IsCore && module.Name == Lex.Primitive.List)
             {
                 var exposing = FakeList.MakeExposing(module);
 
                 Exposing(module, exposing);
             }
+#endif
 
             if (header.Exposing != null)
             {

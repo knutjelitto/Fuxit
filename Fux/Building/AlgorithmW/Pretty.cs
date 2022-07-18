@@ -191,12 +191,12 @@ namespace Fux.Building.AlgorithmW
                         return $"(if {Str(iff.Cond)} then {Str(iff.Then)} else {Str(iff.Else)})";
                     }
 
-                case AlgorithmW.Expr.Empty:
+                case W.Expr.Empty:
                     {
                         return Lex.Symbol.Empty;
                     }
 
-                case AlgorithmW.Expr.Wildcard:
+                case W.Expr.Wildcard:
                     {
                         return Lex.Symbol.Wildcard;
                     }

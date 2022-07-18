@@ -3,7 +3,7 @@ module Basics exposing
   , (+), (-), (*), (/), (//), (^)
   , toFloat, round, floor, ceiling, truncate
   , (==), (/=)
-  , (<), (>), (<=), (>=), max, min, compare, Order(..)
+  , (<), (>), (<=), (>=), max, min, compare, Order(..) 
   , Bool(..), not, (&&), (||), xor
   , (++)
   , modBy, remainderBy, negate, abs, clamp, sqrt, logBase, e

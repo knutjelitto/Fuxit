@@ -5,6 +5,8 @@
         Func<Type>? Resolver { get; set; }
         Type Resolved { get; }
 
+        Decl? Declaration { get; }
+
         public abstract class TypeImpl : NodeImpl, Type
         {
             private Type? resolved;
@@ -18,6 +20,14 @@
             public Func<Type>? Resolver { get; set; }
 
             public Type Resolved => resolved ??= GetResolved();
+
+            public Decl? Declaration { get; set; } = null;
+
+            public Type With(Decl declaration)
+            {
+                Declaration = declaration;
+                return this;
+            }
 
             private Type GetResolved()
             {
@@ -36,6 +46,7 @@
         {
             public Primitive(Identifier name, string text)
             {
+                Assert(name.Text == text);
                 Name = name;
                 Text = text;
             }

@@ -2,13 +2,13 @@
 {
     public sealed class ModuleAst : Expr.ExprImpl
     {
-        public ModuleAst(Decl.Module header, IEnumerable<Decl> declarations)
+        public ModuleAst(Decl.Header header, IEnumerable<Decl> declarations)
         {
             Header = header;
             Declarations = declarations.ToArray();
         }
 
-        public Decl.Module Header { get; }
+        public Decl.Header Header { get; }
         public IReadOnlyList<Decl> Declarations { get; }
 
         public IEnumerable<Decl.Import> ImportDeclarations => Declarations.OfType<Decl.Import>();

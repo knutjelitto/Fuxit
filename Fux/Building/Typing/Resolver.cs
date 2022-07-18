@@ -2,7 +2,6 @@
 {
     public sealed class Resolver
     {
-        private readonly TypeBuilder typeBuilder;
         private readonly ExprBuilder exprBuilder;
 
         public Resolver(Writer writer, Package package, Module module)
@@ -12,8 +11,7 @@
             Module = module;
             Pretty = new W.Pretty(Writer);
 
-            typeBuilder = new();
-            exprBuilder = new(module, typeBuilder);
+            exprBuilder = new(module);
         }
 
         public Writer Writer { get; }

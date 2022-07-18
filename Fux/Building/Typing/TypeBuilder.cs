@@ -7,6 +7,8 @@ namespace Fux.Building.Typing
         private readonly List<W.TypeVariable> vars = new();
         private readonly Dictionary<string, W.TypeVariable> index = new();
 
+        public bool Investigated { get; set; } = false;
+
         public W.Polytype Build(W.Environment env, A.Type? type)
         {
             if (type == null)
@@ -24,6 +26,11 @@ namespace Fux.Building.Typing
 
         private W.Type Resolve(W.Environment env, A.Type type)
         {
+            if (type is A.Type.Custom customX)
+            {
+                Assert(customX.Name.Text != "Float");
+            }
+
             switch (type.Resolved)
             {
                 case A.Type.Function function:
@@ -118,13 +125,13 @@ namespace Fux.Building.Typing
                         return new W.Type.Custom(custom.FullName(), args.ToArray());
                     }
 
-                case A.Type.Custom ctor:
+                case A.Type.Custom custom:
                     {
-                        Assert(ctor.InModule != null);
-                        Assert(ctor.Resolved.InModule != null);
+                        Assert(custom.InModule != null);
+                        Assert(custom.Resolved.InModule != null);
 
-                        var args = ctor.Arguments.Select(t => Resolve(env, t)).ToArray();
-                        return new W.Type.Custom(ctor.FullName(), args);
+                        var args = custom.Arguments.Select(t => Resolve(env, t)).ToArray();
+                        return new W.Type.Custom(custom.FullName(), args);
                     }
 
                 case A.Type.Record record:

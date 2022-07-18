@@ -18,10 +18,6 @@
             {
                 var start = InType is Function ? $"({InType})" : $"{InType}";
 
-                if (OutType is Function outFunction)
-                {
-                    return $"{start} → {outFunction.InType} → {outFunction.OutType}";
-                }
                 return $"{start} → {OutType}";
             }
         }

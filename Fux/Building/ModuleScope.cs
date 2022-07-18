@@ -162,33 +162,33 @@ namespace Fux.Building
             return modules.TryGetValue(identifier.MultiUpper(), out module);
         }
 
-        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Node expr)
+        public override bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl decl)
         {
             Assert(Parent == null);
 
             if (identifier.IsSingleUpper)
             {
-                if (LookupType(identifier, out var type))
+                if (LookupType(identifier, out var typeDecl))
                 {
-                    expr = type;
+                    decl = typeDecl;
                     return true;
                 }
-                else if (LookupAlias(identifier, out var alias))
+                else if (LookupAlias(identifier, out var aliasDecl))
                 {
-                    expr = alias;
+                    decl = aliasDecl;
                     return true;
                 }
-                else if (LookupConstructor(identifier, out var ctor))
+                else if (LookupConstructor(identifier, out var ctorDecl))
                 {
-                    expr = ctor;
+                    decl = ctorDecl;
                     return true;
                 }
             }
             if (identifier.IsSingleOp)
             {
-                if (LookupInfix(identifier, out var type))
+                if (LookupInfix(identifier, out var infixDecl))
                 {
-                    expr = type;
+                    decl = infixDecl;
                     return true;
                 }
             }
@@ -211,21 +211,21 @@ namespace Fux.Building
                             importModule.Scope.AddNative(native);
                         }
 
-                        expr = native;
+                        decl = native;
                         return true;
                     }
                     else if (importModule.Scope.Resolve(memberName, out var resolved))
                     {
-                        expr = resolved;
+                        decl = resolved;
                         return true;
                     }
                 }
 
-                expr = null;
+                decl = null;
                 return false;
             }
 
-            return base.Resolve(identifier, out expr);
+            return base.Resolve(identifier, out decl);
 
             IEnumerable<Module> FindModules(A.Identifier importName)
             {

@@ -53,18 +53,18 @@ namespace Fux.Building
             return vars.TryGetValue(identifier.SingleLowerOrOp(), out var);
         }
 
-        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Node expr)
+        public virtual bool Resolve(A.Identifier identifier, [MaybeNullWhen(false)] out A.Decl decl)
         {
             if (identifier.IsSingleLower && LookupVar(identifier, out var var))
             {
-                expr = var;
+                decl = var;
                 return true;
             }
             else if (Parent != null)
             {
-                return Parent.Resolve(identifier, out expr);
+                return Parent.Resolve(identifier, out decl);
             }
-            expr = null;
+            decl = null;
             return false;
         }
     }

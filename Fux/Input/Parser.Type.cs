@@ -1,65 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Fux.Input
+﻿namespace Fux.Input
 {
-    public partial class Parser
+    public class TypeParser
     {
-        private A.Type TypeArgument(Cursor cursor)
+        public TypeParser(Parser parser)
         {
-            return cursor.Scope(cursor =>
-            {
-                if (cursor.Is(Lex.LowerId))
-                {
-                    var name = Identifier(cursor).SingleLower();
-
-                    return new A.Type.Parameter(name);
-                }
-                else if (cursor.Is(Lex.UpperId))
-                {
-                    var name = Identifier(cursor).MultiUpper();
-
-                    return new A.Type.Custom(name);
-                }
-                else if (cursor.Is(Lex.LeftRoundBracket))
-                {
-                    return BaseType(cursor);
-                }
-                else if (cursor.Is(Lex.LeftCurlyBracket))
-                {
-                    return Type(cursor);
-                }
-
-                Assert(false);
-                throw new NotImplementedException();
-            });
+            Parser = parser;
         }
 
-        private A.Type.Custom Custom(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var name = Identifier(cursor).MultiUpper();
+        public Parser Parser { get; }
 
-                var arguments = new List<A.Type>();
-
-                do
-                {
-                    while (cursor.More() && !cursor.TerminatesSomething)
-                    {
-                        arguments.Add(TypeArgument(cursor));
-                    }
-                }
-                while (cursor.More() && !cursor.TerminatesSomething);
-
-                return new A.Type.Custom(name, arguments);
-            });
-        }
-
-        private A.Type Type(Cursor cursor)
+        public A.Type Type(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -74,77 +24,143 @@ namespace Fux.Input
             });
         }
 
-        private A.Type BaseType(Cursor cursor)
+        public A.Type TypeArgument(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
-                if (cursor.Is(Lex.LeftRoundBracket))
+                if (cursor.Is(Lex.LowerId))
                 {
-                    cursor.Swallow(Lex.LeftRoundBracket);
-
-                    var types = new List<A.Type>();
-
-                    if (cursor.IsNot(Lex.RightRoundBracket))
-                    {
-                        do
-                        {
-                            var type = Type(cursor);
-
-                            types.Add(type);
-                        }
-                        while (cursor.SwallowIf(Lex.Comma));
-                    }
-
-                    cursor.Swallow(Lex.RightRoundBracket);
-
-                    if (types.Count == 0)
-                    {
-                        return new A.Type.Unit();
-                    }
-                    else if (types.Count == 1)
-                    {
-                        return types[0];
-                    }
-                    else if (types.Count == 2)
-                    {
-                        return new A.Type.Tuple2(types[0], types[1]);
-                    }
-                    else if (types.Count == 3)
-                    {
-                        return new A.Type.Tuple3(types[0], types[1], types[2]);
-                    }
-
-                    Assert(false);
-                    throw new NotImplementedException();
+                    return LowerType(cursor);
+                }
+                else if (cursor.Is(Lex.UpperId))
+                {
+                    return UpperType(cursor, multi: false);
+                }
+                else if (cursor.Is(Lex.LeftRoundBracket))
+                {
+                    return RoundType(cursor);
                 }
                 else if (cursor.Is(Lex.LeftCurlyBracket))
                 {
                     return RecordType(cursor);
                 }
+
+                Assert(false);
+                throw new NotImplementedException();
+            });
+        }
+
+        private A.Type BaseType(Cursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                if (cursor.Is(Lex.LowerId))
+                {
+                    return LowerType(cursor);
+                }
                 else if (cursor.Is(Lex.UpperId))
                 {
-                    return Custom(cursor);
+                    return UpperType(cursor, true);
                 }
-                else if (cursor.Is(Lex.LowerId))
+                if (cursor.Is(Lex.LeftRoundBracket))
                 {
-                    var name = Identifier(cursor).SingleLower();
+                    return RoundType(cursor);
+                }
+                else if (cursor.Is(Lex.LeftCurlyBracket))
+                {
+                    return RecordType(cursor);
+                }
 
-                    if (name.ToString() == "number")
+                Assert(false);
+                throw new NotImplementedException();
+            });
+        }
+
+        private A.Type.Custom UpperType(Cursor cursor, bool multi)
+        {
+            return cursor.Scope(cursor =>
+            {
+                var name = Parser.Identifier(cursor).MultiUpper();
+
+                var arguments = new List<A.Type>();
+
+                if (multi)
+                {
+                    do
                     {
-                        return new A.Type.NumberClass(name);
+                        while (cursor.More() && !cursor.TerminatesSomething)
+                        {
+                            arguments.Add(TypeArgument(cursor));
+                        }
                     }
+                    while (cursor.More() && !cursor.TerminatesSomething);
+                }
 
-                    if (name.ToString() == "appendable")
+                return new A.Type.Custom(name, arguments);
+            });
+        }
+
+        private A.Type LowerType(Cursor cursor)
+        {
+            return cursor.Scope<A.Type>(cursor =>
+            {
+                var name = Parser.Identifier(cursor).SingleLower();
+
+                if (name.ToString() == "number")
+                {
+                    return new A.Type.NumberClass(name);
+                }
+
+                if (name.ToString() == "appendable")
+                {
+                    return new A.Type.AppendableClass(name);
+                }
+
+                if (name.ToString() == "comparable")
+                {
+                    return new A.Type.ComparableClass(name);
+                }
+
+                return new A.Type.Parameter(name);
+            });
+        }
+
+        private A.Type RoundType(Cursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                cursor.Swallow(Lex.LeftRoundBracket);
+
+                var types = new List<A.Type>();
+
+                if (cursor.IsNot(Lex.RightRoundBracket))
+                {
+                    do
                     {
-                        return new A.Type.AppendableClass(name);
-                    }
+                        var type = Type(cursor);
 
-                    if (name.ToString() == "comparable")
-                    {
-                        return new A.Type.ComparableClass(name);
+                        types.Add(type);
                     }
+                    while (cursor.SwallowIf(Lex.Comma));
+                }
 
-                    return new A.Type.Parameter(name);
+                cursor.Swallow(Lex.RightRoundBracket);
+
+                if (types.Count == 0)
+                {
+                    return new A.Type.Unit();
+                }
+                else if (types.Count == 1)
+                {
+                    return types[0];
+                }
+                else if (types.Count == 2)
+                {
+                    return new A.Type.Tuple2(types[0], types[1]);
+                }
+                else if (types.Count == 3)
+                {
+                    return new A.Type.Tuple3(types[0], types[1], types[2]);
                 }
 
                 Assert(false);
@@ -193,7 +209,7 @@ namespace Fux.Input
 
                 A.Type.Field Field(Cursor cursor)
                 {
-                    var name = Identifier(cursor);
+                    var name = Parser.Identifier(cursor);
                     cursor.Swallow(Lex.Colon);
                     var type = Type(cursor);
 

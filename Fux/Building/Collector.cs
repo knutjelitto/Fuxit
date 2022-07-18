@@ -10,7 +10,7 @@
 
         public int NumberOfExceptions = 0;
 
-        public List<A.Decl.Module> Module { get; } = new();
+        public List<A.Decl.Header> Module { get; } = new();
         public List<A.Decl.Import> Import { get; } = new();
         public List<A.Decl.Custom> Custom { get; } = new();
         public List<A.Decl.Alias> Alias { get; } = new();
