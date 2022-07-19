@@ -334,7 +334,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Ref.Native:
+                    case A.Expr.Ref.Native:
                         {
                             break;
                         }

@@ -143,7 +143,7 @@
                         return Cons(ref env, list, 0);
                     }
 
-                case A.Ref reference:
+                case A.Expr.Ref reference:
                     {
                         return BuildReference(ref env, reference);
                     }
@@ -210,18 +210,18 @@
 
         private W.Expr BuildIdentifier(ref W.Environment env, A.Identifier identifier)
         {
-            Assert(identifier.Resolved is A.Ref);
+            Assert(identifier.Resolved is A.Expr.Ref);
 
-            var reference = (A.Ref)identifier.Resolved!;
+            var reference = (A.Expr.Ref)identifier.Resolved!;
 
             return BuildReference(ref env, reference);
         }
 
-        private W.Expr BuildReference(ref W.Environment env, A.Ref reference)
+        private W.Expr BuildReference(ref W.Environment env, A.Expr.Ref reference)
         {
             switch (reference)
             {
-                case A.Ref.Ctor ctorRef:
+                case A.Expr.Ref.Ctor ctorRef:
                     {
                         if (Investigated)
                         {
@@ -229,6 +229,7 @@
                         }
 
                         var ctor = ctorRef.Decl;
+                        var custom = ctor.Custom;
 
                         var variable = ctor.FullName();
 
@@ -236,7 +237,9 @@
 
                         if (polytype == null)
                         {
-                            polytype = typeBuilder.Build(env, ctor.Type);
+                            var type = new A.Type.Custom(ctor.Custom.Name);
+
+                            polytype = typeBuilder.Build(env, type);
 
                             env = env.Insert(variable.Term, polytype);
                         }
@@ -244,7 +247,7 @@
                         return variable;
                     }
 
-                case A.Ref.Var varRef:
+                case A.Expr.Ref.Var varRef:
                     {
                         var var = varRef.Decl;
 
@@ -263,13 +266,13 @@
                         return variable;
                     }
 
-                case A.Ref.Native nativeRef:
+                case A.Expr.Ref.Native nativeRef:
                     {
                         var native = nativeRef.Decl;
                         return new W.Expr.Native(native);
                     }
 
-                case A.Ref.Parameter parameterRef:
+                case A.Expr.Ref.Parameter parameterRef:
                     {
                         var parameter = parameterRef.Decl;
 
@@ -281,7 +284,7 @@
                         return variable;
                     }
 
-                case A.Ref.Infix infixRef:
+                case A.Expr.Ref.Infix infixRef:
                     {
                         if (Investigated)
                         {
@@ -291,7 +294,7 @@
                         var infix = infixRef.Decl;
 
                         Assert(infix.Name.IsSingleOp);
-                        Assert(infix.Expression.Resolved is A.Ref.Var);
+                        Assert(infix.Expression.Resolved is A.Expr.Ref.Var);
 
                         return Build(ref env, infix.Expression.Resolved);
                     }
@@ -350,7 +353,7 @@
 
                 case A.Pattern.UpperId upper:
                     {
-                        Assert(upper.Identifier.Resolved is A.Ref.Ctor);
+                        Assert(upper.Identifier.Resolved is A.Expr.Ref.Ctor);
 
                         var first = Build(ref env, upper.Identifier);
 
@@ -364,7 +367,7 @@
                             Assert(true);
                         }
 
-                        Assert(deCtor.Name.Resolved is A.Ref.Ctor);
+                        Assert(deCtor.Name.Resolved is A.Expr.Ref.Ctor);
 
                         var first = Build(ref env, deCtor.Name);
 
@@ -490,7 +493,7 @@
                             Assert(true);
                         }
 
-                        if (deCtor.Name.Resolved is not A.Ref.Ctor ctorRef || ctorRef.Decl is not A.Decl.Ctor ctor)
+                        if (deCtor.Name.Resolved is not A.Expr.Ref.Ctor ctorRef || ctorRef.Decl is not A.Decl.Ctor ctor)
                         {
                             Assert(false);
                             throw NotImplemented(deCtor);

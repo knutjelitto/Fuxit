@@ -4,7 +4,6 @@
     {
         Func<Type>? Resolver { get; set; }
         Type Resolved { get; }
-
         Decl? Declaration { get; }
 
         public abstract class TypeImpl : NodeImpl, Type

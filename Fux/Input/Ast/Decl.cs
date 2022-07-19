@@ -298,20 +298,10 @@ namespace Fux.Input.Ast
 
                 Custom = custom;
                 Arguments = arguments;
-
-                Type type = custom.Type;
-
-                foreach (var argument in Enumerable.Reverse(arguments))
-                {
-                    type = new Type.Function(argument, type);
-                }
-
-                Type = type;
             }
 
             public Custom Custom { get; }
             public List<Type> Arguments { get; }
-            public Type Type { get; }
 
             public override void PP(Writer writer)
             {
@@ -331,19 +321,11 @@ namespace Fux.Input.Ast
             {
                 Parameters = parameters;
                 Ctors = new CtorList();
-
-                Type = new Type.CustomX(Name, parameters)
-                {
-                    InModule = Name.InModule,
-                    Declaration = this
-                };
             }
 
             public TypeParameterList Parameters { get; }
             public CtorList Ctors { get; }
             public TypeScope Scope { get; } = new();
-
-            public Type.CustomX Type { get; }
 
             public override string ToString()
             {

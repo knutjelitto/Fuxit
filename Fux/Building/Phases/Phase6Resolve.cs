@@ -324,37 +324,37 @@ namespace Fux.Building.Phases
                             {
                                 if (resolved is A.Decl.Var var)
                                 {
-                                    expression.Resolved = new A.Ref.Var(var).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Var(var).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Parameter parameter)
                                 {
-                                    expression.Resolved = new A.Ref.Parameter(parameter).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Parameter(parameter).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Native native)
                                 {
-                                    expression.Resolved = new A.Ref.Native(native).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Native(native).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Infix infix)
                                 {
-                                    expression.Resolved = new A.Ref.Infix(infix).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Infix(infix).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Ctor ctor)
                                 {
-                                    expression.Resolved = new A.Ref.Ctor(ctor).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Ctor(ctor).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Custom type)
                                 {
-                                    expression.Resolved = new A.Ref.Type(type).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Type(type).Locate(identifier);
                                     break;
                                 }
                                 else if (resolved is A.Decl.Alias alias)
                                 {
-                                    expression.Resolved = new A.Ref.Alias(alias).Locate(identifier);
+                                    expression.Resolved = new A.Expr.Ref.Alias(alias).Locate(identifier);
                                     break;
                                 }
                                 else
@@ -584,7 +584,7 @@ namespace Fux.Building.Phases
                     case A.Pattern.Literal:
                         break;
 
-                    case A.Ref.Native:
+                    case A.Expr.Ref.Native:
                         break;
 
 

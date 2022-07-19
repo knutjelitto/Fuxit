@@ -9,7 +9,7 @@ namespace Fux.Building.Phases
     public static class RefExtensions
     {
         public static T Locate<T>(this T r, A.Expr d)
-            where T : A.Ref
+            where T : A.Expr.Ref
         {
             //Assert(d.InModule != null);
             //Assert(d.Span != null);
