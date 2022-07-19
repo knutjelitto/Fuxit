@@ -69,9 +69,6 @@ LDFLAGS += -initial-memory=1048576
 LDFLAGS += -max-memory=1048576
 #LDFLAGS += -export=__wasm_call_ctors
 LDFLAGS += -export-all
-LDFLAGS += -export=malloc
-LDFLAGS += -export=free
-LDFLAGS += -export=main
 LDFLAGS += $(addprefix -export=,$(patsubst _%,%,$(strip $(EXPORTS))))
 
 # Project Build flags, add defines from the make command line (e.g. D=MACRO=VALUE)
@@ -91,7 +88,7 @@ CC  := "$(CLANG)"
 CXX := "$(CLANG)" -x c++
 LD  := "$(WASMLD)"
 
-all: $(OUTDIR)/loader.js $(OUTDIR)/loader.html $(OUTDIR)/output.wasm $(OUTDIR)/output.wat $(OUTDIR)/output.c
+all: $(OUTDIR)/output.wasm $(OUTDIR)/output.wat $(OUTDIR)/output.c
 .PHONY: clean cleanall run analyze
 
 clean:
@@ -117,17 +114,8 @@ $(OUTDIR)/output.wat: $(OUTDIR)/output.wasm Makefile $(OBJS)
 	@"$(WASM2WAT)" $(OUTDIR)/output.wasm -o $@
 
 $(OUTDIR)/output.c: $(OUTDIR)/output.wasm Makefile $(OBJS) 
-	$(info Wasm->C $@ ...)
+	$(info Wasm->C+H $@ ...)
 	@"$(WASM2C)" $(OUTDIR)/output.wasm -o $@
-
-$(OUTDIR)/loader.js : loader.js
-	$(info Copying $^ to $@ ...)
-	@$(if $(wildcard $(OUTDIR)),,$(shell mkdir "$(OUTDIR)"))
-	@$(if $(ISWIN),copy,cp) "$^" "$@" $(PIPETONULL)
-
-$(OUTDIR)/loader.html : loader.html
-	$(if $(wildcard $(OUTDIR)),,$(shell mkdir "$(OUTDIR)"))
-	@$(if $(ISWIN),copy,cp) "$^" "$@" $(PIPETONULL)
 
 define COMPILE
 	$(info $2)

@@ -11,9 +11,7 @@
             "Tuple"
         ],
         "Collections": [
-            "List",
-            "Dict",
-            "Set"
+            "List"
         ],
         "Error Handling": [
             "Maybe",
@@ -25,7 +23,9 @@
     },
     "waiting-modules": {
         "Collections": [
-            "Array"
+            "Array",
+            "Dict",
+            "Set"
         ],
         "Effects": [
             "Platform.Cmd",
