@@ -17,6 +17,12 @@ namespace Fux.Input.Ast
             writer.Write(ToString()!);
         }
 
+        public T this[int index]
+        {
+            get => items[index];
+            set => items[index] = value;
+        }
+
         protected void Add(T item)
         {
             if (frozen)
@@ -31,7 +37,6 @@ namespace Fux.Input.Ast
             frozen = true;
         }
 
-        public T this[int index] => items[index];
         public int Count => items.Count;
         public IEnumerator<T> GetEnumerator() => items.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)items).GetEnumerator();

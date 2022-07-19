@@ -14,7 +14,6 @@
 
         public static string FullName(this A.Type.Custom named)
         {
-            Assert(named.InModule != null);
             Assert(named.Declaration != null);
 
             if (named.Declaration is A.NamedDecl namedDecl && namedDecl.InModule != null)
@@ -27,23 +26,13 @@
             }
             else
             {
+                Assert(false);
                 var name = $"{named.InModule.Name}.{named.Name}";
 
                 Assert(!name.StartsWith("Set.Dict."));
 
                 return name;
             }
-        }
-
-        public static string FullName(this A.Type.CustomX named)
-        {
-            Assert(named.InModule != null);
-
-            var name = $"{named.InModule.Name}.{named.Name}";
-
-            Assert(!name.StartsWith("Set.Dict."));
-
-            return name;
         }
     }
 }

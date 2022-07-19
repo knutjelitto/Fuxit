@@ -31,6 +31,8 @@ typedef double f64;
 
 extern void WASM_RT_ADD_PREFIX(init)(void);
 
+/* import: 'env' 'core_math_scalbn' */
+extern u32 (*Z_envZ_core_math_scalbnZ_idi)(f64, u32);
 /* import: 'env' 'floor' */
 extern f64 (*Z_envZ_floorZ_dd)(f64);
 
@@ -38,20 +40,24 @@ extern f64 (*Z_envZ_floorZ_dd)(f64);
 extern wasm_rt_memory_t (*WASM_RT_ADD_PREFIX(Z_memory));
 /* export: '__wasm_call_ctors' */
 extern void (*WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv))(void);
+/* export: 'adder' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_adderZ_iii))(u32, u32);
 /* export: 'scalbn' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_scalbnZ_ddi))(f64, u32);
-/* export: '__math_cos' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z___math_cosZ_ddd))(f64, f64);
-/* export: '__math_sin' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z___math_sinZ_dddi))(f64, f64, u32);
-/* export: '__rem_pio2_large' */
-extern u32 (*WASM_RT_ADD_PREFIX(Z___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
-/* export: '__rem_pio2' */
-extern u32 (*WASM_RT_ADD_PREFIX(Z___rem_pio2Z_idi))(f64, u32);
-/* export: 'cos' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z_cosZ_dd))(f64);
-/* export: 'sin' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z_sinZ_dd))(f64);
+/* export: 'core_math___cos' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___cosZ_ddd))(f64, f64);
+/* export: 'core_math___sin' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi))(f64, f64, u32);
+/* export: 'core_math___rem_pio2_large' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
+/* export: 'core_math___rem_pio2' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2Z_idi))(f64, u32);
+/* export: 'core_math_cos' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd))(f64);
+/* export: 'core_math_sin' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_sinZ_dd))(f64);
+/* export: '__indirect_function_table' */
+extern wasm_rt_table_t (*WASM_RT_ADD_PREFIX(Z___indirect_function_table));
 /* export: '__dso_handle' */
 extern u32 (*WASM_RT_ADD_PREFIX(Z___dso_handleZ_i));
 /* export: '__data_end' */

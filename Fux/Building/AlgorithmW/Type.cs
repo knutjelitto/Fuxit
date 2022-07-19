@@ -60,14 +60,6 @@
 
         public sealed record Custom(string Name, IReadOnlyList<Type> Arguments) : Type
         {
-            public Custom(string Name) : this(Name, Array.Empty<Type>())
-            {
-                if (Name == "Bool")
-                {
-                    Assert(false);
-                }
-            }
-
             public override string ToString() => $"{Name}{StrArguments}";
 
             private string StrArguments

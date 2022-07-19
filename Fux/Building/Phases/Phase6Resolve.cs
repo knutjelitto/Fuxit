@@ -201,11 +201,6 @@ namespace Fux.Building.Phases
                             return primitiveType;
                         }
 
-                    case A.Type.CustomX customX:
-                        {
-                            return customX;
-                        }
-
                     case A.Type.Custom customType:
                         {
                             Assert(customType.InModule != null);

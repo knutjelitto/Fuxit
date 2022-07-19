@@ -13,11 +13,7 @@ namespace Fux
     {
         static void Main(string[] args)
         {
-#if false
-            Building.AlgorithmW.Tester.Run();
-            WaitForKey();
-#endif
-#if false
+#if true
             var (lines, columns) = Terminal.GetSize();
 
             var nums = "0123456789";

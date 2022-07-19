@@ -26,11 +26,6 @@ namespace Fux.Building.Typing
 
         private W.Type Resolve(W.Environment env, A.Type type)
         {
-            if (type is A.Type.Custom customX)
-            {
-                Assert(customX.Name.Text != "Float");
-            }
-
             switch (type.Resolved)
             {
                 case A.Type.Function function:
@@ -103,33 +98,28 @@ namespace Fux.Building.Typing
                         return new W.Type.List(Resolve(env, list.Argument));
                     }
 
-                case A.Type.CustomX custom:
+                case A.Type.Custom custom:
                     {
-                        Assert(custom.InModule != null);
+                        Assert(custom.Declaration != null);
+                        Assert(custom == custom.Resolved);
 
-                        switch (custom.Name.Text)
+                        var name = custom.FullName();
+
+                        switch (name)
                         {
-                            case Lex.Primitive.Int:
+                            case $"Basics.{Lex.Primitive.Int}":
                                 return new W.Type.Integer();
-                            case Lex.Primitive.Float:
+                            case $"Basics.{Lex.Primitive.Float}":
                                 return new W.Type.Float();
-                            case Lex.Primitive.Bool:
+                            case $"Basics.{Lex.Primitive.Bool}":
                                 return new W.Type.Bool();
-                            case Lex.Primitive.String:
+                            case $"Basics.{Lex.Primitive.String}":
                                 return new W.Type.String();
-                            case Lex.Primitive.Char:
+                            case $"Basics.{Lex.Primitive.Char}":
                                 return new W.Type.Char();
                         }
 
-                        var args = custom.Parameters.Select(t => VarType(t.Text)).ToList();
-                        return new W.Type.Custom(custom.FullName(), args.ToArray());
-                    }
-
-                case A.Type.Custom custom:
-                    {
-                        Assert(custom.InModule != null);
-                        Assert(custom.Resolved.InModule != null);
-
+                        Assert(name != "Basics.Bool");
                         var args = custom.Arguments.Select(t => Resolve(env, t)).ToArray();
                         return new W.Type.Custom(custom.FullName(), args);
                     }

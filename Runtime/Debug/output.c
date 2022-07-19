@@ -205,26 +205,28 @@ DEFINE_REINTERPRET(f64_reinterpret_i64, u64, f64)
 DEFINE_REINTERPRET(i64_reinterpret_f64, f64, u64)
 
 
-static u32 func_types[7];
+static u32 func_types[8];
 
 static void init_func_types(void) {
   func_types[0] = wasm_rt_register_func_type(1, 1, WASM_RT_F64, WASM_RT_F64);
-  func_types[1] = wasm_rt_register_func_type(0, 0);
-  func_types[2] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_I32, WASM_RT_F64);
-  func_types[3] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_F64, WASM_RT_F64);
-  func_types[4] = wasm_rt_register_func_type(3, 1, WASM_RT_F64, WASM_RT_F64, WASM_RT_I32, WASM_RT_F64);
-  func_types[5] = wasm_rt_register_func_type(5, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
-  func_types[6] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_I32, WASM_RT_I32);
+  func_types[1] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_I32, WASM_RT_I32);
+  func_types[2] = wasm_rt_register_func_type(0, 0);
+  func_types[3] = wasm_rt_register_func_type(2, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
+  func_types[4] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_I32, WASM_RT_F64);
+  func_types[5] = wasm_rt_register_func_type(2, 1, WASM_RT_F64, WASM_RT_F64, WASM_RT_F64);
+  func_types[6] = wasm_rt_register_func_type(3, 1, WASM_RT_F64, WASM_RT_F64, WASM_RT_I32, WASM_RT_F64);
+  func_types[7] = wasm_rt_register_func_type(5, 1, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32, WASM_RT_I32);
 }
 
 static void w2c___wasm_call_ctors(void);
+static u32 w2c_adder(u32, u32);
 static f64 w2c_scalbn(f64, u32);
-static f64 w2c___math_cos(f64, f64);
-static f64 w2c___math_sin(f64, f64, u32);
-static u32 w2c___rem_pio2_large(u32, u32, u32, u32, u32);
-static u32 w2c___rem_pio2(f64, u32);
-static f64 w2c_cos(f64);
-static f64 w2c_sin(f64);
+static f64 w2c_core_math___cos(f64, f64);
+static f64 w2c_core_math___sin(f64, f64, u32);
+static u32 w2c_core_math___rem_pio2_large(u32, u32, u32, u32, u32);
+static u32 w2c_core_math___rem_pio2(f64, u32);
+static f64 w2c_core_math_cos(f64);
+static f64 w2c_core_math_sin(f64);
 
 static u32 w2c___stack_pointer;
 static u32 w2c___dso_handle;
@@ -246,9 +248,21 @@ static void init_globals(void) {
 
 static wasm_rt_memory_t w2c_memory;
 
+static wasm_rt_table_t w2c___indirect_function_table;
+
 static void w2c___wasm_call_ctors(void) {
   FUNC_PROLOGUE;
   FUNC_EPILOGUE;
+}
+
+static u32 w2c_adder(u32 w2c_p0, u32 w2c_p1) {
+  FUNC_PROLOGUE;
+  u32 w2c_i0, w2c_i1;
+  w2c_i0 = w2c_p1;
+  w2c_i1 = w2c_p0;
+  w2c_i0 += w2c_i1;
+  FUNC_EPILOGUE;
+  return w2c_i0;
 }
 
 static f64 w2c_scalbn(f64 w2c_p0, u32 w2c_p1) {
@@ -328,7 +342,7 @@ static f64 w2c_scalbn(f64 w2c_p0, u32 w2c_p1) {
   return w2c_d0;
 }
 
-static f64 w2c___math_cos(f64 w2c_p0, f64 w2c_p1) {
+static f64 w2c_core_math___cos(f64 w2c_p0, f64 w2c_p1) {
   FUNC_PROLOGUE;
   f64 w2c_d0, w2c_d1, w2c_d2, w2c_d3;
   w2c_d0 = 1;
@@ -376,7 +390,7 @@ static f64 w2c___math_cos(f64 w2c_p0, f64 w2c_p1) {
   return w2c_d0;
 }
 
-static f64 w2c___math_sin(f64 w2c_p0, f64 w2c_p1, u32 w2c_p2) {
+static f64 w2c_core_math___sin(f64 w2c_p0, f64 w2c_p1, u32 w2c_p2) {
   f64 w2c_l3 = 0, w2c_l4 = 0, w2c_l5 = 0;
   FUNC_PROLOGUE;
   u32 w2c_i0;
@@ -441,16 +455,15 @@ static f64 w2c___math_sin(f64 w2c_p0, f64 w2c_p1, u32 w2c_p2) {
   return w2c_d0;
 }
 
-static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, u32 w2c_p4) {
+static u32 w2c_core_math___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, u32 w2c_p4) {
   u32 w2c_l5 = 0, w2c_l6 = 0, w2c_l7 = 0, w2c_l8 = 0, w2c_l9 = 0, w2c_l10 = 0, w2c_l11 = 0, w2c_l12 = 0, 
       w2c_l13 = 0, w2c_l14 = 0, w2c_l15 = 0, w2c_l16 = 0, w2c_l17 = 0, w2c_l18 = 0, w2c_l19 = 0, w2c_l20 = 0, 
       w2c_l21 = 0, w2c_l22 = 0, w2c_l23 = 0, w2c_l24 = 0, w2c_l25 = 0, w2c_l26 = 0, w2c_l27 = 0, w2c_l28 = 0, 
-      w2c_l29 = 0, w2c_l30 = 0, w2c_l31 = 0, w2c_l32 = 0, w2c_l33 = 0, w2c_l34 = 0, w2c_l35 = 0, w2c_l36 = 0, 
-      w2c_l37 = 0;
-  f64 w2c_l38 = 0, w2c_l39 = 0, w2c_l40 = 0, w2c_l41 = 0, w2c_l42 = 0;
+      w2c_l29 = 0, w2c_l30 = 0, w2c_l31 = 0, w2c_l32 = 0;
+  f64 w2c_l33 = 0, w2c_l34 = 0, w2c_l35 = 0, w2c_l36 = 0, w2c_l37 = 0;
   FUNC_PROLOGUE;
-  u32 w2c_i0, w2c_i1, w2c_i2, w2c_i3, w2c_i4, w2c_i5;
-  u64 w2c_j1, w2c_j2;
+  u32 w2c_i0, w2c_i1, w2c_i2, w2c_i3, w2c_i4;
+  u64 w2c_j1;
   f64 w2c_d0, w2c_d1, w2c_d2, w2c_d3, w2c_d4;
   w2c_i0 = w2c___stack_pointer;
   w2c_i1 = 560u;
@@ -473,8 +486,6 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_l8 = w2c_i0;
   w2c_i1 = 4294967272u;
   w2c_i0 *= w2c_i1;
-  w2c_i1 = w2c_p2;
-  w2c_i0 += w2c_i1;
   w2c_l9 = w2c_i0;
   w2c_i0 = w2c_p4;
   w2c_i1 = 2u;
@@ -488,7 +499,7 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i1 += w2c_i2;
   w2c_l11 = w2c_i1;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i1 = 0u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
   if (w2c_i0) {goto w2c_B0;}
@@ -499,17 +510,17 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 = w2c_l10;
   w2c_i1 = w2c_p3;
   w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
+  w2c_l13 = w2c_i0;
   w2c_i1 = 1u;
   w2c_i0 &= w2c_i1;
-  w2c_l13 = w2c_i0;
-  w2c_i0 = w2c_p2;
+  w2c_l14 = w2c_i0;
+  w2c_i0 = w2c_l7;
   w2c_i0 = !(w2c_i0);
   if (w2c_i0) {goto w2c_B1;}
-  w2c_i0 = w2c_l7;
+  w2c_i0 = w2c_l13;
   w2c_i1 = 4294967294u;
   w2c_i0 &= w2c_i1;
-  w2c_l14 = w2c_i0;
+  w2c_l15 = w2c_i0;
   w2c_i0 = w2c_l8;
   w2c_i1 = w2c_p3;
   w2c_i0 -= w2c_i1;
@@ -517,58 +528,58 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 <<= (w2c_i1 & 31);
   w2c_i1 = 1048u;
   w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
+  w2c_l13 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 320u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i0 = 0u;
   w2c_l6 = w2c_i0;
   w2c_L2: 
     w2c_d0 = 0;
-    w2c_l38 = w2c_d0;
+    w2c_l33 = w2c_d0;
     w2c_d0 = 0;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_i0 = w2c_l12;
     w2c_i1 = w2c_l6;
     w2c_i0 += w2c_i1;
-    w2c_l15 = w2c_i0;
+    w2c_l16 = w2c_i0;
     w2c_i1 = 0u;
     w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
     if (w2c_i0) {goto w2c_B3;}
-    w2c_i0 = w2c_l7;
+    w2c_i0 = w2c_l13;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
     w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
     w2c_d0 = (f64)(s32)(w2c_i0);
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_B3:;
-    w2c_i0 = w2c_p2;
-    w2c_d1 = w2c_l39;
+    w2c_i0 = w2c_l7;
+    w2c_d1 = w2c_l34;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_l15;
+    w2c_i0 = w2c_l16;
     w2c_i1 = 4294967295u;
     w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
     if (w2c_i0) {goto w2c_B4;}
-    w2c_i0 = w2c_l7;
+    w2c_i0 = w2c_l13;
     w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
     w2c_d0 = (f64)(s32)(w2c_i0);
-    w2c_l38 = w2c_d0;
+    w2c_l33 = w2c_d0;
     w2c_B4:;
-    w2c_i0 = w2c_p2;
-    w2c_i1 = 8u;
-    w2c_i0 += w2c_i1;
-    w2c_d1 = w2c_l38;
-    f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_p2;
-    w2c_i1 = 16u;
-    w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
     w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
+    w2c_d1 = w2c_l33;
+    f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
+    w2c_i0 = w2c_l7;
+    w2c_i1 = 16u;
+    w2c_i0 += w2c_i1;
     w2c_l7 = w2c_i0;
-    w2c_i0 = w2c_l14;
+    w2c_i0 = w2c_l13;
+    w2c_i1 = 8u;
+    w2c_i0 += w2c_i1;
+    w2c_l13 = w2c_i0;
+    w2c_i0 = w2c_l15;
     w2c_i1 = w2c_l6;
     w2c_i2 = 2u;
     w2c_i1 += w2c_i2;
@@ -580,7 +591,7 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_l12 = w2c_i0;
   w2c_B1:;
-  w2c_i0 = w2c_l13;
+  w2c_i0 = w2c_l14;
   w2c_i0 = !(w2c_i0);
   if (w2c_i0) {goto w2c_B0;}
   w2c_i0 = w2c_l12;
@@ -588,7 +599,7 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
   if (w2c_i0) {goto w2c_B6;}
   w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
+  w2c_l34 = w2c_d0;
   goto w2c_B5;
   w2c_B6:;
   w2c_i0 = w2c_l12;
@@ -598,7 +609,7 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
   w2c_d0 = (f64)(s32)(w2c_i0);
-  w2c_l39 = w2c_d0;
+  w2c_l34 = w2c_d0;
   w2c_B5:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 320u;
@@ -607,95 +618,95 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
   w2c_B0:;
   w2c_i0 = w2c_l9;
-  w2c_i1 = 4294967272u;
+  w2c_i1 = w2c_p2;
   w2c_i0 += w2c_i1;
-  w2c_l16 = w2c_i0;
+  w2c_l17 = w2c_i0;
   w2c_i0 = 0u;
-  w2c_l7 = w2c_i0;
+  w2c_l13 = w2c_i0;
   w2c_i0 = w2c_l10;
   w2c_i1 = 0u;
   w2c_i2 = w2c_l10;
   w2c_i3 = 0u;
   w2c_i2 = (u32)((s32)w2c_i2 > (s32)w2c_i3);
   w2c_i0 = w2c_i2 ? w2c_i0 : w2c_i1;
-  w2c_l13 = w2c_i0;
+  w2c_p2 = w2c_i0;
   w2c_i0 = w2c_p3;
   w2c_i1 = 0u;
   w2c_i0 = (u32)((s32)w2c_i0 > (s32)w2c_i1);
   if (w2c_i0) {goto w2c_B8;}
-  w2c_i0 = w2c_l13;
+  w2c_i0 = w2c_p2;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i1 = 7u;
   w2c_i0 &= w2c_i1;
   w2c_l6 = w2c_i0;
-  w2c_i0 = w2c_l13;
+  w2c_i0 = w2c_p2;
   w2c_i1 = 7u;
   w2c_i0 = w2c_i0 < w2c_i1;
   if (w2c_i0) {goto w2c_B9;}
-  w2c_i0 = w2c_p2;
+  w2c_i0 = w2c_l7;
   w2c_i1 = 4294967288u;
   w2c_i0 &= w2c_i1;
-  w2c_l15 = w2c_i0;
+  w2c_l16 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 32u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_i0 = 0u;
   w2c_l7 = w2c_i0;
+  w2c_i0 = 0u;
+  w2c_l13 = w2c_i0;
   w2c_L10: 
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 24u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 16u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967280u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967272u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967264u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 64u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l15;
-    w2c_i1 = w2c_l7;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l16;
+    w2c_i1 = w2c_l13;
     w2c_i2 = 8u;
     w2c_i1 += w2c_i2;
-    w2c_l7 = w2c_i1;
+    w2c_l13 = w2c_i1;
     w2c_i0 = w2c_i0 != w2c_i1;
     if (w2c_i0) {goto w2c_L10;}
   w2c_B9:;
@@ -703,19 +714,19 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 = !(w2c_i0);
   if (w2c_i0) {goto w2c_B7;}
   w2c_i0 = w2c_l5;
-  w2c_i1 = w2c_l7;
+  w2c_i1 = w2c_l13;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_L11: 
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
@@ -727,11 +738,11 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 = w2c_p3;
   w2c_i1 = 4294967294u;
   w2c_i0 &= w2c_i1;
-  w2c_l15 = w2c_i0;
+  w2c_l16 = w2c_i0;
   w2c_i0 = w2c_p3;
   w2c_i1 = 1u;
   w2c_i0 &= w2c_i1;
-  w2c_l17 = w2c_i0;
+  w2c_l9 = w2c_i0;
   w2c_i0 = w2c_p3;
   w2c_i1 = 3u;
   w2c_i0 <<= (w2c_i1 & 31);
@@ -741,62 +752,62 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967280u;
   w2c_i0 += w2c_i1;
-  w2c_l14 = w2c_i0;
+  w2c_l15 = w2c_i0;
   w2c_i0 = 0u;
   w2c_l12 = w2c_i0;
   w2c_L12: 
     w2c_i0 = w2c_l11;
     if (w2c_i0) {goto w2c_B14;}
     w2c_d0 = 0;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_i0 = 0u;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     goto w2c_B13;
     w2c_B14:;
     w2c_i0 = 0u;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     w2c_d0 = 0;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_l14;
-    w2c_p2 = w2c_i0;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l15;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_p0;
     w2c_l6 = w2c_i0;
     w2c_L15: 
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
       w2c_i1 = w2c_l6;
       w2c_i2 = 8u;
       w2c_i1 += w2c_i2;
       w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
       w2c_d0 *= w2c_d1;
-      w2c_i1 = w2c_p2;
+      w2c_i1 = w2c_l7;
       w2c_i2 = 8u;
       w2c_i1 += w2c_i2;
       w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
       w2c_i2 = w2c_l6;
       w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
       w2c_d1 *= w2c_d2;
-      w2c_d2 = w2c_l39;
+      w2c_d2 = w2c_l34;
       w2c_d1 += w2c_d2;
       w2c_d0 += w2c_d1;
-      w2c_l39 = w2c_d0;
-      w2c_i0 = w2c_p2;
+      w2c_l34 = w2c_d0;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4294967280u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
+      w2c_l7 = w2c_i0;
       w2c_i0 = w2c_l6;
       w2c_i1 = 16u;
       w2c_i0 += w2c_i1;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_l15;
-      w2c_i1 = w2c_l7;
+      w2c_i0 = w2c_l16;
+      w2c_i1 = w2c_l13;
       w2c_i2 = 2u;
       w2c_i1 += w2c_i2;
-      w2c_l7 = w2c_i1;
+      w2c_l13 = w2c_i1;
       w2c_i0 = w2c_i0 != w2c_i1;
       if (w2c_i0) {goto w2c_L15;}
     w2c_B13:;
-    w2c_i0 = w2c_l17;
+    w2c_i0 = w2c_l9;
     w2c_i0 = !(w2c_i0);
     if (w2c_i0) {goto w2c_B16;}
     w2c_i0 = w2c_l5;
@@ -805,128 +816,70 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i1 = w2c_l12;
     w2c_i2 = w2c_l11;
     w2c_i1 += w2c_i2;
-    w2c_i2 = w2c_l7;
+    w2c_i2 = w2c_l13;
     w2c_i1 -= w2c_i2;
     w2c_i2 = 3u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
     w2c_i1 = w2c_p0;
-    w2c_i2 = w2c_l7;
+    w2c_i2 = w2c_l13;
     w2c_i3 = 3u;
     w2c_i2 <<= (w2c_i3 & 31);
     w2c_i1 += w2c_i2;
     w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
     w2c_d0 *= w2c_d1;
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_B16:;
     w2c_i0 = w2c_l5;
     w2c_i1 = w2c_l12;
     w2c_i2 = 3u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_l14;
+    w2c_i0 = w2c_l15;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
-    w2c_l14 = w2c_i0;
+    w2c_l15 = w2c_i0;
     w2c_i0 = w2c_l12;
-    w2c_i1 = w2c_l13;
+    w2c_i1 = w2c_p2;
     w2c_i0 = w2c_i0 == w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l12;
     w2c_i1 = 1u;
     w2c_i0 += w2c_i1;
     w2c_l12 = w2c_i0;
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i0 = !(w2c_i0);
     if (w2c_i0) {goto w2c_L12;}
   w2c_B7:;
-  w2c_d0 = 8.9884656743115795e+307;
-  w2c_d1 = 0;
-  w2c_d2 = 2.0041683600089728e-292;
-  w2c_i3 = w2c_l16;
-  w2c_i4 = 4294965305u;
-  w2c_i3 = w2c_i3 < w2c_i4;
-  w2c_l18 = w2c_i3;
-  w2c_d1 = w2c_i3 ? w2c_d1 : w2c_d2;
-  w2c_d2 = 1;
-  w2c_i3 = w2c_l16;
-  w2c_i4 = 4294966274u;
-  w2c_i3 = (u32)((s32)w2c_i3 < (s32)w2c_i4);
-  w2c_p2 = w2c_i3;
-  w2c_d1 = w2c_i3 ? w2c_d1 : w2c_d2;
-  w2c_i2 = w2c_l16;
-  w2c_i3 = 1023u;
-  w2c_i2 = (u32)((s32)w2c_i2 > (s32)w2c_i3);
-  w2c_l6 = w2c_i2;
-  w2c_d0 = w2c_i2 ? w2c_d0 : w2c_d1;
-  w2c_i1 = w2c_l16;
-  w2c_i2 = 3069u;
-  w2c_i3 = w2c_l16;
-  w2c_i4 = 3069u;
-  w2c_i3 = w2c_i3 < w2c_i4;
-  w2c_i1 = w2c_i3 ? w2c_i1 : w2c_i2;
-  w2c_i2 = 4294965250u;
-  w2c_i1 += w2c_i2;
-  w2c_i2 = w2c_l9;
-  w2c_i3 = 4294966249u;
-  w2c_i2 += w2c_i3;
-  w2c_i3 = w2c_l16;
-  w2c_i4 = 2046u;
-  w2c_i3 = w2c_i3 > w2c_i4;
-  w2c_i1 = w2c_i3 ? w2c_i1 : w2c_i2;
-  w2c_l19 = w2c_i1;
-  w2c_i2 = w2c_l16;
-  w2c_i3 = 4294964336u;
-  w2c_i4 = w2c_l16;
-  w2c_i5 = 4294964336u;
-  w2c_i4 = w2c_i4 > w2c_i5;
-  w2c_i2 = w2c_i4 ? w2c_i2 : w2c_i3;
-  w2c_i3 = 1938u;
-  w2c_i2 += w2c_i3;
-  w2c_i3 = w2c_l9;
-  w2c_i4 = 945u;
-  w2c_i3 += w2c_i4;
-  w2c_i4 = w2c_l18;
-  w2c_i2 = w2c_i4 ? w2c_i2 : w2c_i3;
-  w2c_l20 = w2c_i2;
-  w2c_i3 = w2c_l16;
-  w2c_i4 = w2c_p2;
-  w2c_i2 = w2c_i4 ? w2c_i2 : w2c_i3;
-  w2c_i3 = w2c_l6;
-  w2c_i1 = w2c_i3 ? w2c_i1 : w2c_i2;
-  w2c_i2 = 1023u;
-  w2c_i1 += w2c_i2;
-  w2c_j1 = (u64)(w2c_i1);
-  w2c_j2 = 52ull;
-  w2c_j1 <<= (w2c_j2 & 63);
-  w2c_d1 = f64_reinterpret_i64(w2c_j1);
-  w2c_d0 *= w2c_d1;
-  w2c_l40 = w2c_d0;
+  w2c_i0 = w2c_l17;
+  w2c_i1 = 4294967272u;
+  w2c_i0 += w2c_i1;
+  w2c_l18 = w2c_i0;
   w2c_i0 = w2c_p3;
   w2c_i1 = 4294967294u;
   w2c_i0 &= w2c_i1;
-  w2c_l15 = w2c_i0;
+  w2c_l16 = w2c_i0;
   w2c_i0 = w2c_p3;
   w2c_i1 = 1u;
   w2c_i0 &= w2c_i1;
-  w2c_l21 = w2c_i0;
+  w2c_l14 = w2c_i0;
   w2c_i0 = w2c_l10;
   w2c_i1 = 4294967295u;
   w2c_i0 ^= w2c_i1;
-  w2c_l22 = w2c_i0;
+  w2c_l19 = w2c_i0;
   w2c_i0 = 47u;
-  w2c_i1 = w2c_l9;
+  w2c_i1 = w2c_l17;
   w2c_i0 -= w2c_i1;
-  w2c_l23 = w2c_i0;
+  w2c_l20 = w2c_i0;
   w2c_i0 = 48u;
-  w2c_i1 = w2c_l9;
+  w2c_i1 = w2c_l17;
   w2c_i0 -= w2c_i1;
-  w2c_l24 = w2c_i0;
+  w2c_l21 = w2c_i0;
   w2c_i0 = w2c_l10;
   w2c_i1 = 2u;
   w2c_i0 <<= (w2c_i1 & 31);
@@ -936,41 +889,33 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967292u;
   w2c_i0 += w2c_i1;
-  w2c_l25 = w2c_i0;
+  w2c_l22 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 320u;
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967288u;
   w2c_i0 += w2c_i1;
-  w2c_l26 = w2c_i0;
+  w2c_l23 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 480u;
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967292u;
   w2c_i0 += w2c_i1;
-  w2c_l27 = w2c_i0;
+  w2c_l24 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 480u;
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967280u;
   w2c_i0 += w2c_i1;
-  w2c_l28 = w2c_i0;
+  w2c_l25 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 4294967280u;
   w2c_i0 += w2c_i1;
-  w2c_l29 = w2c_i0;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 1024u;
-  w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  w2c_l30 = w2c_i0;
-  w2c_i0 = w2c_l9;
+  w2c_l26 = w2c_i0;
+  w2c_i0 = w2c_l17;
   w2c_i1 = 4294967271u;
   w2c_i0 += w2c_i1;
-  w2c_l31 = w2c_i0;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 4294966273u;
-  w2c_i0 = (u32)((s32)w2c_i0 > (s32)w2c_i1);
-  w2c_l32 = w2c_i0;
+  w2c_l27 = w2c_i0;
   w2c_i0 = w2c_l10;
   w2c_l12 = w2c_i0;
   w2c_L18: 
@@ -978,167 +923,167 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i1 = w2c_l12;
     w2c_i2 = 3u;
     w2c_i1 <<= (w2c_i2 & 31);
-    w2c_p2 = w2c_i1;
+    w2c_l7 = w2c_i1;
     w2c_i0 += w2c_i1;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_i0 = w2c_l12;
     w2c_i1 = 1u;
     w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-    w2c_l17 = w2c_i0;
+    w2c_l9 = w2c_i0;
     if (w2c_i0) {goto w2c_B19;}
     w2c_i0 = w2c_l12;
     w2c_i1 = 1u;
     w2c_i0 &= w2c_i1;
-    w2c_l33 = w2c_i0;
+    w2c_l28 = w2c_i0;
     w2c_i0 = 0u;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     w2c_i0 = w2c_l12;
     w2c_i1 = 1u;
     w2c_i0 = w2c_i0 != w2c_i1;
     if (w2c_i0) {goto w2c_B21;}
     w2c_i0 = w2c_l12;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     goto w2c_B20;
     w2c_B21:;
     w2c_i0 = w2c_l12;
     w2c_i1 = 4294967294u;
     w2c_i0 &= w2c_i1;
-    w2c_l13 = w2c_i0;
-    w2c_i0 = w2c_l29;
-    w2c_i1 = w2c_p2;
-    w2c_i0 += w2c_i1;
     w2c_p2 = w2c_i0;
-    w2c_i0 = 0u;
+    w2c_i0 = w2c_l26;
+    w2c_i1 = w2c_l7;
+    w2c_i0 += w2c_i1;
     w2c_l7 = w2c_i0;
+    w2c_i0 = 0u;
+    w2c_l13 = w2c_i0;
     w2c_i0 = w2c_l5;
     w2c_i1 = 480u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
     w2c_L22: 
-      w2c_d0 = w2c_l39;
-      w2c_d1 = w2c_l39;
+      w2c_d0 = w2c_l34;
+      w2c_d1 = w2c_l34;
       w2c_d2 = 5.9604644775390625e-08;
       w2c_d1 *= w2c_d2;
       w2c_d1 = trunc(w2c_d1);
-      w2c_l38 = w2c_d1;
+      w2c_l33 = w2c_d1;
       w2c_d2 = 16777216;
       w2c_d1 *= w2c_d2;
       w2c_d0 -= w2c_d1;
-      w2c_l39 = w2c_d0;
+      w2c_l34 = w2c_d0;
       w2c_d0 = fabs(w2c_d0);
       w2c_d1 = 2147483648;
       w2c_i0 = w2c_d0 < w2c_d1;
       w2c_i0 = !(w2c_i0);
       if (w2c_i0) {goto w2c_B24;}
-      w2c_d0 = w2c_l39;
+      w2c_d0 = w2c_l34;
       w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-      w2c_l14 = w2c_i0;
+      w2c_l15 = w2c_i0;
       goto w2c_B23;
       w2c_B24:;
       w2c_i0 = 2147483648u;
-      w2c_l14 = w2c_i0;
+      w2c_l15 = w2c_i0;
       w2c_B23:;
       w2c_i0 = w2c_l6;
-      w2c_i1 = w2c_l14;
+      w2c_i1 = w2c_l15;
       i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 8u;
       w2c_i0 += w2c_i1;
       w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-      w2c_d1 = w2c_l38;
+      w2c_d1 = w2c_l33;
       w2c_d0 += w2c_d1;
-      w2c_l39 = w2c_d0;
-      w2c_d1 = w2c_l39;
+      w2c_l34 = w2c_d0;
+      w2c_d1 = w2c_l34;
       w2c_d2 = 5.9604644775390625e-08;
       w2c_d1 *= w2c_d2;
       w2c_d1 = trunc(w2c_d1);
-      w2c_l39 = w2c_d1;
+      w2c_l34 = w2c_d1;
       w2c_d2 = 16777216;
       w2c_d1 *= w2c_d2;
       w2c_d0 -= w2c_d1;
-      w2c_l38 = w2c_d0;
+      w2c_l33 = w2c_d0;
       w2c_d0 = fabs(w2c_d0);
       w2c_d1 = 2147483648;
       w2c_i0 = w2c_d0 < w2c_d1;
       w2c_i0 = !(w2c_i0);
       if (w2c_i0) {goto w2c_B26;}
-      w2c_d0 = w2c_l38;
+      w2c_d0 = w2c_l33;
       w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-      w2c_l14 = w2c_i0;
+      w2c_l15 = w2c_i0;
       goto w2c_B25;
       w2c_B26:;
       w2c_i0 = 2147483648u;
-      w2c_l14 = w2c_i0;
+      w2c_l15 = w2c_i0;
       w2c_B25:;
       w2c_i0 = w2c_l6;
       w2c_i1 = 4u;
       w2c_i0 += w2c_i1;
-      w2c_i1 = w2c_l14;
+      w2c_i1 = w2c_l15;
       i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-      w2c_d1 = w2c_l39;
+      w2c_d1 = w2c_l34;
       w2c_d0 += w2c_d1;
-      w2c_l39 = w2c_d0;
+      w2c_l34 = w2c_d0;
       w2c_i0 = w2c_l6;
       w2c_i1 = 8u;
       w2c_i0 += w2c_i1;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4294967280u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
-      w2c_i0 = w2c_l13;
-      w2c_i1 = w2c_l7;
+      w2c_l7 = w2c_i0;
+      w2c_i0 = w2c_p2;
+      w2c_i1 = w2c_l13;
       w2c_i2 = 2u;
       w2c_i1 += w2c_i2;
-      w2c_l7 = w2c_i1;
+      w2c_l13 = w2c_i1;
       w2c_i0 = w2c_i0 != w2c_i1;
       if (w2c_i0) {goto w2c_L22;}
     w2c_i0 = w2c_l12;
-    w2c_i1 = w2c_l7;
+    w2c_i1 = w2c_l13;
     w2c_i0 -= w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_B20:;
-    w2c_i0 = w2c_l33;
+    w2c_i0 = w2c_l28;
     w2c_i0 = !(w2c_i0);
     if (w2c_i0) {goto w2c_B19;}
     w2c_i0 = w2c_l5;
     w2c_i1 = 480u;
     w2c_i0 += w2c_i1;
-    w2c_i1 = w2c_l7;
+    w2c_i1 = w2c_l13;
     w2c_i2 = 2u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
-    w2c_d0 = w2c_l39;
-    w2c_d1 = w2c_l39;
+    w2c_d0 = w2c_l34;
+    w2c_d1 = w2c_l34;
     w2c_d2 = 5.9604644775390625e-08;
     w2c_d1 *= w2c_d2;
     w2c_d1 = trunc(w2c_d1);
-    w2c_l38 = w2c_d1;
+    w2c_l33 = w2c_d1;
     w2c_d2 = -16777216;
     w2c_d1 *= w2c_d2;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_d0 = fabs(w2c_d0);
     w2c_d1 = 2147483648;
     w2c_i0 = w2c_d0 < w2c_d1;
     w2c_i0 = !(w2c_i0);
     if (w2c_i0) {goto w2c_B28;}
-    w2c_d0 = w2c_l39;
+    w2c_d0 = w2c_l34;
     w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     goto w2c_B27;
     w2c_B28:;
     w2c_i0 = 2147483648u;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     w2c_B27:;
     w2c_i0 = w2c_l6;
-    w2c_i1 = w2c_l7;
+    w2c_i1 = w2c_l13;
     i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 3u;
     w2c_i0 <<= (w2c_i1 & 31);
     w2c_i1 = w2c_l5;
@@ -1146,81 +1091,49 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_d1 = w2c_l38;
+    w2c_d1 = w2c_l33;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_B19:;
-    w2c_i0 = w2c_l30;
-    if (w2c_i0) {goto w2c_B30;}
-    w2c_d0 = w2c_l39;
-    w2c_d1 = 8.9884656743115795e+307;
-    w2c_d0 *= w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_l19;
-    w2c_p2 = w2c_i0;
-    goto w2c_B29;
-    w2c_B30:;
-    w2c_i0 = w2c_l32;
-    w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B31;}
-    w2c_i0 = w2c_l16;
-    w2c_p2 = w2c_i0;
-    goto w2c_B29;
-    w2c_B31:;
-    w2c_d0 = 0;
-    w2c_d1 = w2c_l39;
-    w2c_d2 = 2.0041683600089728e-292;
-    w2c_d1 *= w2c_d2;
-    w2c_i2 = w2c_l18;
-    w2c_d0 = w2c_i2 ? w2c_d0 : w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_l20;
-    w2c_p2 = w2c_i0;
-    w2c_B29:;
-    w2c_d0 = w2c_l39;
-    w2c_i1 = w2c_p2;
-    w2c_i2 = 1023u;
-    w2c_i1 += w2c_i2;
-    w2c_j1 = (u64)(w2c_i1);
-    w2c_j2 = 52ull;
-    w2c_j1 <<= (w2c_j2 & 63);
-    w2c_d1 = f64_reinterpret_i64(w2c_j1);
-    w2c_d0 *= w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_d0 = w2c_l39;
-    w2c_d1 = w2c_l39;
+    w2c_d0 = w2c_l34;
+    w2c_i1 = w2c_l18;
+    w2c_i0 = (*Z_envZ_core_math_scalbnZ_idi)(w2c_d0, w2c_i1);
+    w2c_d0 = (f64)(s32)(w2c_i0);
+    w2c_l34 = w2c_d0;
+    w2c_d0 = w2c_l34;
+    w2c_d1 = w2c_l34;
     w2c_d2 = 0.125;
     w2c_d1 *= w2c_d2;
     w2c_d1 = (*Z_envZ_floorZ_dd)(w2c_d1);
     w2c_d2 = -8;
     w2c_d1 *= w2c_d2;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_d0 = trunc(w2c_d0);
-    w2c_l38 = w2c_d0;
-    w2c_d0 = w2c_l39;
+    w2c_l33 = w2c_d0;
+    w2c_d0 = w2c_l34;
     w2c_d0 = fabs(w2c_d0);
     w2c_d1 = 2147483648;
     w2c_i0 = w2c_d0 < w2c_d1;
     w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B33;}
-    w2c_d0 = w2c_l39;
+    if (w2c_i0) {goto w2c_B30;}
+    w2c_d0 = w2c_l34;
     w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-    w2c_l34 = w2c_i0;
-    goto w2c_B32;
-    w2c_B33:;
+    w2c_l29 = w2c_i0;
+    goto w2c_B29;
+    w2c_B30:;
     w2c_i0 = 2147483648u;
-    w2c_l34 = w2c_i0;
-    w2c_B32:;
-    w2c_d0 = w2c_l39;
-    w2c_d1 = w2c_l38;
+    w2c_l29 = w2c_i0;
+    w2c_B29:;
+    w2c_d0 = w2c_l34;
+    w2c_d1 = w2c_l33;
     w2c_d0 -= w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_l16;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l18;
     w2c_i1 = 1u;
     w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-    w2c_l35 = w2c_i0;
-    if (w2c_i0) {goto w2c_B38;}
+    w2c_l30 = w2c_i0;
+    if (w2c_i0) {goto w2c_B35;}
     w2c_i0 = w2c_l12;
     w2c_i1 = 2u;
     w2c_i0 <<= (w2c_i1 & 31);
@@ -1230,31 +1143,31 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i0 += w2c_i1;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i1 = w2c_p2;
+    w2c_l7 = w2c_i0;
+    w2c_i1 = w2c_l7;
     w2c_i1 = i32_load((&w2c_memory), (u64)(w2c_i1));
-    w2c_p2 = w2c_i1;
-    w2c_i2 = w2c_p2;
-    w2c_i3 = w2c_l24;
+    w2c_l7 = w2c_i1;
+    w2c_i2 = w2c_l7;
+    w2c_i3 = w2c_l21;
     w2c_i2 = (u32)((s32)w2c_i2 >> (w2c_i3 & 31));
-    w2c_p2 = w2c_i2;
-    w2c_i3 = w2c_l24;
+    w2c_l7 = w2c_i2;
+    w2c_i3 = w2c_l21;
     w2c_i2 <<= (w2c_i3 & 31);
     w2c_i1 -= w2c_i2;
     w2c_l6 = w2c_i1;
     i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
     w2c_i0 = w2c_l6;
-    w2c_i1 = w2c_l23;
+    w2c_i1 = w2c_l20;
     w2c_i0 = (u32)((s32)w2c_i0 >> (w2c_i1 & 31));
-    w2c_l36 = w2c_i0;
-    w2c_i0 = w2c_p2;
-    w2c_i1 = w2c_l34;
+    w2c_l31 = w2c_i0;
+    w2c_i0 = w2c_l7;
+    w2c_i1 = w2c_l29;
     w2c_i0 += w2c_i1;
-    w2c_l34 = w2c_i0;
-    goto w2c_B37;
-    w2c_B38:;
-    w2c_i0 = w2c_l16;
-    if (w2c_i0) {goto w2c_B36;}
+    w2c_l29 = w2c_i0;
+    goto w2c_B34;
+    w2c_B35:;
+    w2c_i0 = w2c_l18;
+    if (w2c_i0) {goto w2c_B33;}
     w2c_i0 = w2c_l12;
     w2c_i1 = 2u;
     w2c_i0 <<= (w2c_i1 & 31);
@@ -1267,166 +1180,166 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
     w2c_i1 = 23u;
     w2c_i0 = (u32)((s32)w2c_i0 >> (w2c_i1 & 31));
-    w2c_l36 = w2c_i0;
-    w2c_B37:;
-    w2c_i0 = w2c_l36;
+    w2c_l31 = w2c_i0;
+    w2c_B34:;
+    w2c_i0 = w2c_l31;
     w2c_i1 = 1u;
     w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-    if (w2c_i0) {goto w2c_B34;}
-    goto w2c_B35;
-    w2c_B36:;
+    if (w2c_i0) {goto w2c_B31;}
+    goto w2c_B32;
+    w2c_B33:;
     w2c_i0 = 2u;
-    w2c_l36 = w2c_i0;
-    w2c_d0 = w2c_l39;
+    w2c_l31 = w2c_i0;
+    w2c_d0 = w2c_l34;
     w2c_d1 = 0.5;
     w2c_i0 = w2c_d0 < w2c_d1;
     w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B35;}
+    if (w2c_i0) {goto w2c_B32;}
     w2c_i0 = 0u;
-    w2c_l36 = w2c_i0;
-    goto w2c_B34;
-    w2c_B35:;
-    w2c_i0 = w2c_l17;
+    w2c_l31 = w2c_i0;
+    goto w2c_B31;
+    w2c_B32:;
+    w2c_i0 = w2c_l9;
     w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B40;}
+    if (w2c_i0) {goto w2c_B37;}
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
-    goto w2c_B39;
-    w2c_B40:;
+    goto w2c_B36;
+    w2c_B37:;
     w2c_i0 = w2c_l12;
     w2c_i1 = 1u;
     w2c_i0 &= w2c_i1;
-    w2c_l37 = w2c_i0;
+    w2c_l32 = w2c_i0;
     w2c_i0 = 0u;
-    w2c_l13 = w2c_i0;
+    w2c_p2 = w2c_i0;
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
     w2c_i0 = w2c_l12;
     w2c_i1 = 1u;
     w2c_i0 = w2c_i0 == w2c_i1;
-    if (w2c_i0) {goto w2c_B41;}
+    if (w2c_i0) {goto w2c_B38;}
     w2c_i0 = w2c_l12;
     w2c_i1 = 4294967294u;
     w2c_i0 &= w2c_i1;
-    w2c_l33 = w2c_i0;
+    w2c_l28 = w2c_i0;
     w2c_i0 = 0u;
-    w2c_l13 = w2c_i0;
+    w2c_p2 = w2c_i0;
     w2c_i0 = w2c_l5;
     w2c_i1 = 480u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
-    w2c_L42: 
-      w2c_i0 = w2c_p2;
-      w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
-      w2c_l7 = w2c_i0;
-      w2c_i0 = 16777215u;
-      w2c_l14 = w2c_i0;
-      w2c_i0 = w2c_l6;
-      if (w2c_i0) {goto w2c_B44;}
-      w2c_i0 = 16777216u;
-      w2c_l14 = w2c_i0;
+    w2c_L39: 
       w2c_i0 = w2c_l7;
-      if (w2c_i0) {goto w2c_B44;}
+      w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
+      w2c_l13 = w2c_i0;
+      w2c_i0 = 16777215u;
+      w2c_l15 = w2c_i0;
+      w2c_i0 = w2c_l6;
+      if (w2c_i0) {goto w2c_B41;}
+      w2c_i0 = 16777216u;
+      w2c_l15 = w2c_i0;
+      w2c_i0 = w2c_l13;
+      if (w2c_i0) {goto w2c_B41;}
       w2c_i0 = 1u;
-      w2c_l14 = w2c_i0;
-      goto w2c_B43;
-      w2c_B44:;
-      w2c_i0 = w2c_p2;
-      w2c_i1 = w2c_l14;
-      w2c_i2 = w2c_l7;
+      w2c_l15 = w2c_i0;
+      goto w2c_B40;
+      w2c_B41:;
+      w2c_i0 = w2c_l7;
+      w2c_i1 = w2c_l15;
+      w2c_i2 = w2c_l13;
       w2c_i1 -= w2c_i2;
       i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
       w2c_i0 = 0u;
-      w2c_l14 = w2c_i0;
-      w2c_B43:;
-      w2c_i0 = w2c_p2;
+      w2c_l15 = w2c_i0;
+      w2c_B40:;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4u;
       w2c_i0 += w2c_i1;
-      w2c_l17 = w2c_i0;
+      w2c_l9 = w2c_i0;
       w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
-      w2c_l7 = w2c_i0;
+      w2c_l13 = w2c_i0;
       w2c_i0 = 16777215u;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_l14;
+      w2c_i0 = w2c_l15;
       w2c_i0 = !(w2c_i0);
-      if (w2c_i0) {goto w2c_B46;}
+      if (w2c_i0) {goto w2c_B43;}
       w2c_i0 = 16777216u;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_l7;
-      if (w2c_i0) {goto w2c_B46;}
+      w2c_i0 = w2c_l13;
+      if (w2c_i0) {goto w2c_B43;}
       w2c_i0 = 0u;
       w2c_l6 = w2c_i0;
-      goto w2c_B45;
-      w2c_B46:;
-      w2c_i0 = w2c_l17;
+      goto w2c_B42;
+      w2c_B43:;
+      w2c_i0 = w2c_l9;
       w2c_i1 = w2c_l6;
-      w2c_i2 = w2c_l7;
+      w2c_i2 = w2c_l13;
       w2c_i1 -= w2c_i2;
       i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
       w2c_i0 = 1u;
       w2c_l6 = w2c_i0;
-      w2c_B45:;
-      w2c_i0 = w2c_p2;
+      w2c_B42:;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 8u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
-      w2c_i0 = w2c_l33;
-      w2c_i1 = w2c_l13;
+      w2c_l7 = w2c_i0;
+      w2c_i0 = w2c_l28;
+      w2c_i1 = w2c_p2;
       w2c_i2 = 2u;
       w2c_i1 += w2c_i2;
-      w2c_l13 = w2c_i1;
+      w2c_p2 = w2c_i1;
       w2c_i0 = w2c_i0 != w2c_i1;
-      if (w2c_i0) {goto w2c_L42;}
-    w2c_B41:;
-    w2c_i0 = w2c_l37;
+      if (w2c_i0) {goto w2c_L39;}
+    w2c_B38:;
+    w2c_i0 = w2c_l32;
     w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B39;}
+    if (w2c_i0) {goto w2c_B36;}
     w2c_i0 = w2c_l5;
     w2c_i1 = 480u;
     w2c_i0 += w2c_i1;
-    w2c_i1 = w2c_l13;
+    w2c_i1 = w2c_p2;
     w2c_i2 = 2u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
-    w2c_l14 = w2c_i0;
+    w2c_l15 = w2c_i0;
     w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = 16777215u;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     w2c_i0 = w2c_l6;
-    if (w2c_i0) {goto w2c_B47;}
+    if (w2c_i0) {goto w2c_B44;}
     w2c_i0 = 16777216u;
-    w2c_l7 = w2c_i0;
-    w2c_i0 = w2c_p2;
-    if (w2c_i0) {goto w2c_B47;}
+    w2c_l13 = w2c_i0;
+    w2c_i0 = w2c_l7;
+    if (w2c_i0) {goto w2c_B44;}
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
-    goto w2c_B39;
-    w2c_B47:;
-    w2c_i0 = w2c_l14;
-    w2c_i1 = w2c_l7;
-    w2c_i2 = w2c_p2;
+    goto w2c_B36;
+    w2c_B44:;
+    w2c_i0 = w2c_l15;
+    w2c_i1 = w2c_l13;
+    w2c_i2 = w2c_l7;
     w2c_i1 -= w2c_i2;
     i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
     w2c_i0 = 1u;
     w2c_l6 = w2c_i0;
-    w2c_B39:;
-    w2c_i0 = w2c_l35;
-    if (w2c_i0) {goto w2c_B48;}
+    w2c_B36:;
+    w2c_i0 = w2c_l30;
+    if (w2c_i0) {goto w2c_B45;}
     w2c_i0 = 8388607u;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l31;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l27;
     switch (w2c_i0) {
-      case 0: goto w2c_B49;
-      case 1: goto w2c_B50;
-      default: goto w2c_B48;
+      case 0: goto w2c_B46;
+      case 1: goto w2c_B47;
+      default: goto w2c_B45;
     }
-    w2c_B50:;
+    w2c_B47:;
     w2c_i0 = 4194303u;
-    w2c_p2 = w2c_i0;
-    w2c_B49:;
+    w2c_l7 = w2c_i0;
+    w2c_B46:;
     w2c_i0 = w2c_l12;
     w2c_i1 = 2u;
     w2c_i0 <<= (w2c_i1 & 31);
@@ -1436,85 +1349,89 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i0 += w2c_i1;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    w2c_i1 = w2c_l7;
+    w2c_l13 = w2c_i0;
+    w2c_i1 = w2c_l13;
     w2c_i1 = i32_load((&w2c_memory), (u64)(w2c_i1));
-    w2c_i2 = w2c_p2;
+    w2c_i2 = w2c_l7;
     w2c_i1 &= w2c_i2;
     i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
-    w2c_B48:;
-    w2c_i0 = w2c_l34;
+    w2c_B45:;
+    w2c_i0 = w2c_l29;
     w2c_i1 = 1u;
     w2c_i0 += w2c_i1;
-    w2c_l34 = w2c_i0;
-    w2c_i0 = w2c_l36;
+    w2c_l29 = w2c_i0;
+    w2c_i0 = w2c_l31;
     w2c_i1 = 2u;
     w2c_i0 = w2c_i0 != w2c_i1;
-    if (w2c_i0) {goto w2c_B34;}
+    if (w2c_i0) {goto w2c_B31;}
     w2c_d0 = 1;
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     w2c_d0 -= w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_d1 = w2c_l40;
-    w2c_d0 -= w2c_d1;
-    w2c_d1 = w2c_l39;
-    w2c_i2 = w2c_l6;
-    w2c_d0 = w2c_i2 ? w2c_d0 : w2c_d1;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_i0 = 2u;
-    w2c_l36 = w2c_i0;
-    w2c_B34:;
-    w2c_d0 = w2c_l39;
+    w2c_l31 = w2c_i0;
+    w2c_i0 = w2c_l6;
+    w2c_i0 = !(w2c_i0);
+    if (w2c_i0) {goto w2c_B31;}
+    w2c_d0 = w2c_l34;
+    w2c_d1 = 1;
+    w2c_i2 = w2c_l18;
+    w2c_i1 = (*Z_envZ_core_math_scalbnZ_idi)(w2c_d1, w2c_i2);
+    w2c_d1 = (f64)(s32)(w2c_i1);
+    w2c_d0 -= w2c_d1;
+    w2c_l34 = w2c_d0;
+    w2c_B31:;
+    w2c_d0 = w2c_l34;
     w2c_d1 = 0;
     w2c_i0 = w2c_d0 != w2c_d1;
-    if (w2c_i0) {goto w2c_B51;}
+    if (w2c_i0) {goto w2c_B48;}
     w2c_i0 = w2c_l12;
     w2c_i1 = w2c_l10;
     w2c_i0 = (u32)((s32)w2c_i0 <= (s32)w2c_i1);
-    if (w2c_i0) {goto w2c_B52;}
+    if (w2c_i0) {goto w2c_B49;}
     w2c_i0 = w2c_l12;
     w2c_i1 = w2c_l10;
     w2c_i0 -= w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i1 = 3u;
     w2c_i0 &= w2c_i1;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
     w2c_i0 = w2c_l12;
-    w2c_l14 = w2c_i0;
+    w2c_l15 = w2c_i0;
     w2c_i0 = w2c_l12;
-    w2c_i1 = w2c_l22;
+    w2c_i1 = w2c_l19;
     w2c_i0 += w2c_i1;
     w2c_i1 = 3u;
     w2c_i0 = w2c_i0 < w2c_i1;
-    if (w2c_i0) {goto w2c_B53;}
-    w2c_i0 = w2c_p2;
+    if (w2c_i0) {goto w2c_B50;}
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967292u;
     w2c_i0 &= w2c_i1;
-    w2c_l13 = w2c_i0;
-    w2c_i0 = w2c_l28;
+    w2c_p2 = w2c_i0;
+    w2c_i0 = w2c_l25;
     w2c_i1 = w2c_l12;
     w2c_i2 = 2u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
     w2c_i0 = w2c_l12;
-    w2c_l14 = w2c_i0;
-    w2c_L54: 
-      w2c_i0 = w2c_p2;
+    w2c_l15 = w2c_i0;
+    w2c_L51: 
+      w2c_i0 = w2c_l7;
       w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
-      w2c_i1 = w2c_p2;
+      w2c_i1 = w2c_l7;
       w2c_i2 = 4u;
       w2c_i1 += w2c_i2;
       w2c_i1 = i32_load((&w2c_memory), (u64)(w2c_i1));
-      w2c_i2 = w2c_p2;
+      w2c_i2 = w2c_l7;
       w2c_i3 = 8u;
       w2c_i2 += w2c_i3;
       w2c_i2 = i32_load((&w2c_memory), (u64)(w2c_i2));
-      w2c_i3 = w2c_p2;
+      w2c_i3 = w2c_l7;
       w2c_i4 = 12u;
       w2c_i3 += w2c_i4;
       w2c_i3 = i32_load((&w2c_memory), (u64)(w2c_i3));
@@ -1524,48 +1441,48 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
       w2c_i1 |= w2c_i2;
       w2c_i0 |= w2c_i1;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4294967280u;
       w2c_i0 += w2c_i1;
+      w2c_l7 = w2c_i0;
+      w2c_i0 = w2c_l15;
+      w2c_i1 = 4294967292u;
+      w2c_i0 += w2c_i1;
+      w2c_l15 = w2c_i0;
+      w2c_i0 = w2c_p2;
+      w2c_i1 = 4294967292u;
+      w2c_i0 += w2c_i1;
       w2c_p2 = w2c_i0;
-      w2c_i0 = w2c_l14;
-      w2c_i1 = 4294967292u;
-      w2c_i0 += w2c_i1;
-      w2c_l14 = w2c_i0;
-      w2c_i0 = w2c_l13;
-      w2c_i1 = 4294967292u;
-      w2c_i0 += w2c_i1;
-      w2c_l13 = w2c_i0;
-      if (w2c_i0) {goto w2c_L54;}
-    w2c_B53:;
-    w2c_i0 = w2c_l7;
+      if (w2c_i0) {goto w2c_L51;}
+    w2c_B50:;
+    w2c_i0 = w2c_l13;
     w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B55;}
-    w2c_i0 = w2c_l27;
-    w2c_i1 = w2c_l14;
+    if (w2c_i0) {goto w2c_B52;}
+    w2c_i0 = w2c_l24;
+    w2c_i1 = w2c_l15;
     w2c_i2 = 2u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_L56: 
-      w2c_i0 = w2c_p2;
+    w2c_l7 = w2c_i0;
+    w2c_L53: 
+      w2c_i0 = w2c_l7;
       w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
       w2c_i1 = w2c_l6;
       w2c_i0 |= w2c_i1;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4294967292u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
-      w2c_i0 = w2c_l7;
+      w2c_l7 = w2c_i0;
+      w2c_i0 = w2c_l13;
       w2c_i1 = 4294967295u;
       w2c_i0 += w2c_i1;
-      w2c_l7 = w2c_i0;
-      if (w2c_i0) {goto w2c_L56;}
-    w2c_B55:;
+      w2c_l13 = w2c_i0;
+      if (w2c_i0) {goto w2c_L53;}
+    w2c_B52:;
     w2c_i0 = w2c_l6;
     w2c_i0 = !(w2c_i0);
-    if (w2c_i0) {goto w2c_B52;}
+    if (w2c_i0) {goto w2c_B49;}
     w2c_i0 = w2c_l5;
     w2c_i1 = 480u;
     w2c_i0 += w2c_i1;
@@ -1575,64 +1492,66 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i0 += w2c_i1;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_L57: 
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l18;
+    w2c_l17 = w2c_i0;
+    w2c_L54: 
       w2c_i0 = w2c_l12;
       w2c_i1 = 4294967295u;
       w2c_i0 += w2c_i1;
       w2c_l12 = w2c_i0;
-      w2c_i0 = w2c_l16;
+      w2c_i0 = w2c_l17;
       w2c_i1 = 4294967272u;
       w2c_i0 += w2c_i1;
-      w2c_l16 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_l17 = w2c_i0;
+      w2c_i0 = w2c_l7;
       w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4294967292u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
+      w2c_l7 = w2c_i0;
       w2c_i0 = w2c_l6;
       w2c_i0 = !(w2c_i0);
-      if (w2c_i0) {goto w2c_L57;}
+      if (w2c_i0) {goto w2c_L54;}
       goto w2c_B17;
     UNREACHABLE;
-    w2c_B52:;
-    w2c_i0 = w2c_l25;
-    w2c_p2 = w2c_i0;
+    w2c_B49:;
+    w2c_i0 = w2c_l22;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l12;
-    w2c_l14 = w2c_i0;
-    w2c_L58: 
-      w2c_i0 = w2c_l14;
+    w2c_l15 = w2c_i0;
+    w2c_L55: 
+      w2c_i0 = w2c_l15;
       w2c_i1 = 1u;
       w2c_i0 += w2c_i1;
-      w2c_l14 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_l15 = w2c_i0;
+      w2c_i0 = w2c_l7;
       w2c_i0 = i32_load((&w2c_memory), (u64)(w2c_i0));
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_p2;
+      w2c_i0 = w2c_l7;
       w2c_i1 = 4294967292u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
+      w2c_l7 = w2c_i0;
       w2c_i0 = w2c_l6;
       w2c_i0 = !(w2c_i0);
-      if (w2c_i0) {goto w2c_L58;}
-    w2c_i0 = w2c_l26;
+      if (w2c_i0) {goto w2c_L55;}
+    w2c_i0 = w2c_l23;
     w2c_i1 = w2c_p3;
     w2c_i2 = w2c_l12;
     w2c_i1 += w2c_i2;
     w2c_i2 = 3u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
-    w2c_l13 = w2c_i0;
-    w2c_L59: 
+    w2c_p2 = w2c_i0;
+    w2c_L56: 
       w2c_i0 = w2c_l5;
       w2c_i1 = 320u;
       w2c_i0 += w2c_i1;
       w2c_i1 = w2c_l12;
       w2c_i2 = w2c_p3;
       w2c_i1 += w2c_i2;
-      w2c_l17 = w2c_i1;
+      w2c_l9 = w2c_i1;
       w2c_i2 = 3u;
       w2c_i1 <<= (w2c_i2 & 31);
       w2c_i0 += w2c_i1;
@@ -1652,176 +1571,113 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
       w2c_i0 = w2c_p3;
       w2c_i1 = 1u;
       w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
-      if (w2c_i0) {goto w2c_B61;}
+      if (w2c_i0) {goto w2c_B58;}
       w2c_d0 = 0;
-      w2c_l39 = w2c_d0;
-      goto w2c_B60;
-      w2c_B61:;
+      w2c_l34 = w2c_d0;
+      goto w2c_B57;
+      w2c_B58:;
       w2c_i0 = 0u;
-      w2c_l7 = w2c_i0;
+      w2c_l13 = w2c_i0;
       w2c_d0 = 0;
-      w2c_l39 = w2c_d0;
+      w2c_l34 = w2c_d0;
       w2c_i0 = w2c_l11;
       w2c_i0 = !(w2c_i0);
-      if (w2c_i0) {goto w2c_B62;}
-      w2c_i0 = w2c_l13;
-      w2c_p2 = w2c_i0;
+      if (w2c_i0) {goto w2c_B59;}
+      w2c_i0 = w2c_p2;
+      w2c_l7 = w2c_i0;
       w2c_i0 = w2c_p0;
       w2c_l6 = w2c_i0;
-      w2c_L63: 
-        w2c_i0 = w2c_p2;
+      w2c_L60: 
+        w2c_i0 = w2c_l7;
         w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
         w2c_i1 = w2c_l6;
         w2c_i2 = 8u;
         w2c_i1 += w2c_i2;
         w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
         w2c_d0 *= w2c_d1;
-        w2c_i1 = w2c_p2;
+        w2c_i1 = w2c_l7;
         w2c_i2 = 8u;
         w2c_i1 += w2c_i2;
         w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
         w2c_i2 = w2c_l6;
         w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
         w2c_d1 *= w2c_d2;
-        w2c_d2 = w2c_l39;
+        w2c_d2 = w2c_l34;
         w2c_d1 += w2c_d2;
         w2c_d0 += w2c_d1;
-        w2c_l39 = w2c_d0;
-        w2c_i0 = w2c_p2;
+        w2c_l34 = w2c_d0;
+        w2c_i0 = w2c_l7;
         w2c_i1 = 4294967280u;
         w2c_i0 += w2c_i1;
-        w2c_p2 = w2c_i0;
+        w2c_l7 = w2c_i0;
         w2c_i0 = w2c_l6;
         w2c_i1 = 16u;
         w2c_i0 += w2c_i1;
         w2c_l6 = w2c_i0;
-        w2c_i0 = w2c_l15;
-        w2c_i1 = w2c_l7;
+        w2c_i0 = w2c_l16;
+        w2c_i1 = w2c_l13;
         w2c_i2 = 2u;
         w2c_i1 += w2c_i2;
-        w2c_l7 = w2c_i1;
+        w2c_l13 = w2c_i1;
         w2c_i0 = w2c_i0 != w2c_i1;
-        if (w2c_i0) {goto w2c_L63;}
-      w2c_B62:;
-      w2c_i0 = w2c_l21;
+        if (w2c_i0) {goto w2c_L60;}
+      w2c_B59:;
+      w2c_i0 = w2c_l14;
       w2c_i0 = !(w2c_i0);
-      if (w2c_i0) {goto w2c_B60;}
+      if (w2c_i0) {goto w2c_B57;}
       w2c_i0 = w2c_l5;
       w2c_i1 = 320u;
       w2c_i0 += w2c_i1;
-      w2c_i1 = w2c_l17;
-      w2c_i2 = w2c_l7;
+      w2c_i1 = w2c_l9;
+      w2c_i2 = w2c_l13;
       w2c_i1 -= w2c_i2;
       w2c_i2 = 3u;
       w2c_i1 <<= (w2c_i2 & 31);
       w2c_i0 += w2c_i1;
       w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
       w2c_i1 = w2c_p0;
-      w2c_i2 = w2c_l7;
+      w2c_i2 = w2c_l13;
       w2c_i3 = 3u;
       w2c_i2 <<= (w2c_i3 & 31);
       w2c_i1 += w2c_i2;
       w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
       w2c_d0 *= w2c_d1;
-      w2c_d1 = w2c_l39;
+      w2c_d1 = w2c_l34;
       w2c_d0 += w2c_d1;
-      w2c_l39 = w2c_d0;
-      w2c_B60:;
+      w2c_l34 = w2c_d0;
+      w2c_B57:;
       w2c_i0 = w2c_l5;
       w2c_i1 = w2c_l12;
       w2c_i2 = 3u;
       w2c_i1 <<= (w2c_i2 & 31);
       w2c_i0 += w2c_i1;
-      w2c_d1 = w2c_l39;
+      w2c_d1 = w2c_l34;
       f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-      w2c_i0 = w2c_l13;
+      w2c_i0 = w2c_p2;
       w2c_i1 = 8u;
       w2c_i0 += w2c_i1;
-      w2c_l13 = w2c_i0;
+      w2c_p2 = w2c_i0;
       w2c_i0 = w2c_l12;
-      w2c_i1 = w2c_l14;
+      w2c_i1 = w2c_l15;
       w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-      if (w2c_i0) {goto w2c_L59;}
-    w2c_i0 = w2c_l14;
+      if (w2c_i0) {goto w2c_L56;}
+    w2c_i0 = w2c_l15;
     w2c_l12 = w2c_i0;
     goto w2c_L18;
-    w2c_B51:;
-  w2c_i0 = 24u;
-  w2c_i1 = w2c_l9;
-  w2c_i0 -= w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 4294966272u;
-  w2c_i0 = (u32)((s32)w2c_i0 > (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B65;}
-  w2c_i0 = w2c_p2;
-  w2c_i1 = 2047u;
-  w2c_i0 = w2c_i0 >= w2c_i1;
-  if (w2c_i0) {goto w2c_B66;}
-  w2c_i0 = 4294966297u;
-  w2c_i1 = w2c_l9;
-  w2c_i0 -= w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_d0 = w2c_l39;
-  w2c_d1 = 8.9884656743115795e+307;
-  w2c_d0 *= w2c_d1;
-  w2c_l39 = w2c_d0;
-  goto w2c_B64;
-  w2c_B66:;
-  w2c_i0 = w2c_p2;
-  w2c_i1 = 3069u;
-  w2c_i2 = w2c_p2;
-  w2c_i3 = 3069u;
-  w2c_i2 = w2c_i2 < w2c_i3;
-  w2c_i0 = w2c_i2 ? w2c_i0 : w2c_i1;
-  w2c_i1 = 4294965250u;
-  w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  goto w2c_B64;
-  w2c_B65:;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 1023u;
-  w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B64;}
-  w2c_i0 = w2c_p2;
-  w2c_i1 = 4294965304u;
-  w2c_i0 = w2c_i0 <= w2c_i1;
-  if (w2c_i0) {goto w2c_B67;}
-  w2c_i0 = 993u;
-  w2c_i1 = w2c_l9;
-  w2c_i0 -= w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_d0 = w2c_l39;
-  w2c_d1 = 2.0041683600089728e-292;
-  w2c_d0 *= w2c_d1;
-  w2c_l39 = w2c_d0;
-  goto w2c_B64;
-  w2c_B67:;
-  w2c_i0 = w2c_p2;
-  w2c_i1 = 4294964336u;
-  w2c_i2 = w2c_p2;
-  w2c_i3 = 4294964336u;
-  w2c_i2 = w2c_i2 > w2c_i3;
-  w2c_i0 = w2c_i2 ? w2c_i0 : w2c_i1;
-  w2c_i1 = 1938u;
-  w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
-  w2c_B64:;
-  w2c_d0 = w2c_l39;
-  w2c_i1 = w2c_p2;
-  w2c_i2 = 1023u;
-  w2c_i1 += w2c_i2;
-  w2c_j1 = (u64)(w2c_i1);
-  w2c_j2 = 52ull;
-  w2c_j1 <<= (w2c_j2 & 63);
-  w2c_d1 = f64_reinterpret_i64(w2c_j1);
-  w2c_d0 *= w2c_d1;
-  w2c_l39 = w2c_d0;
-  w2c_d1 = 16777216;
-  w2c_i0 = w2c_d0 < w2c_d1;
-  if (w2c_i0) {goto w2c_B69;}
+    w2c_B48:;
+  w2c_d0 = w2c_l34;
+  w2c_i1 = 24u;
+  w2c_i2 = w2c_l17;
+  w2c_i1 -= w2c_i2;
+  w2c_i0 = (*Z_envZ_core_math_scalbnZ_idi)(w2c_d0, w2c_i1);
+  w2c_l7 = w2c_i0;
+  w2c_i1 = 16777216u;
+  w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
+  if (w2c_i0) {goto w2c_B62;}
+  w2c_i0 = w2c_l18;
+  w2c_l17 = w2c_i0;
+  goto w2c_B61;
+  w2c_B62:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 480u;
   w2c_i0 += w2c_i1;
@@ -1829,70 +1685,54 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i2 = 2u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_d0 = w2c_l39;
-  w2c_d1 = w2c_l39;
+  w2c_l6 = w2c_i0;
+  w2c_i0 = w2c_l7;
+  w2c_d0 = (f64)(s32)(w2c_i0);
+  w2c_l34 = w2c_d0;
+  w2c_d1 = w2c_l34;
   w2c_d2 = 5.9604644775390625e-08;
   w2c_d1 *= w2c_d2;
-  w2c_l38 = w2c_d1;
+  w2c_l34 = w2c_d1;
   w2c_d1 = trunc(w2c_d1);
   w2c_d2 = -16777216;
   w2c_d1 *= w2c_d2;
   w2c_d0 += w2c_d1;
-  w2c_l39 = w2c_d0;
+  w2c_l33 = w2c_d0;
   w2c_d0 = fabs(w2c_d0);
   w2c_d1 = 2147483648;
   w2c_i0 = w2c_d0 < w2c_d1;
   w2c_i0 = !(w2c_i0);
-  if (w2c_i0) {goto w2c_B71;}
-  w2c_d0 = w2c_l39;
+  if (w2c_i0) {goto w2c_B64;}
+  w2c_d0 = w2c_l33;
   w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-  w2c_l6 = w2c_i0;
-  goto w2c_B70;
-  w2c_B71:;
+  w2c_l7 = w2c_i0;
+  goto w2c_B63;
+  w2c_B64:;
   w2c_i0 = 2147483648u;
-  w2c_l6 = w2c_i0;
-  w2c_B70:;
-  w2c_i0 = w2c_p2;
-  w2c_i1 = w2c_l6;
+  w2c_l7 = w2c_i0;
+  w2c_B63:;
+  w2c_i0 = w2c_l6;
+  w2c_i1 = w2c_l7;
   i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
+  w2c_d0 = w2c_l34;
+  w2c_d0 = fabs(w2c_d0);
+  w2c_d1 = 2147483648;
+  w2c_i0 = w2c_d0 < w2c_d1;
+  w2c_i0 = !(w2c_i0);
+  if (w2c_i0) {goto w2c_B66;}
+  w2c_d0 = w2c_l34;
+  w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
+  w2c_l7 = w2c_i0;
+  goto w2c_B65;
+  w2c_B66:;
+  w2c_i0 = 2147483648u;
+  w2c_l7 = w2c_i0;
+  w2c_B65:;
   w2c_i0 = w2c_l12;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
   w2c_l12 = w2c_i0;
-  w2c_d0 = w2c_l38;
-  w2c_d0 = fabs(w2c_d0);
-  w2c_d1 = 2147483648;
-  w2c_i0 = w2c_d0 < w2c_d1;
-  w2c_i0 = !(w2c_i0);
-  if (w2c_i0) {goto w2c_B72;}
-  w2c_d0 = w2c_l38;
-  w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-  w2c_p2 = w2c_i0;
-  w2c_i0 = w2c_l9;
-  w2c_l16 = w2c_i0;
-  goto w2c_B68;
-  w2c_B72:;
-  w2c_i0 = 2147483648u;
-  w2c_p2 = w2c_i0;
-  w2c_i0 = w2c_l9;
-  w2c_l16 = w2c_i0;
-  goto w2c_B68;
-  w2c_B69:;
-  w2c_d0 = w2c_l39;
-  w2c_d0 = fabs(w2c_d0);
-  w2c_d1 = 2147483648;
-  w2c_i0 = w2c_d0 < w2c_d1;
-  w2c_i0 = !(w2c_i0);
-  if (w2c_i0) {goto w2c_B73;}
-  w2c_d0 = w2c_l39;
-  w2c_i0 = I32_TRUNC_S_F64(w2c_d0);
-  w2c_p2 = w2c_i0;
-  goto w2c_B68;
-  w2c_B73:;
-  w2c_i0 = 2147483648u;
-  w2c_p2 = w2c_i0;
-  w2c_B68:;
+  w2c_B61:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 480u;
   w2c_i0 += w2c_i1;
@@ -1900,95 +1740,35 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i2 = 2u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_i1 = w2c_p2;
+  w2c_i1 = w2c_l7;
   i32_store((&w2c_memory), (u64)(w2c_i0), w2c_i1);
   w2c_B17:;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 1024u;
-  w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B75;}
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 2047u;
-  w2c_i0 = w2c_i0 >= w2c_i1;
-  if (w2c_i0) {goto w2c_B76;}
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 4294966273u;
-  w2c_i0 += w2c_i1;
-  w2c_l16 = w2c_i0;
-  w2c_d0 = 8.9884656743115795e+307;
-  w2c_l39 = w2c_d0;
-  goto w2c_B74;
-  w2c_B76:;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 3069u;
-  w2c_i2 = w2c_l16;
-  w2c_i3 = 3069u;
-  w2c_i2 = w2c_i2 < w2c_i3;
-  w2c_i0 = w2c_i2 ? w2c_i0 : w2c_i1;
-  w2c_i1 = 4294965250u;
-  w2c_i0 += w2c_i1;
-  w2c_l16 = w2c_i0;
-  goto w2c_B74;
-  w2c_B75:;
   w2c_d0 = 1;
-  w2c_l39 = w2c_d0;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 4294966273u;
-  w2c_i0 = (u32)((s32)w2c_i0 > (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B74;}
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 4294965304u;
-  w2c_i0 = w2c_i0 <= w2c_i1;
-  if (w2c_i0) {goto w2c_B77;}
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 969u;
-  w2c_i0 += w2c_i1;
-  w2c_l16 = w2c_i0;
-  w2c_d0 = 2.0041683600089728e-292;
-  w2c_l39 = w2c_d0;
-  goto w2c_B74;
-  w2c_B77:;
-  w2c_i0 = w2c_l16;
-  w2c_i1 = 4294964336u;
-  w2c_i2 = w2c_l16;
-  w2c_i3 = 4294964336u;
-  w2c_i2 = w2c_i2 > w2c_i3;
-  w2c_i0 = w2c_i2 ? w2c_i0 : w2c_i1;
-  w2c_i1 = 1938u;
-  w2c_i0 += w2c_i1;
-  w2c_l16 = w2c_i0;
-  w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
-  w2c_B74:;
+  w2c_i1 = w2c_l17;
+  w2c_i0 = (*Z_envZ_core_math_scalbnZ_idi)(w2c_d0, w2c_i1);
+  w2c_l7 = w2c_i0;
   w2c_i0 = w2c_l12;
   w2c_i1 = 0u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B78;}
-  w2c_d0 = w2c_l39;
-  w2c_i1 = w2c_l16;
-  w2c_i2 = 1023u;
-  w2c_i1 += w2c_i2;
-  w2c_j1 = (u64)(w2c_i1);
-  w2c_j2 = 52ull;
-  w2c_j1 <<= (w2c_j2 & 63);
-  w2c_d1 = f64_reinterpret_i64(w2c_j1);
-  w2c_d0 *= w2c_d1;
-  w2c_l39 = w2c_d0;
+  if (w2c_i0) {goto w2c_B67;}
+  w2c_i0 = w2c_l7;
+  w2c_d0 = (f64)(s32)(w2c_i0);
+  w2c_l34 = w2c_d0;
   w2c_i0 = w2c_l12;
   w2c_i1 = 1u;
   w2c_i0 &= w2c_i1;
   w2c_i0 = !(w2c_i0);
-  if (w2c_i0) {goto w2c_B80;}
+  if (w2c_i0) {goto w2c_B69;}
   w2c_i0 = w2c_l12;
-  w2c_p2 = w2c_i0;
-  goto w2c_B79;
-  w2c_B80:;
+  w2c_l7 = w2c_i0;
+  goto w2c_B68;
+  w2c_B69:;
   w2c_i0 = w2c_l5;
   w2c_i1 = w2c_l12;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   w2c_i2 = w2c_l5;
   w2c_i3 = 480u;
   w2c_i2 += w2c_i3;
@@ -2003,42 +1783,42 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 = w2c_l12;
   w2c_i1 = 4294967295u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_d0 = w2c_l39;
+  w2c_l7 = w2c_i0;
+  w2c_d0 = w2c_l34;
   w2c_d1 = 5.9604644775390625e-08;
   w2c_d0 *= w2c_d1;
-  w2c_l39 = w2c_d0;
-  w2c_B79:;
+  w2c_l34 = w2c_d0;
+  w2c_B68:;
   w2c_i0 = w2c_l12;
   w2c_i0 = !(w2c_i0);
-  if (w2c_i0) {goto w2c_B81;}
-  w2c_i0 = w2c_p2;
+  if (w2c_i0) {goto w2c_B70;}
+  w2c_i0 = w2c_l7;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
+  w2c_l13 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 480u;
   w2c_i0 += w2c_i1;
-  w2c_i1 = w2c_p2;
+  w2c_i1 = w2c_l7;
   w2c_i2 = 4294967295u;
   w2c_i1 += w2c_i2;
   w2c_l6 = w2c_i1;
   w2c_i2 = 2u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = w2c_l6;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
   w2c_l6 = w2c_i0;
-  w2c_L82: 
+  w2c_L71: 
     w2c_i0 = w2c_l6;
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     w2c_d2 = 5.9604644775390625e-08;
     w2c_d1 *= w2c_d2;
-    w2c_i2 = w2c_p2;
+    w2c_i2 = w2c_l7;
     w2c_i2 = i32_load((&w2c_memory), (u64)(w2c_i2));
     w2c_d2 = (f64)(s32)(w2c_i2);
     w2c_d1 *= w2c_d2;
@@ -2046,129 +1826,129 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
     w2c_i0 = w2c_l6;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
-    w2c_d1 = w2c_l39;
-    w2c_i2 = w2c_p2;
+    w2c_d1 = w2c_l34;
+    w2c_i2 = w2c_l7;
     w2c_i3 = 4u;
     w2c_i2 += w2c_i3;
     w2c_i2 = i32_load((&w2c_memory), (u64)(w2c_i2));
     w2c_d2 = (f64)(s32)(w2c_i2);
     w2c_d1 *= w2c_d2;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967280u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
-    w2c_d0 = w2c_l39;
+    w2c_d0 = w2c_l34;
     w2c_d1 = 3.5527136788005009e-15;
     w2c_d0 *= w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_l7;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l13;
     w2c_i1 = 4294967294u;
     w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    if (w2c_i0) {goto w2c_L82;}
-  w2c_B81:;
+    w2c_l13 = w2c_i0;
+    if (w2c_i0) {goto w2c_L71;}
+  w2c_B70:;
   w2c_i0 = w2c_l12;
   w2c_i1 = 0u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B78;}
+  if (w2c_i0) {goto w2c_B67;}
   w2c_i0 = w2c_l5;
   w2c_i1 = w2c_l12;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_l15 = w2c_i0;
+  w2c_l16 = w2c_i0;
   w2c_i0 = w2c_l12;
-  w2c_p2 = w2c_i0;
-  w2c_L83: 
+  w2c_l7 = w2c_i0;
+  w2c_L72: 
     w2c_i0 = w2c_l12;
-    w2c_i1 = w2c_p2;
-    w2c_l13 = w2c_i1;
+    w2c_i1 = w2c_l7;
+    w2c_p2 = w2c_i1;
     w2c_i0 -= w2c_i1;
-    w2c_l14 = w2c_i0;
+    w2c_l15 = w2c_i0;
     w2c_d0 = 0;
-    w2c_l39 = w2c_d0;
+    w2c_l34 = w2c_d0;
     w2c_i0 = 0u;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = 0u;
     w2c_l6 = w2c_i0;
-    w2c_L85: 
-      w2c_i0 = w2c_l15;
-      w2c_i1 = w2c_p2;
+    w2c_L74: 
+      w2c_i0 = w2c_l16;
+      w2c_i1 = w2c_l7;
       w2c_i0 += w2c_i1;
       w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-      w2c_i1 = w2c_p2;
+      w2c_i1 = w2c_l7;
       w2c_i2 = 1312u;
       w2c_i1 += w2c_i2;
       w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
       w2c_d0 *= w2c_d1;
-      w2c_d1 = w2c_l39;
+      w2c_d1 = w2c_l34;
       w2c_d0 += w2c_d1;
-      w2c_l39 = w2c_d0;
+      w2c_l34 = w2c_d0;
       w2c_i0 = w2c_l6;
       w2c_i1 = w2c_l10;
       w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
-      if (w2c_i0) {goto w2c_B84;}
-      w2c_i0 = w2c_p2;
+      if (w2c_i0) {goto w2c_B73;}
+      w2c_i0 = w2c_l7;
       w2c_i1 = 8u;
       w2c_i0 += w2c_i1;
-      w2c_p2 = w2c_i0;
-      w2c_i0 = w2c_l6;
-      w2c_i1 = w2c_l14;
-      w2c_i0 = w2c_i0 < w2c_i1;
       w2c_l7 = w2c_i0;
+      w2c_i0 = w2c_l6;
+      w2c_i1 = w2c_l15;
+      w2c_i0 = w2c_i0 < w2c_i1;
+      w2c_l13 = w2c_i0;
       w2c_i0 = w2c_l6;
       w2c_i1 = 1u;
       w2c_i0 += w2c_i1;
       w2c_l6 = w2c_i0;
-      w2c_i0 = w2c_l7;
-      if (w2c_i0) {goto w2c_L85;}
-    w2c_B84:;
+      w2c_i0 = w2c_l13;
+      if (w2c_i0) {goto w2c_L74;}
+    w2c_B73:;
     w2c_i0 = w2c_l5;
     w2c_i1 = 160u;
     w2c_i0 += w2c_i1;
-    w2c_i1 = w2c_l14;
+    w2c_i1 = w2c_l15;
     w2c_i2 = 3u;
     w2c_i1 <<= (w2c_i2 & 31);
     w2c_i0 += w2c_i1;
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_l15;
+    w2c_i0 = w2c_l16;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
-    w2c_l15 = w2c_i0;
-    w2c_i0 = w2c_l13;
+    w2c_l16 = w2c_i0;
+    w2c_i0 = w2c_p2;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l13;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_p2;
     w2c_i1 = 0u;
     w2c_i0 = (u32)((s32)w2c_i0 > (s32)w2c_i1);
-    if (w2c_i0) {goto w2c_L83;}
-  w2c_B78:;
+    if (w2c_i0) {goto w2c_L72;}
+  w2c_B67:;
   w2c_i0 = w2c_p4;
   switch (w2c_i0) {
-    case 0: goto w2c_B91;
-    case 1: goto w2c_B90;
-    case 2: goto w2c_B90;
-    case 3: goto w2c_B92;
-    default: goto w2c_B86;
+    case 0: goto w2c_B80;
+    case 1: goto w2c_B79;
+    case 2: goto w2c_B79;
+    case 3: goto w2c_B81;
+    default: goto w2c_B75;
   }
-  w2c_B92:;
+  w2c_B81:;
   w2c_d0 = 0;
-  w2c_l41 = w2c_d0;
+  w2c_l35 = w2c_d0;
   w2c_i0 = w2c_l12;
   w2c_i1 = 1u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B87;}
+  if (w2c_i0) {goto w2c_B76;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 4294967295u;
   w2c_i0 += w2c_i1;
-  w2c_l15 = w2c_i0;
+  w2c_l16 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
@@ -2177,61 +1957,61 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-  w2c_l39 = w2c_d0;
+  w2c_l34 = w2c_d0;
   w2c_i0 = w2c_l12;
   w2c_i1 = 3u;
   w2c_i0 &= w2c_i1;
-  w2c_l7 = w2c_i0;
-  if (w2c_i0) {goto w2c_B94;}
+  w2c_l13 = w2c_i0;
+  if (w2c_i0) {goto w2c_B83;}
   w2c_i0 = w2c_l12;
   w2c_l6 = w2c_i0;
-  goto w2c_B93;
-  w2c_B94:;
+  goto w2c_B82;
+  w2c_B83:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
-  w2c_i1 = w2c_l15;
+  w2c_i1 = w2c_l16;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i0 = w2c_l12;
   w2c_l6 = w2c_i0;
-  w2c_L95: 
-    w2c_i0 = w2c_p2;
+  w2c_L84: 
+    w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
-    w2c_d1 = w2c_l39;
-    w2c_i2 = w2c_p2;
+    w2c_i0 = w2c_l7;
+    w2c_d1 = w2c_l34;
+    w2c_i2 = w2c_l7;
     w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
     w2c_d1 += w2c_d2;
-    w2c_l39 = w2c_d1;
+    w2c_l34 = w2c_d1;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
-    w2c_i0 = w2c_l7;
+    w2c_i0 = w2c_l13;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    if (w2c_i0) {goto w2c_L95;}
-  w2c_B93:;
-  w2c_i0 = w2c_l15;
+    w2c_l13 = w2c_i0;
+    if (w2c_i0) {goto w2c_L84;}
+  w2c_B82:;
+  w2c_i0 = w2c_l16;
   w2c_i1 = 3u;
   w2c_i0 = w2c_i0 < w2c_i1;
-  if (w2c_i0) {goto w2c_B96;}
+  if (w2c_i0) {goto w2c_B85;}
   w2c_i0 = w2c_l6;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
+  w2c_l13 = w2c_i0;
   w2c_i0 = w2c_l6;
   w2c_i1 = 3u;
   w2c_i0 <<= (w2c_i1 & 31);
@@ -2241,69 +2021,69 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967264u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_L97: 
-    w2c_i0 = w2c_p2;
+  w2c_l7 = w2c_i0;
+  w2c_L86: 
+    w2c_i0 = w2c_l7;
     w2c_i1 = 32u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 24u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_l38 = w2c_d0;
+    w2c_l33 = w2c_d0;
     w2c_i0 = w2c_l6;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 16u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_l40 = w2c_d0;
+    w2c_l36 = w2c_d0;
     w2c_i0 = w2c_l6;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_l42 = w2c_d0;
+    w2c_l37 = w2c_d0;
     w2c_i0 = w2c_l6;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
-    w2c_d1 = w2c_l42;
-    w2c_d2 = w2c_l40;
-    w2c_d3 = w2c_l39;
-    w2c_d4 = w2c_l38;
+    w2c_i0 = w2c_l7;
+    w2c_d1 = w2c_l37;
+    w2c_d2 = w2c_l36;
+    w2c_d3 = w2c_l34;
+    w2c_d4 = w2c_l33;
     w2c_d3 += w2c_d4;
     w2c_d2 += w2c_d3;
     w2c_d1 += w2c_d2;
-    w2c_i2 = w2c_p2;
+    w2c_i2 = w2c_l7;
     w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
     w2c_d1 += w2c_d2;
-    w2c_l39 = w2c_d1;
+    w2c_l34 = w2c_d1;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967264u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l7;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l13;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
+    w2c_l13 = w2c_i0;
     w2c_i1 = 1u;
     w2c_i0 = w2c_i0 > w2c_i1;
-    if (w2c_i0) {goto w2c_L97;}
-  w2c_B96:;
+    if (w2c_i0) {goto w2c_L86;}
+  w2c_B85:;
   w2c_i0 = w2c_l12;
   w2c_i1 = 2u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B87;}
+  if (w2c_i0) {goto w2c_B76;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
@@ -2311,11 +2091,11 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
-  w2c_i1 = w2c_l15;
+  w2c_i1 = w2c_l16;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
@@ -2324,69 +2104,69 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-  w2c_l39 = w2c_d0;
-  w2c_L98: 
-    w2c_i0 = w2c_p2;
+  w2c_l34 = w2c_d0;
+  w2c_L87: 
+    w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
     w2c_j1 = 0ull;
     i64_store((&w2c_memory), (u64)(w2c_i0), w2c_j1);
-    w2c_i0 = w2c_p2;
-    w2c_d1 = w2c_l39;
-    w2c_i2 = w2c_p2;
+    w2c_i0 = w2c_l7;
+    w2c_d1 = w2c_l34;
+    w2c_i2 = w2c_l7;
     w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
     w2c_d1 += w2c_d2;
-    w2c_l39 = w2c_d1;
+    w2c_l34 = w2c_d1;
     f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
     w2c_i1 = 2u;
     w2c_i0 = w2c_i0 > w2c_i1;
-    if (w2c_i0) {goto w2c_L98;}
+    if (w2c_i0) {goto w2c_L87;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 2u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B87;}
+  if (w2c_i0) {goto w2c_B76;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 4294967294u;
   w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
-  w2c_i0 = w2c_l15;
+  w2c_l13 = w2c_i0;
+  w2c_i0 = w2c_l16;
   w2c_i1 = 3u;
   w2c_i0 &= w2c_i1;
   w2c_l6 = w2c_i0;
+  if (w2c_i0) {goto w2c_B78;}
+  w2c_d0 = 0;
+  w2c_l35 = w2c_d0;
+  goto w2c_B77;
+  w2c_B80:;
+  w2c_i0 = w2c_l12;
+  w2c_i1 = 0u;
+  w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
   if (w2c_i0) {goto w2c_B89;}
   w2c_d0 = 0;
-  w2c_l41 = w2c_d0;
+  w2c_l34 = w2c_d0;
   goto w2c_B88;
-  w2c_B91:;
-  w2c_i0 = w2c_l12;
-  w2c_i1 = 0u;
-  w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B100;}
-  w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
-  goto w2c_B99;
-  w2c_B100:;
+  w2c_B89:;
   w2c_i0 = w2c_l12;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
   w2c_i1 = 3u;
   w2c_i0 &= w2c_i1;
-  w2c_l7 = w2c_i0;
-  if (w2c_i0) {goto w2c_B102;}
+  w2c_l13 = w2c_i0;
+  if (w2c_i0) {goto w2c_B91;}
   w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
+  w2c_l34 = w2c_d0;
   w2c_i0 = w2c_l12;
   w2c_l6 = w2c_i0;
-  goto w2c_B101;
-  w2c_B102:;
+  goto w2c_B90;
+  w2c_B91:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
@@ -2394,150 +2174,39 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
+  w2c_l34 = w2c_d0;
   w2c_i0 = w2c_l12;
   w2c_l6 = w2c_i0;
-  w2c_L103: 
+  w2c_L92: 
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_p2;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l7;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l13;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    if (w2c_i0) {goto w2c_L103;}
-  w2c_B101:;
-  w2c_i0 = w2c_l12;
-  w2c_i1 = 3u;
-  w2c_i0 = w2c_i0 < w2c_i1;
-  if (w2c_i0) {goto w2c_B99;}
-  w2c_i0 = w2c_l6;
-  w2c_i1 = 1u;
-  w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
-  w2c_i0 = w2c_l6;
-  w2c_i1 = 3u;
-  w2c_i0 <<= (w2c_i1 & 31);
-  w2c_i1 = w2c_l5;
-  w2c_i2 = 160u;
-  w2c_i1 += w2c_i2;
-  w2c_i0 += w2c_i1;
-  w2c_i1 = 4294967272u;
-  w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_L104: 
-    w2c_i0 = w2c_p2;
-    w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_i1 = w2c_p2;
-    w2c_i2 = 8u;
-    w2c_i1 += w2c_i2;
-    w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
-    w2c_i2 = w2c_p2;
-    w2c_i3 = 16u;
-    w2c_i2 += w2c_i3;
-    w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
-    w2c_i3 = w2c_p2;
-    w2c_i4 = 24u;
-    w2c_i3 += w2c_i4;
-    w2c_d3 = f64_load((&w2c_memory), (u64)(w2c_i3));
-    w2c_d4 = w2c_l39;
-    w2c_d3 += w2c_d4;
-    w2c_d2 += w2c_d3;
-    w2c_d1 += w2c_d2;
-    w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_p2;
-    w2c_i1 = 4294967264u;
-    w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l7;
-    w2c_i1 = 4294967292u;
-    w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    if (w2c_i0) {goto w2c_L104;}
-  w2c_B99:;
-  w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l39;
-  w2c_d1 = -(w2c_d1);
-  w2c_d2 = w2c_l39;
-  w2c_i3 = w2c_l36;
-  w2c_d1 = w2c_i3 ? w2c_d1 : w2c_d2;
-  f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
-  goto w2c_B86;
+    w2c_l13 = w2c_i0;
+    if (w2c_i0) {goto w2c_L92;}
   w2c_B90:;
   w2c_i0 = w2c_l12;
-  w2c_i1 = 0u;
-  w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B106;}
-  w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
-  goto w2c_B105;
-  w2c_B106:;
-  w2c_i0 = w2c_l12;
-  w2c_i1 = 1u;
-  w2c_i0 += w2c_i1;
-  w2c_i1 = 3u;
-  w2c_i0 &= w2c_i1;
-  w2c_l7 = w2c_i0;
-  if (w2c_i0) {goto w2c_B108;}
-  w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
-  w2c_i0 = w2c_l12;
-  w2c_l6 = w2c_i0;
-  goto w2c_B107;
-  w2c_B108:;
-  w2c_i0 = w2c_l5;
-  w2c_i1 = 160u;
-  w2c_i0 += w2c_i1;
-  w2c_i1 = w2c_l12;
-  w2c_i2 = 3u;
-  w2c_i1 <<= (w2c_i2 & 31);
-  w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_d0 = 0;
-  w2c_l39 = w2c_d0;
-  w2c_i0 = w2c_l12;
-  w2c_l6 = w2c_i0;
-  w2c_L109: 
-    w2c_i0 = w2c_l6;
-    w2c_i1 = 4294967295u;
-    w2c_i0 += w2c_i1;
-    w2c_l6 = w2c_i0;
-    w2c_i0 = w2c_p2;
-    w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_d1 = w2c_l39;
-    w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_p2;
-    w2c_i1 = 4294967288u;
-    w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l7;
-    w2c_i1 = 4294967295u;
-    w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    if (w2c_i0) {goto w2c_L109;}
-  w2c_B107:;
-  w2c_i0 = w2c_l12;
   w2c_i1 = 3u;
   w2c_i0 = w2c_i0 < w2c_i1;
-  if (w2c_i0) {goto w2c_B105;}
+  if (w2c_i0) {goto w2c_B88;}
   w2c_i0 = w2c_l6;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
-  w2c_l7 = w2c_i0;
+  w2c_l13 = w2c_i0;
   w2c_i0 = w2c_l6;
   w2c_i1 = 3u;
   w2c_i0 <<= (w2c_i1 & 31);
@@ -2547,56 +2216,167 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967272u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_L110: 
-    w2c_i0 = w2c_p2;
+  w2c_l7 = w2c_i0;
+  w2c_L93: 
+    w2c_i0 = w2c_l7;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_i1 = w2c_p2;
+    w2c_i1 = w2c_l7;
     w2c_i2 = 8u;
     w2c_i1 += w2c_i2;
     w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
-    w2c_i2 = w2c_p2;
+    w2c_i2 = w2c_l7;
     w2c_i3 = 16u;
     w2c_i2 += w2c_i3;
     w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
-    w2c_i3 = w2c_p2;
+    w2c_i3 = w2c_l7;
     w2c_i4 = 24u;
     w2c_i3 += w2c_i4;
     w2c_d3 = f64_load((&w2c_memory), (u64)(w2c_i3));
-    w2c_d4 = w2c_l39;
+    w2c_d4 = w2c_l34;
     w2c_d3 += w2c_d4;
     w2c_d2 += w2c_d3;
     w2c_d1 += w2c_d2;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_p2;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967264u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l7;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l13;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
-    w2c_l7 = w2c_i0;
-    if (w2c_i0) {goto w2c_L110;}
-  w2c_B105:;
+    w2c_l13 = w2c_i0;
+    if (w2c_i0) {goto w2c_L93;}
+  w2c_B88:;
   w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   w2c_d1 = -(w2c_d1);
-  w2c_d2 = w2c_l39;
-  w2c_i3 = w2c_l36;
+  w2c_d2 = w2c_l34;
+  w2c_i3 = w2c_l31;
+  w2c_d1 = w2c_i3 ? w2c_d1 : w2c_d2;
+  f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
+  goto w2c_B75;
+  w2c_B79:;
+  w2c_i0 = w2c_l12;
+  w2c_i1 = 0u;
+  w2c_i0 = (u32)((s32)w2c_i0 >= (s32)w2c_i1);
+  if (w2c_i0) {goto w2c_B95;}
+  w2c_d0 = 0;
+  w2c_l34 = w2c_d0;
+  goto w2c_B94;
+  w2c_B95:;
+  w2c_i0 = w2c_l12;
+  w2c_i1 = 1u;
+  w2c_i0 += w2c_i1;
+  w2c_i1 = 3u;
+  w2c_i0 &= w2c_i1;
+  w2c_l13 = w2c_i0;
+  if (w2c_i0) {goto w2c_B97;}
+  w2c_d0 = 0;
+  w2c_l34 = w2c_d0;
+  w2c_i0 = w2c_l12;
+  w2c_l6 = w2c_i0;
+  goto w2c_B96;
+  w2c_B97:;
+  w2c_i0 = w2c_l5;
+  w2c_i1 = 160u;
+  w2c_i0 += w2c_i1;
+  w2c_i1 = w2c_l12;
+  w2c_i2 = 3u;
+  w2c_i1 <<= (w2c_i2 & 31);
+  w2c_i0 += w2c_i1;
+  w2c_l7 = w2c_i0;
+  w2c_d0 = 0;
+  w2c_l34 = w2c_d0;
+  w2c_i0 = w2c_l12;
+  w2c_l6 = w2c_i0;
+  w2c_L98: 
+    w2c_i0 = w2c_l6;
+    w2c_i1 = 4294967295u;
+    w2c_i0 += w2c_i1;
+    w2c_l6 = w2c_i0;
+    w2c_i0 = w2c_l7;
+    w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
+    w2c_d1 = w2c_l34;
+    w2c_d0 += w2c_d1;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l7;
+    w2c_i1 = 4294967288u;
+    w2c_i0 += w2c_i1;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l13;
+    w2c_i1 = 4294967295u;
+    w2c_i0 += w2c_i1;
+    w2c_l13 = w2c_i0;
+    if (w2c_i0) {goto w2c_L98;}
+  w2c_B96:;
+  w2c_i0 = w2c_l12;
+  w2c_i1 = 3u;
+  w2c_i0 = w2c_i0 < w2c_i1;
+  if (w2c_i0) {goto w2c_B94;}
+  w2c_i0 = w2c_l6;
+  w2c_i1 = 1u;
+  w2c_i0 += w2c_i1;
+  w2c_l13 = w2c_i0;
+  w2c_i0 = w2c_l6;
+  w2c_i1 = 3u;
+  w2c_i0 <<= (w2c_i1 & 31);
+  w2c_i1 = w2c_l5;
+  w2c_i2 = 160u;
+  w2c_i1 += w2c_i2;
+  w2c_i0 += w2c_i1;
+  w2c_i1 = 4294967272u;
+  w2c_i0 += w2c_i1;
+  w2c_l7 = w2c_i0;
+  w2c_L99: 
+    w2c_i0 = w2c_l7;
+    w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
+    w2c_i1 = w2c_l7;
+    w2c_i2 = 8u;
+    w2c_i1 += w2c_i2;
+    w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
+    w2c_i2 = w2c_l7;
+    w2c_i3 = 16u;
+    w2c_i2 += w2c_i3;
+    w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
+    w2c_i3 = w2c_l7;
+    w2c_i4 = 24u;
+    w2c_i3 += w2c_i4;
+    w2c_d3 = f64_load((&w2c_memory), (u64)(w2c_i3));
+    w2c_d4 = w2c_l34;
+    w2c_d3 += w2c_d4;
+    w2c_d2 += w2c_d3;
+    w2c_d1 += w2c_d2;
+    w2c_d0 += w2c_d1;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l7;
+    w2c_i1 = 4294967264u;
+    w2c_i0 += w2c_i1;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l13;
+    w2c_i1 = 4294967292u;
+    w2c_i0 += w2c_i1;
+    w2c_l13 = w2c_i0;
+    if (w2c_i0) {goto w2c_L99;}
+  w2c_B94:;
+  w2c_i0 = w2c_p1;
+  w2c_d1 = w2c_l34;
+  w2c_d1 = -(w2c_d1);
+  w2c_d2 = w2c_l34;
+  w2c_i3 = w2c_l31;
   w2c_d1 = w2c_i3 ? w2c_d1 : w2c_d2;
   f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
   w2c_i0 = w2c_l5;
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0) + 160u);
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   w2c_d0 -= w2c_d1;
-  w2c_l39 = w2c_d0;
+  w2c_l34 = w2c_d0;
   w2c_i0 = 1u;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_i0 = w2c_l12;
   w2c_i1 = 1u;
   w2c_i0 = (u32)((s32)w2c_i0 < (s32)w2c_i1);
-  if (w2c_i0) {goto w2c_B111;}
+  if (w2c_i0) {goto w2c_B100;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 3u;
   w2c_i0 &= w2c_i1;
@@ -2606,92 +2386,92 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i1 = 3u;
   w2c_i0 = w2c_i0 < w2c_i1;
-  if (w2c_i0) {goto w2c_B112;}
+  if (w2c_i0) {goto w2c_B101;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 4294967292u;
   w2c_i0 &= w2c_i1;
-  w2c_l15 = w2c_i0;
+  w2c_l16 = w2c_i0;
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
   w2c_i1 = 32u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_i0 = 0u;
   w2c_l7 = w2c_i0;
-  w2c_L113: 
-    w2c_i0 = w2c_p2;
+  w2c_i0 = 0u;
+  w2c_l13 = w2c_i0;
+  w2c_L102: 
+    w2c_i0 = w2c_l7;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_i1 = w2c_p2;
+    w2c_i1 = w2c_l7;
     w2c_i2 = 4294967288u;
     w2c_i1 += w2c_i2;
     w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
-    w2c_i2 = w2c_p2;
+    w2c_i2 = w2c_l7;
     w2c_i3 = 4294967280u;
     w2c_i2 += w2c_i3;
     w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
-    w2c_i3 = w2c_p2;
+    w2c_i3 = w2c_l7;
     w2c_i4 = 4294967272u;
     w2c_i3 += w2c_i4;
     w2c_d3 = f64_load((&w2c_memory), (u64)(w2c_i3));
-    w2c_d4 = w2c_l39;
+    w2c_d4 = w2c_l34;
     w2c_d3 += w2c_d4;
     w2c_d2 += w2c_d3;
     w2c_d1 += w2c_d2;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_p2;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 32u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
-    w2c_i0 = w2c_l15;
-    w2c_i1 = w2c_l7;
+    w2c_l7 = w2c_i0;
+    w2c_i0 = w2c_l16;
+    w2c_i1 = w2c_l13;
     w2c_i2 = 4u;
     w2c_i1 += w2c_i2;
-    w2c_l7 = w2c_i1;
+    w2c_l13 = w2c_i1;
     w2c_i0 = w2c_i0 != w2c_i1;
-    if (w2c_i0) {goto w2c_L113;}
-  w2c_i0 = w2c_l7;
+    if (w2c_i0) {goto w2c_L102;}
+  w2c_i0 = w2c_l13;
   w2c_i1 = 1u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_B112:;
+  w2c_l7 = w2c_i0;
+  w2c_B101:;
   w2c_i0 = w2c_l6;
   w2c_i0 = !(w2c_i0);
-  if (w2c_i0) {goto w2c_B111;}
+  if (w2c_i0) {goto w2c_B100;}
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
-  w2c_i1 = w2c_p2;
+  w2c_i1 = w2c_l7;
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_L114: 
-    w2c_i0 = w2c_p2;
+  w2c_l7 = w2c_i0;
+  w2c_L103: 
+    w2c_i0 = w2c_l7;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_d1 = w2c_l39;
+    w2c_d1 = w2c_l34;
     w2c_d0 += w2c_d1;
-    w2c_l39 = w2c_d0;
-    w2c_i0 = w2c_p2;
+    w2c_l34 = w2c_d0;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 8u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
-    if (w2c_i0) {goto w2c_L114;}
-  w2c_B111:;
+    if (w2c_i0) {goto w2c_L103;}
+  w2c_B100:;
   w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   w2c_d1 = -(w2c_d1);
-  w2c_d2 = w2c_l39;
-  w2c_i3 = w2c_l36;
+  w2c_d2 = w2c_l34;
+  w2c_i3 = w2c_l31;
   w2c_d1 = w2c_i3 ? w2c_d1 : w2c_d2;
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
-  goto w2c_B86;
-  w2c_B89:;
+  goto w2c_B75;
+  w2c_B78:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 160u;
   w2c_i0 += w2c_i1;
@@ -2699,33 +2479,33 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i2 = 3u;
   w2c_i1 <<= (w2c_i2 & 31);
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
+  w2c_l7 = w2c_i0;
   w2c_d0 = 0;
-  w2c_l41 = w2c_d0;
-  w2c_L115: 
+  w2c_l35 = w2c_d0;
+  w2c_L104: 
     w2c_i0 = w2c_l12;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
     w2c_l12 = w2c_i0;
-    w2c_i0 = w2c_p2;
+    w2c_i0 = w2c_l7;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_d1 = w2c_l41;
+    w2c_d1 = w2c_l35;
     w2c_d0 += w2c_d1;
-    w2c_l41 = w2c_d0;
-    w2c_i0 = w2c_p2;
+    w2c_l35 = w2c_d0;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967288u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967295u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
-    if (w2c_i0) {goto w2c_L115;}
-  w2c_B88:;
-  w2c_i0 = w2c_l7;
+    if (w2c_i0) {goto w2c_L104;}
+  w2c_B77:;
+  w2c_i0 = w2c_l13;
   w2c_i1 = 3u;
   w2c_i0 = w2c_i0 < w2c_i1;
-  if (w2c_i0) {goto w2c_B87;}
+  if (w2c_i0) {goto w2c_B76;}
   w2c_i0 = w2c_l12;
   w2c_i1 = 4u;
   w2c_i0 += w2c_i1;
@@ -2739,63 +2519,63 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_i0 += w2c_i1;
   w2c_i1 = 4294967272u;
   w2c_i0 += w2c_i1;
-  w2c_p2 = w2c_i0;
-  w2c_L116: 
-    w2c_i0 = w2c_p2;
+  w2c_l7 = w2c_i0;
+  w2c_L105: 
+    w2c_i0 = w2c_l7;
     w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
-    w2c_i1 = w2c_p2;
+    w2c_i1 = w2c_l7;
     w2c_i2 = 8u;
     w2c_i1 += w2c_i2;
     w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1));
-    w2c_i2 = w2c_p2;
+    w2c_i2 = w2c_l7;
     w2c_i3 = 16u;
     w2c_i2 += w2c_i3;
     w2c_d2 = f64_load((&w2c_memory), (u64)(w2c_i2));
-    w2c_i3 = w2c_p2;
+    w2c_i3 = w2c_l7;
     w2c_i4 = 24u;
     w2c_i3 += w2c_i4;
     w2c_d3 = f64_load((&w2c_memory), (u64)(w2c_i3));
-    w2c_d4 = w2c_l41;
+    w2c_d4 = w2c_l35;
     w2c_d3 += w2c_d4;
     w2c_d2 += w2c_d3;
     w2c_d1 += w2c_d2;
     w2c_d0 += w2c_d1;
-    w2c_l41 = w2c_d0;
-    w2c_i0 = w2c_p2;
+    w2c_l35 = w2c_d0;
+    w2c_i0 = w2c_l7;
     w2c_i1 = 4294967264u;
     w2c_i0 += w2c_i1;
-    w2c_p2 = w2c_i0;
+    w2c_l7 = w2c_i0;
     w2c_i0 = w2c_l6;
     w2c_i1 = 4294967292u;
     w2c_i0 += w2c_i1;
     w2c_l6 = w2c_i0;
     w2c_i1 = 5u;
     w2c_i0 = (u32)((s32)w2c_i0 > (s32)w2c_i1);
-    if (w2c_i0) {goto w2c_L116;}
-  w2c_B87:;
+    if (w2c_i0) {goto w2c_L105;}
+  w2c_B76:;
   w2c_i0 = w2c_l5;
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0) + 160u);
-  w2c_l39 = w2c_d0;
-  w2c_i0 = w2c_l36;
-  if (w2c_i0) {goto w2c_B117;}
+  w2c_l34 = w2c_d0;
+  w2c_i0 = w2c_l31;
+  if (w2c_i0) {goto w2c_B106;}
   w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
   w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l41;
+  w2c_d1 = w2c_l35;
   f64_store((&w2c_memory), (u64)(w2c_i0) + 16, w2c_d1);
   w2c_i0 = w2c_p1;
   w2c_i1 = w2c_l5;
   w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1) + 168u);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
-  goto w2c_B86;
-  w2c_B117:;
+  goto w2c_B75;
+  w2c_B106:;
   w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l39;
+  w2c_d1 = w2c_l34;
   w2c_d1 = -(w2c_d1);
   f64_store((&w2c_memory), (u64)(w2c_i0), w2c_d1);
   w2c_i0 = w2c_p1;
-  w2c_d1 = w2c_l41;
+  w2c_d1 = w2c_l35;
   w2c_d1 = -(w2c_d1);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 16, w2c_d1);
   w2c_i0 = w2c_p1;
@@ -2803,19 +2583,19 @@ static u32 w2c___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u32 w2c_p3, 
   w2c_d1 = f64_load((&w2c_memory), (u64)(w2c_i1) + 168u);
   w2c_d1 = -(w2c_d1);
   f64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_d1);
-  w2c_B86:;
+  w2c_B75:;
   w2c_i0 = w2c_l5;
   w2c_i1 = 560u;
   w2c_i0 += w2c_i1;
   w2c___stack_pointer = w2c_i0;
-  w2c_i0 = w2c_l34;
+  w2c_i0 = w2c_l29;
   w2c_i1 = 7u;
   w2c_i0 &= w2c_i1;
   FUNC_EPILOGUE;
   return w2c_i0;
 }
 
-static u32 w2c___rem_pio2(f64 w2c_p0, u32 w2c_p1) {
+static u32 w2c_core_math___rem_pio2(f64 w2c_p0, u32 w2c_p1) {
   u32 w2c_l2 = 0, w2c_l3 = 0, w2c_l4 = 0, w2c_l5 = 0;
   u64 w2c_l6 = 0;
   f64 w2c_l7 = 0, w2c_l8 = 0, w2c_l9 = 0;
@@ -3222,7 +3002,7 @@ static u32 w2c___rem_pio2(f64 w2c_p0, u32 w2c_p1) {
   w2c_i4 = 1u;
   w2c_i3 += w2c_i4;
   w2c_i4 = 1u;
-  w2c_i0 = w2c___rem_pio2_large(w2c_i0, w2c_i1, w2c_i2, w2c_i3, w2c_i4);
+  w2c_i0 = w2c_core_math___rem_pio2_large(w2c_i0, w2c_i1, w2c_i2, w2c_i3, w2c_i4);
   w2c_l3 = w2c_i0;
   w2c_i0 = w2c_l2;
   w2c_d0 = f64_load((&w2c_memory), (u64)(w2c_i0));
@@ -3263,7 +3043,7 @@ static u32 w2c___rem_pio2(f64 w2c_p0, u32 w2c_p1) {
   return w2c_i0;
 }
 
-static f64 w2c_cos(f64 w2c_p0) {
+static f64 w2c_core_math_cos(f64 w2c_p0) {
   u32 w2c_l1 = 0, w2c_l2 = 0;
   f64 w2c_l3 = 0, w2c_l4 = 0, w2c_l5 = 0;
   FUNC_PROLOGUE;
@@ -3347,7 +3127,7 @@ static f64 w2c_cos(f64 w2c_p0) {
   if (w2c_i0) {goto w2c_B0;}
   w2c_d0 = w2c_p0;
   w2c_i1 = w2c_l1;
-  w2c_i0 = w2c___rem_pio2(w2c_d0, w2c_i1);
+  w2c_i0 = w2c_core_math___rem_pio2(w2c_d0, w2c_i1);
   w2c_i1 = 3u;
   w2c_i0 &= w2c_i1;
   switch (w2c_i0) {
@@ -3551,7 +3331,7 @@ static f64 w2c_cos(f64 w2c_p0) {
   return w2c_d0;
 }
 
-static f64 w2c_sin(f64 w2c_p0) {
+static f64 w2c_core_math_sin(f64 w2c_p0) {
   u32 w2c_l1 = 0, w2c_l2 = 0;
   f64 w2c_l3 = 0, w2c_l4 = 0, w2c_l5 = 0;
   FUNC_PROLOGUE;
@@ -3635,7 +3415,7 @@ static f64 w2c_sin(f64 w2c_p0) {
   if (w2c_i0) {goto w2c_B0;}
   w2c_d0 = w2c_p0;
   w2c_i1 = w2c_l1;
-  w2c_i0 = w2c___rem_pio2(w2c_d0, w2c_i1);
+  w2c_i0 = w2c_core_math___rem_pio2(w2c_d0, w2c_i1);
   w2c_i1 = 3u;
   w2c_i0 &= w2c_i1;
   switch (w2c_i0) {
@@ -3879,26 +3659,31 @@ static void init_memory(void) {
 
 static void init_table(void) {
   uint32_t offset;
+  wasm_rt_allocate_table((&w2c___indirect_function_table), 1, 1);
 }
 
 /* export: 'memory' */
 wasm_rt_memory_t (*WASM_RT_ADD_PREFIX(Z_memory));
 /* export: '__wasm_call_ctors' */
 void (*WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv))(void);
+/* export: 'adder' */
+u32 (*WASM_RT_ADD_PREFIX(Z_adderZ_iii))(u32, u32);
 /* export: 'scalbn' */
 f64 (*WASM_RT_ADD_PREFIX(Z_scalbnZ_ddi))(f64, u32);
-/* export: '__math_cos' */
-f64 (*WASM_RT_ADD_PREFIX(Z___math_cosZ_ddd))(f64, f64);
-/* export: '__math_sin' */
-f64 (*WASM_RT_ADD_PREFIX(Z___math_sinZ_dddi))(f64, f64, u32);
-/* export: '__rem_pio2_large' */
-u32 (*WASM_RT_ADD_PREFIX(Z___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
-/* export: '__rem_pio2' */
-u32 (*WASM_RT_ADD_PREFIX(Z___rem_pio2Z_idi))(f64, u32);
-/* export: 'cos' */
-f64 (*WASM_RT_ADD_PREFIX(Z_cosZ_dd))(f64);
-/* export: 'sin' */
-f64 (*WASM_RT_ADD_PREFIX(Z_sinZ_dd))(f64);
+/* export: 'core_math___cos' */
+f64 (*WASM_RT_ADD_PREFIX(Z_core_math___cosZ_ddd))(f64, f64);
+/* export: 'core_math___sin' */
+f64 (*WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi))(f64, f64, u32);
+/* export: 'core_math___rem_pio2_large' */
+u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
+/* export: 'core_math___rem_pio2' */
+u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2Z_idi))(f64, u32);
+/* export: 'core_math_cos' */
+f64 (*WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd))(f64);
+/* export: 'core_math_sin' */
+f64 (*WASM_RT_ADD_PREFIX(Z_core_math_sinZ_dd))(f64);
+/* export: '__indirect_function_table' */
+wasm_rt_table_t (*WASM_RT_ADD_PREFIX(Z___indirect_function_table));
 /* export: '__dso_handle' */
 u32 (*WASM_RT_ADD_PREFIX(Z___dso_handleZ_i));
 /* export: '__data_end' */
@@ -3917,20 +3702,24 @@ static void init_exports(void) {
   WASM_RT_ADD_PREFIX(Z_memory) = (&w2c_memory);
   /* export: '__wasm_call_ctors' */
   WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv) = (&w2c___wasm_call_ctors);
+  /* export: 'adder' */
+  WASM_RT_ADD_PREFIX(Z_adderZ_iii) = (&w2c_adder);
   /* export: 'scalbn' */
   WASM_RT_ADD_PREFIX(Z_scalbnZ_ddi) = (&w2c_scalbn);
-  /* export: '__math_cos' */
-  WASM_RT_ADD_PREFIX(Z___math_cosZ_ddd) = (&w2c___math_cos);
-  /* export: '__math_sin' */
-  WASM_RT_ADD_PREFIX(Z___math_sinZ_dddi) = (&w2c___math_sin);
-  /* export: '__rem_pio2_large' */
-  WASM_RT_ADD_PREFIX(Z___rem_pio2_largeZ_iiiiii) = (&w2c___rem_pio2_large);
-  /* export: '__rem_pio2' */
-  WASM_RT_ADD_PREFIX(Z___rem_pio2Z_idi) = (&w2c___rem_pio2);
-  /* export: 'cos' */
-  WASM_RT_ADD_PREFIX(Z_cosZ_dd) = (&w2c_cos);
-  /* export: 'sin' */
-  WASM_RT_ADD_PREFIX(Z_sinZ_dd) = (&w2c_sin);
+  /* export: 'core_math___cos' */
+  WASM_RT_ADD_PREFIX(Z_core_math___cosZ_ddd) = (&w2c_core_math___cos);
+  /* export: 'core_math___sin' */
+  WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi) = (&w2c_core_math___sin);
+  /* export: 'core_math___rem_pio2_large' */
+  WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii) = (&w2c_core_math___rem_pio2_large);
+  /* export: 'core_math___rem_pio2' */
+  WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2Z_idi) = (&w2c_core_math___rem_pio2);
+  /* export: 'core_math_cos' */
+  WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd) = (&w2c_core_math_cos);
+  /* export: 'core_math_sin' */
+  WASM_RT_ADD_PREFIX(Z_core_math_sinZ_dd) = (&w2c_core_math_sin);
+  /* export: '__indirect_function_table' */
+  WASM_RT_ADD_PREFIX(Z___indirect_function_table) = (&w2c___indirect_function_table);
   /* export: '__dso_handle' */
   WASM_RT_ADD_PREFIX(Z___dso_handleZ_i) = (&w2c___dso_handle);
   /* export: '__data_end' */

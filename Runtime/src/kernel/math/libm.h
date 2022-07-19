@@ -55,5 +55,10 @@ static inline void fp_force_evall(long double x)
 
 
 
-#define __cos __math_cos
-#define __sin __math_sin
+#define __cos 				core_math___cos
+#define __sin 				core_math___sin
+#define __rem_pio2 			core_math___rem_pio2
+#define __rem_pio2_large 	core_math___rem_pio2_large
+#define cos 				core_math_cos
+#define sin 				core_math_sin
+#define scalbn 				core_math_scalbn

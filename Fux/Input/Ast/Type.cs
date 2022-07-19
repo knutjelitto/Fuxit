@@ -139,12 +139,12 @@
         {
             public Tuple(params Type[] types)
             {
-                Types = types.ToList();
+                Types = new TypeList(types);
 
                 Assert(Types.Count >= 2 && Types.Count <= 3);
             }
 
-            public List<Type> Types { get; }
+            public TypeList Types { get; }
 
             public override string ToString()
             {
@@ -195,27 +195,6 @@
             public Identifier Name { get; }
             public Decl.TypeParameterList Parameters { get; }
             public Decl.Alias Decl { get; }
-
-            public override string ToString()
-            {
-                if (Parameters.Count > 0)
-                {
-                    return $"{Name}<{string.Join(",", Parameters)}>";
-                }
-                return $"{Name}";
-            }
-        }
-
-        public sealed class CustomX : TypeImpl
-        {
-            public CustomX(Identifier name, Decl.TypeParameterList parameters)
-            {
-                Name = name;
-                Parameters = parameters;
-            }
-
-            public Identifier Name { get; }
-            public Decl.TypeParameterList Parameters { get; }
 
             public override string ToString()
             {

@@ -28,28 +28,6 @@ namespace Fux.Building.AlgorithmW
             return Environment.Initial(new TypeVarGenerator());
         }
 
-        public Environment GetDefaultEnvironment(TypeVarGenerator typeVarGenerator)
-        {
-            var number1 = typeVarGenerator.GetNext("number");
-            var number2 = typeVarGenerator.GetNext("number");
-            var number3 = typeVarGenerator.GetNext("number");
-
-            return Environment.Initial(typeVarGenerator,
-
-                // + :: number -> number -> number -- binary addition
-                ("+", new Polytype(new Type.Function(number1, new Type.Function(number1, number1)))),
-
-                // - :: number -> number -- unary negation
-                ("-", new Polytype(new Type.Function(number2, number2))),
-
-                // less-than :: number -> number -> bool
-                ("<", new Polytype(new Type.Function(number3, new Type.Function(number3, new Type.Bool())))),
-
-                // - :: integer -> float -- conversion
-                ("toFloat", new Polytype(new Type.Function(new Type.Integer(), new Type.Float())))
-            );
-        }
-
         private (Substitution, TType) InferType<TType>(Expr expression, Environment env)
             where TType : Type
         {
@@ -84,6 +62,17 @@ namespace Fux.Building.AlgorithmW
                     {
                         var (s1, t1) = InferType(expr1, env);
                         var (s2, t2) = InferType(expr2, env);
+                        var ty1 = ApplySubstitution(t1, s2);
+                        var ty2 = t2;
+                        var tuple2 = (Type)new Type.Tuple2(ty1, ty2);
+
+                        return (ComposeSubstitutions(s2, s1), tuple2);
+                    }
+
+                case Expr.Tuple3({ } expr1, { } expr2, { } expr3):
+                    {
+                        var (s1, t1) = InferType(expr1, env);
+                        var (s2, t2) = InferType(expr2, ApplySubstitution(env, s1));
                         var ty1 = ApplySubstitution(t1, s2);
                         var ty2 = t2;
                         var tuple2 = (Type)new Type.Tuple2(ty1, ty2);

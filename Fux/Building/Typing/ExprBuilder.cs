@@ -237,7 +237,9 @@
 
                         if (polytype == null)
                         {
-                            var type = new A.Type.Custom(ctor.Custom.Name);
+                            var args = custom.Parameters.Select(p => (A.Type)new A.Type.Parameter(p.Name)).ToList();
+
+                            var type = new A.Type.Custom(custom.Name, args).With(custom);
 
                             polytype = typeBuilder.Build(env, type);
 

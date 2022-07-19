@@ -50,9 +50,11 @@ else
   WOPTFLAGS := -g -O0
 endif
 
+INCLUDES = -Isrc/include -Isrc/kernel/math
+
 # Global compiler flags
-CXXFLAGS := $(DBGCFLAGS) -Ofast -std=c++11 -fno-rtti -Wno-writable-strings -Wno-unknown-pragmas
-CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c2x -Isrc/include -Isrc/kernel/math
+CXXFLAGS := $(DBGCFLAGS) -Ofast -std=c++11 -fno-rtti -Wno-writable-strings -Wno-unknown-pragmas $(INCLUDES)
+CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c2x $(INCLUDES)
 
 # Global compiler flags for Wasm targeting
 CLANGFLAGS := -target wasm32 -nostdinc
@@ -83,12 +85,6 @@ endif
 # Compute tool paths
 ISWIN := $(findstring :,$(firstword $(subst \, ,$(subst /, ,$(abspath .)))))
 PIPETONULL := $(if $(ISWIN),>nul 2>nul,>/dev/null 2>/dev/null)
-#ifeq ($(wildcard $(subst $(strip ) ,\ ,$(LLVM_ROOT))/clang*),)
-#  $(error clang executables not found in set LLVM_ROOT path ($(LLVM_ROOT)). Set custom path in this makefile with LLVM_ROOT = $(if $(ISWIN),d:)/path/to/clang)
-#endif
-#ifeq ($(wildcard $(subst $(strip ) ,\ ,$(WASMOPT))),)
-#  $(error wasm-opt executable not found in set WASMOPT path ($(WASMOPT)). Fix path in this makefile with WASMOPT = $(if $(ISWIN),d:)/path/to/wasm-opt$(if $(ISWIN),.exe))
-#endif
 
 # Surround used commands with double quotes
 CC  := "$(CLANG)"
@@ -103,9 +99,11 @@ clean:
 	@$(if $(wildcard $(OUTDIR)),$(if $(ISWIN),rmdir /S /Q,rm -rf) "$(OUTDIR)" $(PIPETONULL))
 
 # Generate a list of .o files to build, include dependency rules for source files, then compile files
-OBJS := $(addprefix $(OUTDIR)/,$(notdir $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))))
+#OBJS := $(addprefix $(OUTDIR)/,$(notdir $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))))
+OBJS := $(addprefix $(OUTDIR)/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES))))
 -include $(OBJS:%.o=%.d)
-MAKEOBJ = $(OUTDIR)/$(basename $(notdir $(1))).o: $(1) ; $$(call COMPILE,$$@,$$<,$(2),$(3) $$(FLAGS))
+#MAKEOBJ = $(OUTDIR)/$(basename $(notdir $(1))).o: $(1) ; $$(call COMPILE,$$@,$$<,$(2),$(3) $$(FLAGS))
+MAKEOBJ = $(OUTDIR)/$(basename $(1)).o: $(1) ; $$(call COMPILE,$$@,$$<,$(2),$(3) $$(FLAGS))
 $(foreach F,$(filter %.cpp,$(SOURCES)),$(eval $(call MAKEOBJ,$(F),$$(CXX),$$(CXXFLAGS))))
 $(foreach F,$(filter %.c  ,$(SOURCES)),$(eval $(call MAKEOBJ,$(F),$$(CC),$$(CCFLAGS))))
 
