@@ -12,29 +12,41 @@
             return matchPattern.Flatten(null, true).Select(name => new A.Decl.Parameter(name));
         }
 
-        public static IEnumerable<A.Identifier> ExractMatchIds(this A.Pattern matchPattern)
+        public static IEnumerable<A.Pattern.LowerId> ExractMatchIds(this A.Pattern matchPattern)
         {
             return matchPattern.Flatten(null, true);
         }
 
-        public static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)
+        public static IEnumerable<A.Pattern.LowerId> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)
         {
             return pattern.Flatten(genWildcard, false).ToList(); ;
         }
 
-        private static IEnumerable<A.Identifier> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard, bool inner)
+        private static IEnumerable<A.Pattern.LowerId> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard, bool inner)
         {
             switch (pattern)
             {
                 case A.Pattern.LowerId identifier:
                     {
-                        yield return identifier.Identifier;
+                        yield return identifier;
                         break;
                     }
 
                 case A.Pattern.Signature sign when inner && sign.Parameters.Count == 0:
                     {
-                        yield return sign.Name;
+                        Assert(false);
+                        throw new InvalidOperationException();
+                    }
+
+                case A.Pattern.Signature sign:
+                    {
+                        foreach (var argument in sign.Parameters)
+                        {
+                            foreach (var pim in Flatten(argument, genWildcard, true))
+                            {
+                                yield return pim;
+                            }
+                        }
                         break;
                     }
 
@@ -71,18 +83,6 @@
                         foreach (var pim in Flatten(destruct.Rest, genWildcard, true))
                         {
                             yield return pim;
-                        }
-                        break;
-                    }
-
-                case A.Pattern.Signature sign:
-                    {
-                        foreach (var argument in sign.Parameters)
-                        {
-                            foreach (var pim in Flatten(argument, genWildcard, true))
-                            {
-                                yield return pim;
-                            }
                         }
                         break;
                     }
@@ -140,7 +140,7 @@
                     {
                         if (genWildcard != null)
                         {
-                            yield return genWildcard();
+                            yield return new A.Pattern.LowerId(genWildcard());
                         }
                         break;
                     }

@@ -8,8 +8,8 @@ namespace Fux.Building
 
         public void Add(A.Decl.Parameter parameter)
         {
-            Assert(parameter.Expression is A.Identifier);
-            var name = ((A.Identifier)parameter.Expression).SingleLower();
+            Assert(parameter.Pattern is A.Pattern.LowerId);
+            var name = ((A.Pattern.LowerId)parameter.Pattern).Identifier.SingleLower();
 
             Assert(!parameters.ContainsKey(name));
 

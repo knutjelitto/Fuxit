@@ -4,10 +4,10 @@
     {
         public RecordPattern(IEnumerable<FieldPattern> fields)
         {
-            Fields = fields.ToArray();
+            Fields = fields.ToList();
         }
         
-        public IReadOnlyList<FieldPattern> Fields { get; }
+        public List<FieldPattern> Fields { get; }
 
         public override string ToString()
         {

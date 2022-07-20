@@ -78,9 +78,9 @@ namespace Fux.Input.Ast
                 IfFalse = ifFalse;
             }
 
-            public Expr Condition { get; }
-            public Expr IfTrue { get; }
-            public Expr IfFalse { get; }
+            public Expr Condition { get; set; }
+            public Expr IfTrue { get; set; }
+            public Expr IfFalse { get; set; }
 
             public override string ToString()
             {
@@ -165,8 +165,8 @@ namespace Fux.Input.Ast
                 Expression = expr;
             }
 
-            public Pattern.Lambda Parameters { get; }
-            public Expr Expression { get; }
+            public Pattern.Lambda Parameters { get; set; }
+            public Expr Expression { get; set; }
 
             public LetScope Scope { get; } = new();
 
@@ -191,8 +191,8 @@ namespace Fux.Input.Ast
                 Collector.Instance.MatchPattern.Add(Pattern);
             }
 
-            public Pattern Pattern { get; }
-            public Expr Expression { get; }
+            public Pattern Pattern { get; set; }
+            public Expr Expression { get; set; }
 
             public LetScope Scope { get; } = new();
 
@@ -213,12 +213,12 @@ namespace Fux.Input.Ast
         {
             public Let(List<Decl> letExpressions, Expr inExpression)
             {
-                LetDecls = letExpressions.ToArray();
+                LetDecls = letExpressions;
                 InExpression = inExpression;
             }
 
-            public IReadOnlyList<Decl> LetDecls { get; }
-            public Expr InExpression { get; }
+            public List<Decl> LetDecls { get; }
+            public Expr InExpression { get; set; }
 
             public LetScope Scope { get; set; } = new();
 
@@ -303,11 +303,11 @@ namespace Fux.Input.Ast
             public Matcher(Expr expression, List<Case> cases)
             {
                 Expression = expression;
-                Cases = cases.ToArray();
+                Cases = cases;
             }
 
-            public Expr Expression { get; }
-            public IReadOnlyList<Case> Cases { get; }
+            public Expr Expression { get; set; }
+            public List<Case> Cases { get; }
 
             public override string ToString()
             {
@@ -356,7 +356,7 @@ namespace Fux.Input.Ast
             }
 
             public OperatorSymbol Op { get; }
-            public Expr Rhs { get; }
+            public Expr Rhs { get; set; }
 
             public override string ToString()
             {
@@ -373,12 +373,12 @@ namespace Fux.Input.Ast
         {
             public Record(Identifier? baseRecord, IEnumerable<FieldAssign> fields)
             {
-                Fields = fields.ToArray();
+                Fields = fields.ToList();
                 BaseRecord = baseRecord;
             }
 
             public Identifier? BaseRecord { get; }
-            public IReadOnlyList<FieldAssign> Fields { get; }
+            public List<FieldAssign> Fields { get; }
 
             public LetScope Scope { get; } = new();
 
@@ -443,8 +443,8 @@ namespace Fux.Input.Ast
                 Rhs = rhs;
             }
 
-            public Expr Lhs { get; }
-            public Expr Rhs { get; }
+            public Expr Lhs { get; set; }
+            public Expr Rhs { get; set; }
 
             public override string ToString()
             {

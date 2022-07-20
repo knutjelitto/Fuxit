@@ -110,7 +110,7 @@ namespace Fux.Building.Phases
                             }
                             foreach (var parameter in var.Parameters)
                             {
-                                ResolveExpr(var.Scope, parameter.Expression);
+                                ResolvePattern(var.Scope, parameter.Pattern);
                             }
                             break;
                         }
@@ -301,6 +301,100 @@ namespace Fux.Building.Phases
                 throw new NotImplementedException();
             }
 
+            private void ResolvePattern(Scope scope, A.Pattern expression)
+            {
+                switch (expression)
+                {
+                    case A.Pattern.List list:
+                        {
+                            foreach (var pattern in list.Patterns)
+                            {
+                                ResolvePattern(scope, pattern);
+                            }
+                            break;
+                        }
+
+                    case A.Pattern.DeCons destruct:
+{
+                            ResolvePattern(scope, destruct.First);
+                            ResolvePattern(scope, destruct.Rest);
+                            break;
+                        }
+                    case A.Pattern.Tuple tuple:
+                        {
+                            foreach (var pattern in tuple.Patterns)
+                            {
+                                ResolvePattern(scope, pattern);
+                            }
+                            break;
+                        }
+                    case A.Pattern.Record record:
+                        {
+                            foreach (var pattern in record.Patterns)
+                            {
+                                ResolvePattern(scope, pattern);
+                            }
+                            break;
+                        }
+
+                    case A.Pattern.Signature sign:
+                        {
+                            foreach (var pattern in sign.Parameters)
+                            {
+                                ResolvePattern(scope, pattern);
+                            }
+                            break;
+                        }
+
+                    case A.Pattern.Lambda lambda:
+                        {
+                            foreach (var pattern in lambda.Parameters)
+                            {
+                                ResolvePattern(scope, pattern);
+                            }
+                            break;
+                        }
+
+                    case A.Pattern.DeCtor ctor:
+                        {
+                            ResolveExpr(scope, ctor.Name);
+                            foreach (var pattern in ctor.Arguments)
+                            {
+                                ResolvePattern(scope, pattern);
+                            }
+                            break;
+                        }
+
+                    case A.Pattern.WithAlias with:
+                        {
+                            ResolvePattern(scope, with.Pattern);
+                            ResolvePattern(scope, with.Alias);
+                            break;
+                        }
+
+                    case A.Pattern.LowerId lower:
+                        {
+                            ResolveExpr(scope, lower.Identifier);
+                            break;
+                        }
+
+                    case A.Pattern.UpperId upper:
+                        {
+                            ResolveExpr(scope, upper.Identifier);
+                            break;
+                        }
+
+                    case A.Pattern.Wildcard:
+                    case A.Pattern.Unit:
+                    case A.Pattern.Literal:
+                        break;
+
+                    default:
+                        Assert(false);
+                        throw new NotImplementedException($"{expression}");
+                }
+            }
+
             private void ResolveExpr(Scope scope, A.Expr expression)
             {
                 switch (expression)
@@ -383,7 +477,7 @@ namespace Fux.Building.Phases
 
                     case A.Expr.Case matchCase:
                         {
-                            ResolveExpr(matchCase.Scope, matchCase.Pattern);
+                            ResolvePattern(matchCase.Scope, matchCase.Pattern);
                             ResolveExpr(matchCase.Scope, matchCase.Expression);
                             break;
                         }
@@ -400,7 +494,7 @@ namespace Fux.Building.Phases
 
                     case A.Expr.Lambda lambda:
                         {
-                            ResolveExpr(lambda.Scope, lambda.Parameters);
+                            ResolvePattern(lambda.Scope, lambda.Parameters);
                             ResolveExpr(lambda.Scope, lambda.Expression);
                             break;
                         }
@@ -482,7 +576,7 @@ namespace Fux.Building.Phases
 
                     case A.FieldPattern fieldPattern:
                         {
-                            ResolveExpr(scope, fieldPattern.Pattern);
+                            ResolveExpr(scope, fieldPattern.Name);
                             break;
                         }
 
@@ -490,7 +584,7 @@ namespace Fux.Building.Phases
                         {
                             foreach (var parameter in parameters)
                             {
-                                ResolveExpr(scope, parameter.Expression);
+                                ResolvePattern(scope, parameter.Pattern);
                             }
                             break;
                         }
@@ -499,22 +593,22 @@ namespace Fux.Building.Phases
                         {
                             foreach (var pattern in list.Patterns)
                             {
-                                ResolveExpr(scope, pattern);
+                                ResolvePattern(scope, pattern);
                             }
                             break;
                         }
 
                     case A.Pattern.DeCons destruct:
-{
-                            ResolveExpr(scope, destruct.First);
-                            ResolveExpr(scope, destruct.Rest);
+                        {
+                            ResolvePattern(scope, destruct.First);
+                            ResolvePattern(scope, destruct.Rest);
                             break;
                         }
                     case A.Pattern.Tuple tuple:
                         {
                             foreach (var pattern in tuple.Patterns)
                             {
-                                ResolveExpr(scope, pattern);
+                                ResolvePattern(scope, pattern);
                             }
                             break;
                         }
@@ -522,7 +616,7 @@ namespace Fux.Building.Phases
                         {
                             foreach (var pattern in record.Patterns)
                             {
-                                ResolveExpr(scope, pattern);
+                                ResolvePattern(scope, pattern);
                             }
                             break;
                         }
@@ -531,7 +625,7 @@ namespace Fux.Building.Phases
                         {
                             foreach (var pattern in sign.Parameters)
                             {
-                                ResolveExpr(scope, pattern);
+                                ResolvePattern(scope, pattern);
                             }
                             break;
                         }
@@ -540,7 +634,7 @@ namespace Fux.Building.Phases
                         {
                             foreach (var pattern in lambda.Parameters)
                             {
-                                ResolveExpr(scope, pattern);
+                                ResolvePattern(scope, pattern);
                             }
                             break;
                         }
@@ -550,15 +644,15 @@ namespace Fux.Building.Phases
                             ResolveExpr(scope, ctor.Name);
                             foreach (var pattern in ctor.Arguments)
                             {
-                                ResolveExpr(scope, pattern);
+                                ResolvePattern(scope, pattern);
                             }
                             break;
                         }
 
                     case A.Pattern.WithAlias with:
                         {
-                            ResolveExpr(scope, with.Pattern);
-                            ResolveExpr(scope, with.Alias);
+                            ResolvePattern(scope, with.Pattern);
+                            ResolvePattern(scope, with.Alias);
                             break;
                         }
 

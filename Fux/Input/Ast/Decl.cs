@@ -361,7 +361,7 @@ namespace Fux.Input.Ast
         {
             public LetAssign(Pattern pattern, Expr expression)
             {
-                Assert(pattern is not Pattern.LowerId);
+                //Assert(pattern is not Pattern.LowerId);
 
                 Pattern = pattern;
                 Expression = expression;
@@ -388,23 +388,17 @@ namespace Fux.Input.Ast
 
         public sealed class Parameter : DeclImpl
         {
-            public Parameter(Expr expression)
+            public Parameter(Pattern pattern)
             {
-                Assert(expression is Pattern);
-
-                Expression = expression;
+                Pattern = pattern;
             }
 
-            public Parameter(Identifier identifier)
-            {
-                Expression = identifier;
-            }
 
-            public Expr Expression { get; }
+            public Pattern Pattern { get; set; }
 
             public override string ToString()
             {
-                return $"{Expression}";
+                return $"{Pattern}";
             }
 
             public override void PP(Writer writer)

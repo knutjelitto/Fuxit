@@ -15,7 +15,7 @@ module Bitwise exposing
 
 import Fux.Core.Bitwise
 
-import Basics exposing (Int)
+import Int exposing (Int)
 
 
 

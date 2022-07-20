@@ -9,7 +9,7 @@
         }
 
         public OperatorSymbol Op { get; }
-        public Expr Expression { get; }
+        public Expr Expression { get; set; }
 
         public override string ToString()
         {

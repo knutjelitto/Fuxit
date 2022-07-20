@@ -168,7 +168,7 @@ namespace Fux.Building.Phases
 
                             foreach (var parameter in var.Parameters)
                             {
-                                if (parameter.Expression is A.Pattern pattern)
+                                if (parameter.Pattern is A.Pattern pattern)
                                 {
                                     foreach (var identifier in pattern.Flatten())
                                     {
@@ -177,7 +177,7 @@ namespace Fux.Building.Phases
                                 }
                                 else
                                 {
-                                    Assert(parameter.Expression is A.Pattern);
+                                    Assert(parameter.Pattern is A.Pattern);
                                     throw new InvalidOperationException();
                                 }
                             }
@@ -360,7 +360,7 @@ namespace Fux.Building.Phases
 
                                 foreach (var parameter in var.Parameters)
                                 {
-                                    if (parameter.Expression is A.Pattern pattern)
+                                    if (parameter.Pattern is A.Pattern pattern)
                                     {
                                         foreach (var identifier in pattern.ExtractNamedParameters())
                                         {
@@ -369,7 +369,7 @@ namespace Fux.Building.Phases
                                     }
                                     else
                                     {
-                                        Assert(parameter.Expression is A.Pattern);
+                                        Assert(parameter.Pattern is A.Pattern);
                                         throw new InvalidOperationException();
                                     }
                                 }

@@ -8,13 +8,13 @@
         public OpChain(Expr first, IEnumerable<OpExpr> rest)
         {
             First = first;
-            Rest = rest.ToArray();
+            Rest = rest.ToList();
 
             OpChains++;
         }
 
-        public Expr First { get; }
-        public IReadOnlyList<OpExpr> Rest { get; }
+        public Expr First { get; set; }
+        public List<OpExpr> Rest { get; }
 
         public Expr Resolve()
         {

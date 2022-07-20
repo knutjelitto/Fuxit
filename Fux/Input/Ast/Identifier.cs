@@ -122,6 +122,13 @@ namespace Fux.Input.Ast
             return this;
         }
 
+        public Identifier Qualified()
+        {
+            Assert(IsSingleLower || IsQualified);
+
+            return this;
+        }
+
         public override bool Equals(object? obj) => obj is Identifier other && toString == other.toString;
         public bool Equals(Identifier? other) => other != null && hashCode == other.hashCode && toString == other.toString;
         public override int GetHashCode() => hashCode;

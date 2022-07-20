@@ -8,21 +8,21 @@ namespace Fux.Input.Ast
 {
     public sealed class FieldPattern : Field
     {
-        public FieldPattern(Expr pattern)
+        public FieldPattern(Identifier name)
         {
-            Pattern = pattern;
+            Name = name;
         }
 
-        public Expr Pattern { get; }
+        public Identifier Name { get; set; }
 
         public override string ToString()
         {
-            return $"{Pattern}";
+            return $"{Name}";
         }
 
         public override void PP(Writer writer)
         {
-            writer.Write($"{Pattern}");
+            writer.Write($"{Name}");
         }
     }
 }

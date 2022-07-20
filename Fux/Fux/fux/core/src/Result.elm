@@ -22,7 +22,7 @@ way to manage errors in Elm.
 @docs withDefault, toMaybe, fromMaybe, mapError
 -}
 
-import Basics exposing ( Bool(..) )
+import Bool exposing ( Bool(..) )
 import Maybe exposing ( Maybe(..) )
 
 

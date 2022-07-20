@@ -139,7 +139,14 @@
         {
             var name = Parser.Identifier(cursor).SingleLower();
 
-            return new A.Pattern.Signature(name, CollectAtomic(cursor));
+            var atomics = CollectAtomic(cursor);
+
+            if (atomics.Count == 0)
+            {
+                return new A.Pattern.LowerId(name);
+            }
+
+            return new A.Pattern.Signature(name, atomics);
         }
 
         private A.Pattern CtorPattern(Cursor cursor)

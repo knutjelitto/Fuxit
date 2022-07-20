@@ -1,12 +1,10 @@
 module Basics exposing
-  ( Int, Float
-  , (+), (-), (*), (/), (//), (^)
-  , toFloat, round, floor, ceiling, truncate
+  ( (+), (-), (*), (/), (^)
   , (==), (/=)
+  , (||), (^^), (&&)
   , (<), (>), (<=), (>=), max, min, compare, Order(..) 
-  , Bool(..), not, (&&), (||), xor
   , (++)
-  , modBy, remainderBy, negate, abs, clamp, sqrt, logBase, e
+  , negate, abs, clamp, sqrt, logBase, e
   , pi, cos, sin, tan, acos, asin, atan, atan2
   , degrees, radians, turns
   , toPolar, fromPolar
@@ -63,6 +61,10 @@ things.
 import Fux.Core.Basics
 import Fux.Core.Utils
 
+import Int exposing(..)
+import Bool exposing(..)
+import String exposing(..)
+
 
 
 -- INFIX OPERATORS
@@ -70,8 +72,9 @@ import Fux.Core.Utils
 
 infix right 0 (<|) = apL
 infix left  0 (|>) = apR
-infix right 2 (||) = or
-infix right 3 (&&) = and
+infix right 2 (||) = Bool.or
+infix right 2 (^^) = Bool.xor
+infix right 3 (&&) = Bool.and
 infix non   4 (==) = eq
 infix non   4 (/=) = neq
 infix non   4 (<)  = lt
@@ -79,12 +82,11 @@ infix non   4 (>)  = gt
 infix non   4 (<=) = le
 infix non   4 (>=) = ge
 infix right 5 (++) = append
-infix left  6 (+)  = add
-infix left  6 (-)  = sub
-infix left  7 (*)  = mul
-infix left  7 (/)  = fdiv
-infix left  7 (//) = idiv
-infix right 8 (^)  = pow
+infix left  6 (+)  = Int.add
+infix left  6 (-)  = Int.sub
+infix left  7 (*)  = Int.mul
+infix left  7 (/)  = Int.div
+infix right 8 (^)  = Int.pow
 infix left  9 (<<) = composeL
 infix right 9 (>>) = composeR
 

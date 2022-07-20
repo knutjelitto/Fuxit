@@ -1,6 +1,6 @@
 ﻿namespace Fux.Input.Ast
 {
-    public abstract class Pattern : Expr.ExprImpl
+    public abstract class Pattern : Node.NodeImpl
     {
         public override void PP(Writer writer) => writer.Write($"{this}");
 
@@ -114,7 +114,7 @@
             }
 
             public Pattern Pattern { get; }
-            public new LowerId Alias { get; }
+            public LowerId Alias { get; }
 
             public override string ToString() => $"({Pattern} {Lex.KwAs} {Alias})";
         }
@@ -137,10 +137,10 @@
         {
             protected Tuple(params Pattern[] patterns)
             {
-                Patterns = patterns;
+                Patterns = patterns.ToList();
             }
 
-            public IReadOnlyList<Pattern> Patterns { get; }
+            public List<Pattern> Patterns { get; }
 
             public override string ToString() => $"({string.Join(", ", Patterns)})";
         }
@@ -172,10 +172,10 @@
         {
             public List(List<Pattern> patterns)
             {
-                Patterns = patterns.ToArray();
+                Patterns = patterns;
             }
 
-            public IReadOnlyList<Pattern> Patterns { get; }
+            public List<Pattern> Patterns { get; }
 
             public override string ToString() => $"[{string.Join(", ", Patterns)}]";
         }
@@ -224,8 +224,8 @@
                 First = first;
                 Rest = rest;
             }
-            public Pattern First { get; }
-            public Pattern Rest { get; }
+            public Pattern First { get; set; }
+            public Pattern Rest { get; set; }
 
             public override string ToString() => $"{First} {Lex.Symbol.Cons} {Rest}";
         }

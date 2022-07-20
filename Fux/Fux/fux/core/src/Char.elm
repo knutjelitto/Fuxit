@@ -27,7 +27,9 @@ module Char exposing
 
 import Fux.Core.Char
 
-import Basics exposing (Bool, Int, (&&), (||), (>=), (<=))
+import Basics exposing ((&&), (||), (>=), (<=))
+import Int exposing (Int)
+import Bool exposing (Bool)
 
 
 

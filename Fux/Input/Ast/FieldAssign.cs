@@ -15,7 +15,7 @@ namespace Fux.Input.Ast
         }
 
         public Identifier Name { get; }
-        public Expr Expression { get; }
+        public Expr Expression { get; set; }
 
         public override string ToString()
         {

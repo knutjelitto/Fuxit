@@ -5,39 +5,16 @@
     "exposed-modules": {
         "Primitives": [
             "Basics",
+            "Int",
+            "Bool",
             "String",
             "Char",
             "Bitwise",
-            "Tuple"
-        ],
-        "Collections": [
-            "List"
-        ],
-        "Error Handling": [
             "Maybe",
             "Result"
         ],
-        "Debug": [
-            "Debug"
-        ]
-    },
-    "waiting-modules": {
         "Collections": [
-            "Array",
-            "Dict",
-            "Set"
-        ],
-        "Effects": [
-            "Platform.Cmd",
-            "Platform.Sub",
-            "Platform",
-            "Process",
-            "Task"
-        ]
-    },
-    "internal-modules": {
-        "Array": [
-            "Intern.JsArray"
+            "List"
         ]
     },
     "dependencies": {}

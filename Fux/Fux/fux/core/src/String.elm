@@ -5,10 +5,12 @@ module String exposing
   , slice, left, right, dropLeft, dropRight
   , contains, startsWith, endsWith, indexes, indices
   , toInt, fromInt
-  , toFloat, fromFloat
+  --, toFloat, fromFloat
   , fromChar, cons, uncons
   , toList, fromList
-  , toUpper, toLower, pad, padLeft, padRight, trim, trimLeft, trimRight
+  , toUpper, toLower
+  --, pad
+  , padLeft, padRight, trim, trimLeft, trimRight
   , map, filter, foldl, foldr, any, all
   )
 
@@ -52,6 +54,8 @@ import Fux.Core.List
 import Fux.Core.String
 
 import Basics exposing (..)
+import Int exposing(..)
+import Bool exposing(..)
 import Bitwise
 import Char exposing (Char)
 import List exposing ((::))
@@ -362,6 +366,7 @@ toLower =
   Fux.Core.String.toLower
 
 
+{--
 {-| Pad a string on both sides until it has a given length.
 
     pad 5 ' ' "1"   == "  1  "
@@ -375,6 +380,7 @@ pad n char string =
       Basics.toFloat (n - length string) / 2
   in
     repeat (ceiling half) (fromChar char) ++ string ++ repeat (floor half) (fromChar char)
+--}
 
 
 {-| Pad a string on the left until it has a given length.
@@ -461,7 +467,7 @@ fromInt =
   Fux.Core.String.fromNumber
 
 
-
+{--
 -- FLOAT CONVERSIONS
 
 
@@ -495,6 +501,7 @@ for debugging purposes.
 fromFloat : Float -> String
 fromFloat =
   Fux.Core.String.fromNumber
+  --}
 
 
 

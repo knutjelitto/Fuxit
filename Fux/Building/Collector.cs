@@ -19,8 +19,8 @@
         public List<A.Decl.TypeAnnotation> Annotation { get; } = new();
         public List<A.Decl.Native> Native { get; } = new();
         public List<A.Expr> VarPattern { get; } = new();
-        public List<A.Expr> LetPattern { get; } = new();
-        public List<A.Expr> MatchPattern { get; } = new();
+        public List<A.Pattern> LetPattern { get; } = new();
+        public List<A.Pattern> MatchPattern { get; } = new();
 
         public Stopwatch ScanTime { get; } = new();
         public Stopwatch ParseTime { get; } = new();

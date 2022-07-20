@@ -19,7 +19,7 @@ you with optional arguments, error handling, and records with optional fields.
 -}
 
 
-import Basics exposing (Bool(..))
+import Bool exposing (Bool(..))
 
 
 

@@ -168,7 +168,7 @@ namespace Fux.Input
                 var lets = new List<A.Decl>();
                 while (cursor.IsNot(Lex.KwIn))
                 {
-                    var decl = Parser.VarDeclOrTypeAnnotation(cursor.Subcursor());
+                    var decl = Parser.VarDeclOrTypeAnnotationInLet(cursor.Subcursor());
 
                     lets.Add(decl);
                 }

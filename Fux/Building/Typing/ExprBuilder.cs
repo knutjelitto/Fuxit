@@ -278,9 +278,9 @@
                     {
                         var parameter = parameterRef.Decl;
 
-                        Assert(parameter.Expression is A.Identifier);
+                        Assert(parameter.Pattern is A.Pattern.LowerId);
 
-                        var name = (A.Identifier)parameter.Expression;
+                        var name = ((A.Pattern.LowerId)parameter.Pattern).Identifier;
                         var variable = new W.Expr.Variable(name);
 
                         return variable;
@@ -631,7 +631,7 @@
             var (itypes, iresult) = bind2.Invert(varType.Type);
             var (types, result) = bind2.Flatten(varType.Type);
 
-            var patterns = var.Parameters.Select(p => p.Expression).Cast<A.Pattern>().Reverse().ToList();
+            var patterns = var.Parameters.Select(p => p.Pattern).Cast<A.Pattern>().Reverse().ToList();
 
             var i = 0;
             for (; i < patterns.Count; i++)
@@ -764,7 +764,7 @@
 
             W.Expr inExpr = Build(ref env, letExpr.InExpression);
 
-            foreach (var let in letExpr.LetDecls.Reverse())
+            foreach (var let in letExpr.LetDecls.AsEnumerable().Reverse())
             {
                 inExpr = BuildLet(ref env, let, inExpr);
             }
@@ -781,8 +781,8 @@
                         var name = GenVariable(GenVarPrefix);
                         var expr = Build(ref env, assign.Expression);
 
-                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().Single());
-                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().Single());
+                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().Single().Identifier);
+                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().Single().Identifier);
 
                         var first = new W.Expr.GetValue(name, typeGen, 0);
                         var second = new W.Expr.GetValue(name, typeGen, 1);
@@ -799,9 +799,9 @@
                         var name = GenVariable(GenVarPrefix);
                         var expr = Build(ref env, assign.Expression);
 
-                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().Single());
-                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().Single());
-                        var name3 = new W.TermVariable(tuple2.Pattern3.ExractMatchIds().Single());
+                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().Single().Identifier);
+                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().Single().Identifier);
+                        var name3 = new W.TermVariable(tuple2.Pattern3.ExractMatchIds().Single().Identifier);
 
                         var first = new W.Expr.GetValue(name, typeGen, 0);
                         var second = new W.Expr.GetValue(name, typeGen, 1);
@@ -833,9 +833,9 @@
 
                         foreach (var parameter in var.Parameters.Reverse())
                         {
-                            Assert(parameter.Expression is A.Pattern);
+                            Assert(parameter.Pattern is A.Pattern);
 
-                            var pattern = (A.Pattern)parameter.Expression;
+                            var pattern = (A.Pattern)parameter.Pattern;
 
                             expr = Decompose(pattern, expr);
 
