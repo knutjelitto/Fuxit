@@ -458,15 +458,15 @@ namespace Fux.Input.Ast
             }
         }
 
-        public sealed class Sequence : ListOf<Expr>
+        public sealed class Application : ListOf<Expr>
         {
-            public Sequence(IEnumerable<Expr> expressions)
+            public Application(IEnumerable<Expr> expressions)
                 : base(expressions)
             {
                 Assert(Count >= 1);
             }
 
-            public Sequence(params Expr[] expressions)
+            public Application(params Expr[] expressions)
                 : this(expressions.AsEnumerable())
             {
             }
@@ -493,6 +493,23 @@ namespace Fux.Input.Ast
             public override void PP(Writer writer)
             {
                 writer.Write(ToString());
+            }
+        }
+
+        public sealed class Ctor : ExprImpl
+        {
+            public Ctor(Identifier name, IEnumerable<Expr> arguments)
+            {
+                Name = name.MultiUpper();
+                Arguments = arguments.ToList();
+            }
+
+            public Identifier Name { get; set; }
+            public List<Expr> Arguments { get; }
+
+            public override string ToString()
+            {
+                return $"{Name}{Arguments.SpaceJoin()}";
             }
         }
 

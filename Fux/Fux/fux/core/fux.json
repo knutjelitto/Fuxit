@@ -9,6 +9,7 @@
             "Bool",
             "String",
             "Char",
+            "Compare",
             "Bitwise",
             "Maybe",
             "Result"

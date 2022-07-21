@@ -16,7 +16,8 @@ namespace Fux.Input
         public ISource Source => Parser.Source;
         public ErrorBag Errors => Parser.Errors;
 
-        public PatternParser Pattern => Parser.Pattern;
+        public PatternParser Patt => Parser.Patt;
+        public DeclParser Decl => Parser.Decl;
 
         public A.Expr Expression(Cursor cursor)
         {
@@ -55,10 +56,6 @@ namespace Fux.Input
 
                 do
                 {
-                    if (cursor.Current.Line == 74)
-                    {
-                        Assert(true);
-                    }
                     var expression = PrefixExpr(cursor);
 
                     expressions.Add(expression);
@@ -72,7 +69,31 @@ namespace Fux.Input
                     return expressions[0];
                 }
 
-                return new A.Expr.Sequence(expressions);
+#if false
+                if (expressions[0] is A.Identifier identifier)
+                {
+                    if (identifier.IsMultiUpper)
+                    {
+                        Assert(true);
+
+                        return new A.Expr.Ctor(identifier, expressions.Skip(1));
+                    }
+                    else if (identifier.IsSingleLower || identifier.IsQualified)
+                    {
+                        Assert(true);
+                    }
+                    else
+                    {
+                        Assert(false);
+                    }
+                }
+                else
+                {
+                    Assert(false);
+                }
+#endif
+
+                return new A.Expr.Application(expressions);
             });
         }
 
@@ -80,11 +101,6 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                if (cursor.Line == 72 && cursor.Column == 28)
-                {
-                    Assert(true);
-                }
-
                 A.Expr app;
 
                 if (cursor.StartsPrefix)
@@ -95,7 +111,7 @@ namespace Fux.Input
                     switch (op.Text)
                     {
                         case "-":
-                            app = new A.Expr.Sequence(Fake.NativeNegate(Module, Source), argument);
+                            app = new A.Expr.Application(Fake.NativeNegate(Module, Source), argument);
                             break;
                         default:
                             Assert(false);
@@ -168,7 +184,7 @@ namespace Fux.Input
                 var lets = new List<A.Decl>();
                 while (cursor.IsNot(Lex.KwIn))
                 {
-                    var decl = Parser.VarDeclOrTypeAnnotationInLet(cursor.Subcursor());
+                    var decl = Decl.VarDeclOrTypeAnnotationInLet(cursor.Subcursor());
 
                     lets.Add(decl);
                 }
@@ -500,7 +516,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var pattern = Pattern.Pattern(cursor);
+                var pattern = Patt.Pattern(cursor);
 
                 cursor.Swallow(Lex.Arrow);
 
@@ -516,7 +532,7 @@ namespace Fux.Input
             {
                 cursor.Swallow(Lex.Lambda);
 
-                var pattern = Pattern.Lambda(cursor);
+                var pattern = Patt.Lambda(cursor);
 
                 cursor.Swallow(Lex.Arrow);
 

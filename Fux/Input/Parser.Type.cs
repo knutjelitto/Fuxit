@@ -90,7 +90,8 @@
                     {
                         while (cursor.More() && !cursor.TerminatesSomething)
                         {
-                            arguments.Add(TypeArgument(cursor));
+                            var argument = TypeArgument(cursor);
+                            arguments.Add(argument);
                         }
                     }
                     while (cursor.More() && !cursor.TerminatesSomething);

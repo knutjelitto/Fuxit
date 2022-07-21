@@ -231,7 +231,7 @@
 
             public override string ToString()
             {
-                return Protected($"{Name}{Arguments.Join(" ")}");
+                return Protected($"{Name}{Arguments.SpaceJoin()}");
             }
         }
 

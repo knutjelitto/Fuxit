@@ -499,7 +499,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Expr.Sequence sequence:
+                    case A.Expr.Application sequence:
                         {
                             foreach (var expr in sequence)
                             {
@@ -559,6 +559,7 @@ namespace Fux.Building.Phases
                             ResolveInfix(scope, chain);
                             break;
                         }
+                    
                     case A.Expr.Select select:
                         {
                             ResolveExpr(scope, select.Lhs);
@@ -570,6 +571,16 @@ namespace Fux.Building.Phases
                             foreach (var field in recordPattern.Fields)
                             {
                                 ResolveExpr(scope, field);
+                            }
+                            break;
+                        }
+
+                    case A.Expr.Ctor ctor:
+                        {
+                            ResolveExpr(scope, ctor.Name);
+                            foreach (var expr in ctor.Arguments)
+                            {
+                                ResolveExpr(scope, expr);
                             }
                             break;
                         }

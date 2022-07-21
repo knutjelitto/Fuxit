@@ -1,15 +1,20 @@
-﻿namespace Fux.Input.Ast
-{
-    public abstract class Pattern : Node.NodeImpl
-    {
-        public override void PP(Writer writer) => writer.Write($"{this}");
+﻿#pragma warning disable IDE1006 // Naming Styles
 
-        public class Unit : Pattern
+namespace Fux.Input.Ast
+{
+    public interface Pattern : Node
+    {
+        public abstract class PatternImpl : NodeImpl, Pattern
+        {
+            public override void PP(Writer writer) => writer.Write($"{this}");
+        }
+
+        public class Unit : PatternImpl
         {
             public override string ToString() => Lex.Symbol.Unit;
         }
 
-        public class LowerId : Pattern
+        public class LowerId : PatternImpl
         {
             public LowerId(Identifier identifier)
             {
@@ -23,7 +28,7 @@
             public override string ToString() => Identifier.ToString();
         }
 
-        public class UpperId : Pattern
+        public class UpperId : PatternImpl
         {
             public UpperId(Identifier identifier)
             {
@@ -37,12 +42,12 @@
             public override string ToString() => Identifier.ToString();
         }
 
-        public class Wildcard : Pattern
+        public class Wildcard : PatternImpl
         {
             public override string ToString() => Lex.Symbol.Wildcard;
         }
 
-        public class Signature : Pattern
+        public class Signature : PatternImpl
         {
             public Signature(Identifier name, List<Pattern> parameters)
             {
@@ -66,7 +71,7 @@
             }
         }
 
-        public class Lambda : Pattern
+        public class Lambda : PatternImpl
         {
             public Lambda(List<Pattern> parameters)
             {
@@ -81,7 +86,7 @@
             }
         }
 
-        public class DeCtor : Pattern
+        public class DeCtor : PatternImpl
         {
             public DeCtor(Identifier name, params Pattern[] arguments)
             {
@@ -105,7 +110,7 @@
             }
         }
 
-        public class WithAlias : Pattern
+        public class WithAlias : PatternImpl
         {
             public WithAlias(Pattern pattern, LowerId alias)
             {
@@ -119,7 +124,7 @@
             public override string ToString() => $"({Pattern} {Lex.KwAs} {Alias})";
         }
 
-        public class Record : Pattern
+        public class Record : PatternImpl
         {
 
             public Record(params Pattern[] patterns)
@@ -133,7 +138,7 @@
         }
 
 
-        public abstract class Tuple : Pattern
+        public abstract class Tuple : PatternImpl
         {
             protected Tuple(params Pattern[] patterns)
             {
@@ -168,7 +173,7 @@
             public Pattern Pattern3 => Patterns[2];
         }
 
-        public class List : Pattern
+        public class List : PatternImpl
         {
             public List(List<Pattern> patterns)
             {
@@ -180,14 +185,14 @@
             public override string ToString() => $"[{string.Join(", ", Patterns)}]";
         }
 
-        public abstract class Literal : Pattern
+        public abstract class Literal : PatternImpl
         {
-            public Literal(A.Expr.Literal lit)
+            public Literal(Expr.Literal lit)
             {
                 Lit = lit;
             }
 
-            public A.Expr.Literal Lit { get; }
+            public Expr.Literal Lit { get; }
 
             public override string ToString() => Lit.ToString();
 
@@ -217,7 +222,7 @@
             }
         }
 
-        public class DeCons : Pattern
+        public class DeCons : PatternImpl
         {
             public DeCons(Pattern first, Pattern rest)
             {

@@ -35,6 +35,7 @@ with them!
 import Fux.Core.List
 
 import Basics exposing (..)
+import Compare exposing (..)
 import Int exposing (..)
 import Bool exposing (..)
 import Maybe exposing ( Maybe(..) )

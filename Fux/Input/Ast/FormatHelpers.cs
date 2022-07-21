@@ -17,5 +17,10 @@ namespace Fux.Input.Ast
 
             return $"{joiner}{string.Join(joiner, nodes)}";
         }
+
+        public static string SpaceJoin(this IReadOnlyList<Node> nodes)
+        {
+            return nodes.Join(" ");
+        }
     }
 }

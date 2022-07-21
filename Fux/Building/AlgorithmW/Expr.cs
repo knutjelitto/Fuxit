@@ -82,6 +82,11 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
+        public sealed record Ctor(Expr First, IReadOnlyList<Expr> Arguments) : Expr
+        {
+            public override string ToString() => Pretty.Expr(this);
+        }
+
         public sealed record DeVariable(Expr Var) : Expr
         {
             public override string ToString() => Pretty.Expr(this);

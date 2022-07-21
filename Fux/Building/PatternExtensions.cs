@@ -7,19 +7,19 @@
             return pattern.Flatten().Select(id => new A.Decl.Parameter(id));
         }
 
-        public static IEnumerable<A.Decl.Parameter> ExractMatchNames(this A.Pattern matchPattern)
+        public static IEnumerable<A.Decl.Parameter> ExtractMatchNames(this A.Pattern pattern)
         {
-            return matchPattern.Flatten(null, true).Select(name => new A.Decl.Parameter(name));
+            return Flatten(pattern, null, true).Select(name => new A.Decl.Parameter(name));
         }
 
-        public static IEnumerable<A.Pattern.LowerId> ExractMatchIds(this A.Pattern matchPattern)
+        public static IEnumerable<A.Pattern.LowerId> ExractMatchIds(this A.Pattern pattern)
         {
-            return matchPattern.Flatten(null, true);
+            return Flatten(pattern, null, true);
         }
 
         public static IEnumerable<A.Pattern.LowerId> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard = null)
         {
-            return pattern.Flatten(genWildcard, false).ToList(); ;
+            return Flatten(pattern, genWildcard, false).ToList(); ;
         }
 
         private static IEnumerable<A.Pattern.LowerId> Flatten(this A.Pattern pattern, Func<A.Identifier>? genWildcard, bool inner)

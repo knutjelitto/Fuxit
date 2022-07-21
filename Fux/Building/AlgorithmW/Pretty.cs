@@ -134,6 +134,9 @@ namespace Fux.Building.AlgorithmW
                 case Expr.Variable variable:
                     Write($"{Str(variable)}");
                     break;
+                case Expr.Ctor ctor:
+                    Write($"{Str(ctor)}");
+                    break;
                 default:
                     Assert(false);
                     throw new NotImplementedException();
@@ -273,6 +276,15 @@ namespace Fux.Building.AlgorithmW
                         var fields = string.Join(", ", record.Fields.Select(f => Str(f)));
 
                         return $"{{{@base}{fields}}}";
+                    }
+                case Expr.Ctor ctor:
+                    {
+                        if (ctor.Arguments.Count > 0)
+                        {
+                            var arguments = string.Join(" ", ctor.Arguments.Select(a => Str(a)));
+                            return $"({Str(ctor.First)} {arguments})";
+                        }
+                        return $"({Str(ctor.First)})";
                     }
 
                 case Expr.Field field:

@@ -349,6 +349,27 @@ namespace Fux.Building.AlgorithmW
 
                         return (subst, recordType);
                     }
+
+                case Expr.Ctor({ } first, { } arguments) ctor:
+                    {
+                        Assert(false);
+
+                        var subst = Substitution.Empty();
+
+                        var types = new List<Type>();
+
+                        foreach (var expr in arguments)
+                        {
+                            var (s, type) = InferType(expr, ApplySubstitution(env, subst));
+
+                            subst = ComposeSubstitutions(subst, s);
+                            types.Add(type);
+                        }
+
+                        //var c = new Type.Custom()
+
+                        break;
+                    }
             }
 
             throw new InvalidOperationException($"can not infer - unknown expression type '{expression.GetType().Name} - {expression}'");

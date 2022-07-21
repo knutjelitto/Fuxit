@@ -9,9 +9,21 @@ using Fux.Building;
 
 namespace Fux.Input
 {
-    public partial class Parser
+    public class DeclParser
     {
-        private A.Decl.Header ModuleHeader(Cursor cursor)
+        public DeclParser(Parser parser)
+        {
+            Parser = parser;
+        }
+
+        public Parser Parser { get; }
+        public Module Module => Parser.Module;
+        public ErrorBag Errors => Parser.Errors;
+        public ExprParser Expr => Parser.Expr;
+        public TypeParser Type => Parser.Type;
+        public PatternParser Patt => Parser.Patt;
+
+        public A.Decl.Header ModuleHeader(Cursor cursor)
         {
             return cursor.Scope(cursor =>
             {
@@ -29,7 +41,7 @@ namespace Fux.Input
                 }
                 cursor.Swallow(Lex.KwModule);
 
-                var path = Identifier(cursor).MultiUpper();
+                var path = Parser.Identifier(cursor).MultiUpper();
 
                 var where = new List<A.Decl.Var>();
 
@@ -40,7 +52,7 @@ namespace Fux.Input
 
                     do
                     {
-                        var name = SingleIdentifier(cursor).SingleLower();
+                        var name = Parser.SingleIdentifier(cursor).SingleLower();
                         cursor.Swallow(Lex.Assign);
                         var expression = Expr.Expression(cursor);
 
@@ -68,13 +80,13 @@ namespace Fux.Input
             {
                 cursor.Swallow(Lex.KwImport);
 
-                var path = Identifier(cursor).MultiUpper();
+                var path = Parser.Identifier(cursor).MultiUpper();
 
                 A.Identifier? alias = null;
 
                 if (cursor.SwallowIf(Lex.KwAs))
                 {
-                    alias = Identifier(cursor).MultiUpper();
+                    alias = Parser.Identifier(cursor).MultiUpper();
                 }
 
                 A.Exposing? exposing = null;
@@ -109,12 +121,12 @@ namespace Fux.Input
                 {
                     if (cursor.Is(Lex.LowerId))
                     {
-                        var name = SingleIdentifier(cursor).SingleLower();
+                        var name = Parser.SingleIdentifier(cursor).SingleLower();
                         exposed.Add(new A.Exposed.Var(name));
                     }
                     else if (cursor.Is(Lex.UpperId))
                     {
-                        var name = SingleIdentifier(cursor).SingleUpper();
+                        var name = Parser.SingleIdentifier(cursor).SingleUpper();
                         var inclusive = false;
                         if (cursor.IsWeak(Lex.Weak.ExposeAll))
                         {
@@ -125,7 +137,7 @@ namespace Fux.Input
                     }
                     else if (cursor.Is(Lex.OperatorId))
                     {
-                        var name = SingleIdentifier(cursor).SingleOp();
+                        var name = Parser.SingleIdentifier(cursor).SingleOp();
                         exposed.Add(new A.Exposed.Var(name));
                     }
                     else
@@ -155,9 +167,9 @@ namespace Fux.Input
                 }
                 var prioTok = cursor.Swallow(Lex.Integer);
                 var power = new A.InfixPower(prioTok);
-                var operatorSymbol = SingleIdentifier(cursor).SingleOp();
+                var operatorSymbol = Parser.SingleIdentifier(cursor).SingleOp();
                 var defineTok = cursor.Swallow(Lex.Assign);
-                var definition = Identifier(cursor).Qualified(); ;
+                var definition = Parser.Identifier(cursor).Qualified(); ;
 
                 return new A.Decl.Infix(Module, assoc, power, operatorSymbol, definition);
             });
@@ -177,7 +189,7 @@ namespace Fux.Input
 
                 Assert(cursor.Is(Lex.UpperId));
 
-                var name = SingleIdentifier(cursor).SingleUpper();
+                var name = Parser.SingleIdentifier(cursor).SingleUpper();
 
                 var parameterList = new List<A.Decl.TypeParameter>();
 
@@ -194,7 +206,7 @@ namespace Fux.Input
 
                 if (alias)
                 {
-                    var definition = Typ.Type(cursor);
+                    var definition = Type.Type(cursor);
 
                     return new A.Decl.Alias(Module, name, new A.Decl.TypeParameterList(parameterList), definition);
                 }
@@ -219,7 +231,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                return new A.Decl.TypeParameter(Module, SingleIdentifier(cursor).SingleLower());
+                return new A.Decl.TypeParameter(Module, Parser.SingleIdentifier(cursor).SingleLower());
             });
         }
 
@@ -238,11 +250,11 @@ namespace Fux.Input
             });
         }
 
-        private A.Decl VarDecl(Cursor cursor)
+        public A.Decl VarDecl(Cursor cursor)
         {
             return cursor.Scope<A.Decl>(cursor =>
             {
-                var pattern = Pattern.Pattern(cursor);
+                var pattern = Patt.Pattern(cursor);
 
                 cursor.Swallow(Lex.Assign);
 
@@ -276,11 +288,11 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var name = SingleIdentifier(cursor).SingleLower();
+                var name = Parser.SingleIdentifier(cursor).SingleLower();
 
                 cursor.Swallow(Lex.Colon);
 
-                var type = Typ.Type(cursor);
+                var type = Type.Type(cursor);
 
                 return new A.Decl.TypeAnnotation(Module, name, type);
             });
@@ -292,7 +304,7 @@ namespace Fux.Input
             {
                 Assert(cursor.Is(Lex.UpperId));
 
-                var name = Identifier(cursor).SingleUpper();
+                var name = Parser.Identifier(cursor).SingleUpper();
 
                 var arguments = new List<A.Type>();
 
@@ -300,7 +312,7 @@ namespace Fux.Input
                 {
                     while (cursor.More() && !cursor.TerminatesSomething)
                     {
-                        var argument = Typ.TypeArgument(cursor);
+                        var argument = Type.TypeArgument(cursor);
 
                         arguments.Add(argument);
                     }

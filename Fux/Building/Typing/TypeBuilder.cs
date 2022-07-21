@@ -107,21 +107,21 @@ namespace Fux.Building.Typing
 
                         switch (name)
                         {
-                            case $"Basics.{Lex.Primitive.Int}":
+                            case $"Int.{Lex.Primitive.Int}":
                                 return new W.Type.Integer();
-                            case $"Basics.{Lex.Primitive.Float}":
+                            case $"Float.{Lex.Primitive.Float}":
                                 return new W.Type.Float();
-                            case $"Basics.{Lex.Primitive.Bool}":
+                            case $"Bool.{Lex.Primitive.Bool}":
                                 return new W.Type.Bool();
-                            case $"Basics.{Lex.Primitive.String}":
+                            case $"String.{Lex.Primitive.String}":
                                 return new W.Type.String();
-                            case $"Basics.{Lex.Primitive.Char}":
+                            case $"Char.{Lex.Primitive.Char}":
                                 return new W.Type.Char();
                         }
 
-                        Assert(name != "Basics.Bool");
+                        Assert(name != "Bool.Bool");
                         var args = custom.Arguments.Select(t => Resolve(env, t)).ToArray();
-                        return new W.Type.Custom(custom.FullName(), args);
+                        return new W.Type.Custom(name, args);
                     }
 
                 case A.Type.Record record:

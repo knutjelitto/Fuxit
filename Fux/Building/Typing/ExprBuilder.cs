@@ -72,7 +72,7 @@
                         return new W.Expr.Iff(condition, ifTrue, ifFalse);
                     }
 
-                case A.Expr.Sequence seqExpr:
+                case A.Expr.Application seqExpr:
                     {
                         Assert(seqExpr.Count >= 2);
 
@@ -85,10 +85,32 @@
                         {
                             return new W.Expr.Tuple2(
                                 Build(ref env, tupleExpr[0]),
-                                Build(ref env, tupleExpr[1])
-                                );
+                                Build(ref env, tupleExpr[1]));
                         }
                         break;
+                    }
+
+                case A.Expr.Ctor ctorExpr:
+                    {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+
+                        Assert(ctorExpr.Name.Resolved is A.Expr.Ref.Ctor);
+
+                        var first = Build(ref env, ctorExpr.Name);
+
+                        var arguments = new List<W.Expr>();
+                        foreach (var arg in ctorExpr.Arguments)
+                        {
+                            var argument = Build(ref env, arg);
+                            arguments.Add(argument);
+                        }
+
+                        var ctor = new W.Expr.Ctor(first, arguments);
+
+                        return ctor;
                     }
 
                 case A.Expr.Unit unit:
@@ -190,7 +212,7 @@
                 }
             }
 
-            W.Expr Apply(ref W.Environment env, A.Expr.Sequence seq, int index)
+            W.Expr Apply(ref W.Environment env, A.Expr.Application seq, int index)
             {
                 if (index == 1)
                 {
@@ -240,6 +262,11 @@
                             var args = custom.Parameters.Select(p => (A.Type)new A.Type.Parameter(p.Name)).ToList();
 
                             var type = new A.Type.Custom(custom.Name, args).With(custom);
+
+                            foreach (var x in ctor.Arguments.AsEnumerable().Reverse())
+                            {
+                                type = new A.Type.Function(x, type);
+                            }
 
                             polytype = typeBuilder.Build(env, type);
 

@@ -239,7 +239,7 @@ namespace Fux.Building.Phases
                             Assert(matchCase.Scope.Parent == null);
                             matchCase.Scope.Parent = scope;
 
-                            foreach (var parameter in matchCase.Pattern.ExractMatchNames())
+                            foreach (var parameter in matchCase.Pattern.ExtractMatchNames())
                             {
                                 matchCase.Scope.Add(parameter);
                             }
@@ -248,7 +248,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Expr.Sequence sequence:
+                    case A.Expr.Application sequence:
                         {
                             foreach (var expr in sequence)
                             {
@@ -308,7 +308,7 @@ namespace Fux.Building.Phases
                     case A.Expr.Lambda lambda:
                         {
                             lambda.Scope.Parent = scope;
-                            foreach (var parameter in lambda.Parameters.ExractMatchNames())
+                            foreach (var parameter in lambda.Parameters.ExtractMatchNames())
                             {
                                 lambda.Scope.Add(parameter);
                             }
@@ -323,6 +323,16 @@ namespace Fux.Building.Phases
                             foreach (var field in record.Fields)
                             {
                                 ScopeExpr(record.Scope, field.Expression);
+                            }
+                            break;
+                        }
+
+                    case A.Expr.Ctor ctor:
+                        {
+                            ScopeExpr(scope, ctor.Name);
+                            foreach (var expr in ctor.Arguments)
+                            {
+                                ScopeExpr(scope, expr);
                             }
                             break;
                         }

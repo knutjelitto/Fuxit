@@ -16,18 +16,21 @@ namespace Fux.Input
             Module = module;
             Errors = errors;
             Lexer = lexer;
-            Pattern = new PatternParser(this);
+            Patt = new PatternParser(this);
             Expr = new ExprParser(this);
-            Typ = new TypeParser(this);
+            Type = new TypeParser(this);
+            Decl = new DeclParser(this);
         }
 
         public Module Module { get; }
         public ErrorBag Errors { get; }
         public ISource Source => Lexer.Source;
         public ILexer Lexer { get; }
-        public PatternParser Pattern { get; }
+        public PatternParser Patt { get; }
         public ExprParser Expr { get; }
-        public TypeParser Typ { get; }
+        public TypeParser Type { get; }
+        public DeclParser Decl { get; }
+
 
         public A.ModuleAst ParseModule()
         {
@@ -72,19 +75,19 @@ namespace Fux.Input
 
                 if (cursor.Is(Lex.KwModule, Lex.KwEffect, Lex.KwPort))
                 {
-                    outer = ModuleHeader(cursor);
+                    outer = Decl.ModuleHeader(cursor);
                 }
                 else if (cursor.Is(Lex.KwImport))
                 {
-                    outer = ImportDecl(cursor);
+                    outer = Decl.ImportDecl(cursor);
                 }
                 else if (cursor.Is(Lex.KwInfix))
                 {
-                    outer = InfixDecl(cursor);
+                    outer = Decl.InfixDecl(cursor);
                 }
                 else if (cursor.Is(Lex.KwType))
                 {
-                    outer = CustomOrAliasDecl(cursor);
+                    outer = Decl.CustomOrAliasDecl(cursor);
                 }
                 else if (cursor.Is(Lex.EOF))
                 {
@@ -92,11 +95,11 @@ namespace Fux.Input
                 }
                 else if (cursor.StartsTypeAnnotation)
                 {
-                    outer = TypeAnnotation(cursor);
+                    outer = Decl.TypeAnnotation(cursor);
                 }
                 else
                 {
-                    outer = VarDecl(cursor);
+                    outer = Decl.VarDecl(cursor);
                 }
 
                 if (cursor.More())
