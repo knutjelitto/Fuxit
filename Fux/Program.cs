@@ -40,8 +40,8 @@ namespace Fux
 
                 if (true)
                 {
-                    //builder.Load(ElmPackage.Latest("elm-explorations/markdown"));
-                    //builder.Load(new ElmPackage("fux/fux/core", "1.0.0"));
+                    builder.Load("fux/test");
+                    builder.Load("fux/app");
                     builder.Load("fux/core");
                 }
                 else

@@ -14,7 +14,7 @@
             Name = string.Intern(name);
             IsKeyword = isKeyword;
             StartsAtomic = startsAtomic;
-            TerminatesSomething = terminatesSomething;
+            TerminatesSomething = terminatesSomething || isKeyword;
             IsIdentifier = isIdentifier;
             IsBracket = isBracket;
         }
@@ -101,6 +101,7 @@
         public static readonly Lex KwExposing = Add(new("exposing", isKeyword: true));
         public static readonly Lex KwPort = Add(new("port", isKeyword: true));
         public static readonly Lex KwWhere = Add(new("where", isKeyword: true));
+        public static readonly Lex KwClass = Add(new("class", isKeyword: true));
 
         public static class Weak
         {

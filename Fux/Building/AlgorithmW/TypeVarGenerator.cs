@@ -4,7 +4,7 @@
     {
         private int supply = 0;
 
-        public Type.Variable GetNext(string? name = null)
+        public Type.Variable GetNextTypeVar(string? name = null)
         {
             return new Type.Variable(new TypeVariable(supply++, name));
         }

@@ -13,7 +13,7 @@ namespace Fux.Building.Typing
         {
             if (type == null)
             {
-                return new W.Polytype(env.GetNext());
+                return new W.Polytype(env.GetNextTypeVar());
             }
 
             vars.Clear();
@@ -70,27 +70,27 @@ namespace Fux.Building.Typing
 
                 case A.Type.Bool:
                     {
-                        return new W.Type.Bool();
+                        return W.Type.Bool.Instance;
                     }
 
                 case A.Type.Integer:
                     {
-                        return new W.Type.Integer();
+                        return W.Type.Integer.Instance;
                     }
 
                 case A.Type.Float:
                     {
-                        return new W.Type.Float();
+                        return W.Type.Float.Instance;
                     }
 
                 case A.Type.String:
                     {
-                        return new W.Type.String();
+                        return W.Type.String.Instance;
                     }
 
                 case A.Type.Char:
                     {
-                        return new W.Type.Char();
+                        return W.Type.Char.Instance;
                     }
 
                 case A.Type.List list:
@@ -108,15 +108,15 @@ namespace Fux.Building.Typing
                         switch (name)
                         {
                             case $"Int.{Lex.Primitive.Int}":
-                                return new W.Type.Integer();
+                                return W.Type.Integer.Instance;
                             case $"Float.{Lex.Primitive.Float}":
-                                return new W.Type.Float();
+                                return W.Type.Float.Instance;
                             case $"Bool.{Lex.Primitive.Bool}":
-                                return new W.Type.Bool();
+                                return W.Type.Bool.Instance;
                             case $"String.{Lex.Primitive.String}":
-                                return new W.Type.String();
+                                return W.Type.String.Instance;
                             case $"Char.{Lex.Primitive.Char}":
-                                return new W.Type.Char();
+                                return W.Type.Char.Instance;
                         }
 
                         Assert(name != "Bool.Bool");
@@ -149,7 +149,7 @@ namespace Fux.Building.Typing
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
-                    typeVar = env.GetNext(text).TypeVar;
+                    typeVar = env.GetNextTypeVar(text).TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
                 }

@@ -40,6 +40,19 @@ namespace Fux.Building.AlgorithmW
             return new Substitution(union);
         }
 
+        public Substitution UnionWith(IEnumerable<(TypeVariable, Type)> pairs)
+        {
+            var union = map;
+            foreach (var (variable, type) in pairs)
+            {
+                if (!map.ContainsKey(variable))
+                {
+                    union = union.Add(variable, type);
+                }
+            }
+            return new Substitution(union);
+        }
+
         public override string ToString()
         {
             return $"Substitution{{{string.Join(", ", Enumerate().Select(kv => str(kv)))}}}";

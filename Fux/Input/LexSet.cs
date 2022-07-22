@@ -30,5 +30,10 @@
         {
             return Add(lexes.AsEnumerable());
         }
+
+        public LexSet Add(LexSet lexes)
+        {
+            return Add(lexes.lexes);
+        }
     }
 }

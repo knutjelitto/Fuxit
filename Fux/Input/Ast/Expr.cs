@@ -369,16 +369,35 @@ namespace Fux.Input.Ast
             }
         }
 
+        public sealed class Field : ExprImpl
+        {
+            public Field(Identifier name, Expr? expression)
+            {
+                Name = name;
+                Expression = expression;
+            }
+
+            public Identifier Name { get; }
+            public Expr? Expression { get; set; }
+
+            public override string ToString() => Name.OptJoin(" = ", Expression);
+
+            public override void PP(Writer writer)
+            {
+                writer.Write($"{this}");
+            }
+        }
+
         public sealed class Record : ExprImpl
         {
-            public Record(Identifier? baseRecord, IEnumerable<FieldAssign> fields)
+            public Record(Identifier? baseRecord, IEnumerable<Field> fields)
             {
                 Fields = fields.ToList();
                 BaseRecord = baseRecord;
             }
 
             public Identifier? BaseRecord { get; }
-            public List<FieldAssign> Fields { get; }
+            public List<Field> Fields { get; }
 
             public LetScope Scope { get; } = new();
 

@@ -112,7 +112,7 @@
             public override string ToString() => Pretty.Expr(this);
         }
 
-        public sealed record Field(string Name, Expr Value) : Expr
+        public sealed record Field(string Name, Expr? Value) : Expr
         {
             public override string ToString() => Pretty.Expr(this);
         }
@@ -132,12 +132,12 @@
         /// </summary>
         public abstract record Literal(Type Type) : Expr
         {
-            public sealed record Integer(long Value) : Literal(new Type.Integer())
+            public sealed record Integer(long Value) : Literal(Type.Integer.Instance)
             {
                 public override string ToString() => Value.ToString();
             }
 
-            public sealed record Float(double Value) : Literal(new Type.Float())
+            public sealed record Float(double Value) : Literal(Type.Float.Instance)
             {
                 public override string ToString()
                 {
@@ -149,17 +149,17 @@
                 }
             }
 
-            public sealed record Bool(bool Value) : Literal(new Type.Bool())
+            public sealed record Bool(bool Value) : Literal(Type.Bool.Instance)
             {
                 public override string ToString() => Value.ToString();
             }
 
-            public sealed record String(string Value) : Literal(new Type.String())
+            public sealed record String(string Value) : Literal(Type.String.Instance)
             {
                 public override string ToString() => $"\"{Value}\"";
             }
 
-            public sealed record Char(string Value) : Literal(new Type.Char())
+            public sealed record Char(string Value) : Literal(Type.Char.Instance)
             {
                 public override string ToString() => $"\'{Value}\'";
             }

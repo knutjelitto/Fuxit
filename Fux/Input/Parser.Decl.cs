@@ -288,7 +288,7 @@ namespace Fux.Input
         {
             return cursor.Scope(cursor =>
             {
-                var name = Parser.SingleIdentifier(cursor).SingleLower();
+                var name = Parser.SingleIdentifier(cursor).SingleLowerOrOp();
 
                 cursor.Swallow(Lex.Colon);
 
@@ -325,6 +325,77 @@ namespace Fux.Input
 
                 return ctor;
             });
+        }
+
+        public A.Decl.TypeClass TypeClass(Cursor cursor)
+        {
+            return cursor.Scope(cursor =>
+            {
+                cursor.Swallow(Lex.KwClass);
+
+                var name = Parser.SingleIdentifier(cursor).SingleUpper();
+
+                var parameterList = new List<A.Decl.TypeParameter>();
+
+                while (cursor.IsNot(Lex.KwWhere, Lex.Colon))
+                {
+                    Assert(cursor.Is(Lex.LowerId));
+
+                    var parameter = TypeParameter(cursor);
+
+                    parameterList.Add(parameter);
+                }
+
+                var typeClass = new A.Decl.TypeClass(Module, name, new A.Decl.TypeParameterList(parameterList));
+
+                if (cursor.SwallowIf(Lex.Colon))
+                {
+                    var super = Super(typeClass, cursor);
+
+                    while (cursor.IsNot(Lex.KwWhere))
+                    {
+                        super = Super(typeClass, cursor);
+                    }
+                }
+
+                if (cursor.SwallowIf(Lex.KwWhere))
+                {
+                    do
+                    {
+                        var x = TypeAnnotation(cursor.Subcursor());
+                    }
+                    while (cursor.IsNot(Lex.EOF));
+                }
+
+                return typeClass;
+            });
+        }
+
+        public A.Decl.SuperClass Super(A.Decl.TypeClass typeClass, Cursor cursor)
+        {
+            Assert(cursor.Is(Lex.UpperId));
+
+            var name = Parser.Identifier(cursor).SingleUpper();
+
+            var arguments = new List<A.Type>();
+
+            do
+            {
+                while (cursor.More() && !cursor.TerminatesSomething)
+                {
+                    var argument = Type.TypeArgument(cursor);
+
+                    arguments.Add(argument);
+                }
+            }
+            while (cursor.More() && !cursor.TerminatesSomething);
+
+            var super = new A.Decl.SuperClass(typeClass, Module, name, arguments);
+
+            typeClass.Supers.Add(super);
+
+            return super;
+
         }
     }
 }

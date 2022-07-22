@@ -15,7 +15,7 @@ namespace Fux.Building.Phases
             {
                 Terminal.Write(".");
 
-                if (module.IsJs)
+                if (module.IsBuiltin)
                 {
                     continue;
                 }

@@ -4,14 +4,14 @@ namespace Fux.Building
 {
     public class Module
     {
-        public Module(Package package, string name, bool js = false)
+        public Module(Package package, string name, bool builtin = false)
         {
             Package = package;
             Name = name;
-            IsJs = js;
+            IsBuiltin = builtin;
 
             var pathName = Name.Replace('.', '/');
-            var ext = js ? "js" : "elm";
+            var ext = builtin ? "wat" : "elm";
             NickName = Package.FullName + "/" + pathName;
             FileName = $"src/{pathName}.{ext}";
 
@@ -20,8 +20,8 @@ namespace Fux.Building
 
         public Package Package { get; }
         public string Name { get; }
-        public bool IsJs { get; }
-        public bool IsElm => !IsJs;
+        public bool IsBuiltin { get; }
+        public bool IsFux => !IsBuiltin;
         public bool IsCore => Package.IsCore;
         public string NickName { get; }
         public string FileName { get; }

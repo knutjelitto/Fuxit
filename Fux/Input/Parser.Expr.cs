@@ -69,30 +69,6 @@ namespace Fux.Input
                     return expressions[0];
                 }
 
-#if false
-                if (expressions[0] is A.Identifier identifier)
-                {
-                    if (identifier.IsMultiUpper)
-                    {
-                        Assert(true);
-
-                        return new A.Expr.Ctor(identifier, expressions.Skip(1));
-                    }
-                    else if (identifier.IsSingleLower || identifier.IsQualified)
-                    {
-                        Assert(true);
-                    }
-                    else
-                    {
-                        Assert(false);
-                    }
-                }
-                else
-                {
-                    Assert(false);
-                }
-#endif
-
                 return new A.Expr.Application(expressions);
             });
         }
@@ -262,10 +238,6 @@ namespace Fux.Input
                     {
                         return Parser.Identifier(cursor);
                     }
-                    else if (cursor.Is(Lex.Wildcard))
-                    {
-                        return Wildcard(cursor);
-                    }
                     else if (cursor.Is(Lex.Integer))
                     {
                         return IntegerLiteral(cursor);
@@ -274,6 +246,10 @@ namespace Fux.Input
                     {
                         return FloatLiteral(cursor);
                     }
+                    else if (cursor.Is(Lex.Char))
+                    {
+                        return CharLiteral(cursor);
+                    }
                     else if (cursor.Is(Lex.String))
                     {
                         return StringLiteral(cursor);
@@ -281,10 +257,6 @@ namespace Fux.Input
                     else if (cursor.Is(Lex.LongString))
                     {
                         return LongStringLiteral(cursor);
-                    }
-                    else if (cursor.Is(Lex.Char))
-                    {
-                        return CharLiteral(cursor);
                     }
                     else if (cursor.Is(Lex.LeftRoundBracket))
                     {
@@ -311,6 +283,7 @@ namespace Fux.Input
                 }
             });
         }
+
 
         private A.Expr TupleLiteral(Cursor cursor)
         {
@@ -359,10 +332,10 @@ namespace Fux.Input
                 {
                     cursor.Swallow(Lex.RCurlyBracket);
 
-                    return new A.RecordPattern(Enumerable.Empty<A.FieldPattern>());
+                    return new A.Expr.Record(null, Enumerable.Empty<A.Expr.Field>());
                 }
 
-                var fields = new List<A.Field>();
+                var fields = new List<A.Expr.Field>();
                 var state = cursor.State;
                 A.Identifier? baseName = Parser.SingleIdentifier(cursor).SingleLower();
 
@@ -384,21 +357,9 @@ namespace Fux.Input
 
                 cursor.Swallow(Lex.RCurlyBracket);
 
-                if (fields.All(f => f is A.FieldAssign))
-                {
-                    return new A.Expr.Record(baseName, fields.Cast<A.FieldAssign>());
-                }
-                else if (fields.All(f => f is A.FieldPattern))
-                {
-                    Assert(baseName == null);
-                    Assert(fields.Count >= 1);
-                    return new A.RecordPattern(fields.Cast<A.FieldPattern>());
-                }
+                return new A.Expr.Record(baseName, fields.Cast<A.Expr.Field>());
 
-                Assert(false);
-                throw new NotImplementedException();
-
-                A.Field Field(Cursor cursor)
+                A.Expr.Field Field(Cursor cursor)
                 {
                     var name = Parser.SingleIdentifier(cursor).SingleLower();
 
@@ -407,11 +368,11 @@ namespace Fux.Input
                         var assign = cursor.Swallow(Lex.Assign);
                         var value = Expression(cursor);
 
-                        return new A.FieldAssign(name, value);
+                        return new A.Expr.Field(name, value);
                     }
                     else
                     {
-                        return new A.FieldPattern(name);
+                        return new A.Expr.Field(name, null);
                     }
                 }
             });
@@ -449,16 +410,6 @@ namespace Fux.Input
                 var expr = Parser.SingleIdentifier(cursor);
 
                 return new A.Expr.Dot(expr);
-            });
-        }
-
-        private A.Expr Wildcard(Cursor cursor)
-        {
-            return cursor.Scope(cursor =>
-            {
-                var token = cursor.Swallow(Lex.Wildcard);
-
-                return new A.Wildcard(token);
             });
         }
 

@@ -58,7 +58,7 @@ import Int exposing(..)
 import Bool exposing(..)
 import Bitwise
 import Char exposing (Char)
-import List exposing ((::))
+import List exposing (List, (::))
 import Maybe exposing (Maybe)
 import Result exposing (Result)
 

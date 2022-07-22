@@ -30,17 +30,24 @@ namespace Fux.Building.AlgorithmW
 
         private void Print(Expr top)
         {
-            var str = Str(top);
-            if (str.Length <= maxWidth)
+            switch (top)
             {
-                Write(str);
-                return;
+                case AlgorithmW.Expr.Sugar.Let:
+                    break;
+                default:
+                    var str = Str(top);
+                    if (str.Length <= maxWidth)
+                    {
+                        Write(str);
+                        return;
+                    }
+                    break;
             }
 
             switch (top)
             {
                 case AlgorithmW.Expr.Native:
-                    Write(str);
+                    Write(Str(top));
                     break;
                 case Expr.Unify expr:
                     Print(expr.Expr);
@@ -165,7 +172,7 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Sugar.Let let:
                     {
-                        var assignments = string.Join(")(", let.Lets.Select(assign => $"{assign.term} = {Str(assign.value)}"));
+                        var assignments = string.Join(") (", let.Lets.Select(assign => $"{assign.term} = {Str(assign.value)}"));
                         return $"(let ({assignments}) in {Str(let.Expr)})";
                     }
 
@@ -289,6 +296,10 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Field field:
                     {
+                        if (field.Value == null)
+                        {
+                            return $"{field.Name}";
+                        }
                         return $"{field.Name} = {Str(field.Value)}";
                     }
 

@@ -9,6 +9,8 @@
             var name = $"{named.InModule.Name}.{named.Name}";
             var variable = new W.Expr.Variable(name);
 
+            Assert(name != "Main.x");
+
             return variable;
         }
 

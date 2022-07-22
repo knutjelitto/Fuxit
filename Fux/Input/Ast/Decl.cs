@@ -236,7 +236,7 @@ namespace Fux.Input.Ast
         public sealed class TypeAnnotation : NamedDeclImpl
         {
             public TypeAnnotation(Module module, Identifier name, Type type)
-                : base(module, name.SingleLower())
+                : base(module, name.SingleLowerOrOp())
             {
 
                 Type = type;
@@ -406,5 +406,34 @@ namespace Fux.Input.Ast
                 writer.Write(ToString());
             }
         }
+
+        public class TypeClass : Decl.NamedDeclImpl
+        {
+            public TypeClass(Module module, Identifier name, Decl.TypeParameterList parameters)
+                : base(module, name)
+            {
+                Parameters = parameters;
+            }
+
+            public List<SuperClass> Supers { get; } = new List<SuperClass>();
+            public Decl.TypeParameterList Parameters { get; }
+        }
+
+        public class SuperClass : Node.NodeImpl
+        {
+            public SuperClass(TypeClass typeClass, Module module, Identifier name, List<Type> arguments)
+            {
+                TypeClass = typeClass;
+                Module = module;
+                Name = name;
+                Arguments = arguments;
+            }
+
+            public TypeClass TypeClass { get; }
+            public Module Module { get; }
+            public Identifier Name { get; }
+            public List<Type> Arguments { get; }
+        }
+
     }
 }

@@ -82,14 +82,14 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Native:
                     {
-                        var type = (Type)env.GetNext();
+                        var type = (Type)env.GetNextTypeVar();
 
                         return (Substitution.Empty(), type);
                     }
 
                 case Expr.Wildcard:
                     {
-                        var type = (Type)env.GetNext();
+                        var type = (Type)env.GetNextTypeVar();
 
                         return (Substitution.Empty(), type);
                     }
@@ -148,7 +148,7 @@ namespace Fux.Building.AlgorithmW
 
                         {
                             var (s1, type1) = InferType(cond, env);
-                            var type2 = new Type.Bool();
+                            var type2 = Type.Bool.Instance;
                             var s2 = MostGeneralUnifier(type1, type2);
                         }
                         {
@@ -166,7 +166,7 @@ namespace Fux.Building.AlgorithmW
                 // * Applying the resulting substitution to the argument to define the type of the argument.
                 case Expr.Lambda({ } term, { } expr):
                     {
-                        var typeVariable = env.GetNext();
+                        var typeVariable = env.GetNextTypeVar();
                         var nenv = env.Remove(term).Insert(term, new Polytype(typeVariable));
                         var (substitution, type) = InferType(expr, nenv);
                         return (substitution, new Type.Function(ApplySubstitution(typeVariable, substitution), type));
@@ -189,7 +189,7 @@ namespace Fux.Building.AlgorithmW
                             Assert(true);
                         }
 
-                        var varType = env.GetNext();
+                        var varType = env.GetNextTypeVar();
                         var t3 = ApplySubstitution(t1, s2);
                         var s3 = MostGeneralUnifier(t1, new Type.Function(t2, varType));
                         return (ComposeSubstitutions(s3, s2, s1), ApplySubstitution(varType, s3));
@@ -197,7 +197,7 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.Empty: // the empty list [] / alias list bottom
                     {
-                        return (Substitution.Empty(), new Type.List(env.GetNext()));
+                        return (Substitution.Empty(), new Type.List(env.GetNextTypeVar()));
                     }
 
                 case Expr.Cons({ } first, { } rest):
@@ -260,7 +260,7 @@ namespace Fux.Building.AlgorithmW
 
                 case Expr.DeCons({ } first, { } rest):
                     {
-                        var type = env.GetNext();
+                        var type = env.GetNextTypeVar();
                         return (Substitution.Empty(), new Type.List(type));
                     }
 
@@ -268,7 +268,7 @@ namespace Fux.Building.AlgorithmW
                     {
                         Assert(first is Expr.Variable);
 
-                        var type = env.GetNext();
+                        var type = env.GetNextTypeVar();
                         return (Substitution.Empty(), type);
                     }
 
@@ -276,7 +276,7 @@ namespace Fux.Building.AlgorithmW
                     {
                         Assert(var is Expr.Variable);
 
-                        var type = env.GetNext();
+                        var type = env.GetNextTypeVar();
                         return (Substitution.Empty(), type);
                     }
 
@@ -336,13 +336,16 @@ namespace Fux.Building.AlgorithmW
 
                         foreach (var field in record.Fields)
                         {
-                            var name = field.Name;
+                            if (field.Value != null)
+                            {
+                                var name = field.Name;
 
-                            var (s, type) = InferType(field.Value, ApplySubstitution(env, subst));
-                            var typeField = new Type.Field(name, type);
+                                var (s, type) = InferType(field.Value, ApplySubstitution(env, subst));
+                                var typeField = new Type.Field(name, type);
 
-                            subst = ComposeSubstitutions(subst, s);
-                            typeFields.Add(typeField);
+                                subst = ComposeSubstitutions(subst, s);
+                                typeFields.Add(typeField);
+                            }
                         }
 
                         var recordType = new Type.Record(typeFields);
@@ -449,25 +452,29 @@ namespace Fux.Building.AlgorithmW
             return new Polytype(ApplySubstitution(polytype.Type, subst), polytype.TypeVariables);
         }
 
-        private Polytype GeneralizePolytype(Environment typeEnv, Type type)
+        private Polytype GeneralizePolytype(Environment env, Type type)
         {
-            return new Polytype(type, GetFreeTypeVariables(type).Except(GetFreeTypeVariables(typeEnv)).ToList());
+            return new Polytype(type, GetFreeTypeVariables(type).Except(GetFreeTypeVariables(env)).ToList());
         }
 
         /// <summary>
         /// To compose two substitutions, we apply s1 to each type in s2 and union the resulting substitution with s1.
         /// </summary>
-        private Substitution ComposeSubstitutions(params Substitution[] ss)
+        private Substitution ComposeSubstitutions(params Substitution[] substitutions)
         {
-            Assert(ss.Length >= 2);
+            Assert(substitutions.Length >= 2);
 
-            var composed = ss[0];
+            var composed = substitutions[0];
 
-            for (var i = 1; i < ss.Length; i++)
+            for (var i = 1; i < substitutions.Length; i++)
             {
-                var map = ss[i].Enumerate().Select(kv => (typeVar: kv.Key, type: ApplySubstitution(kv.Value, composed))).ToImmutableDictionary(x => x.typeVar, x => x.type);
-
+#if true
+                var pairs = substitutions[i].Enumerate().Select(kv => (kv.Key, ApplySubstitution(kv.Value, composed)));
+                composed = composed.UnionWith(pairs);
+#else
+                var map = substitutions[i].Enumerate().Select(kv => (typeVar: kv.Key, type: ApplySubstitution(kv.Value, composed))).ToImmutableDictionary(x => x.typeVar, x => x.type);
                 composed = composed.UnionWith(new Substitution(map));
+#endif
             }
 
             return composed;
@@ -735,7 +742,7 @@ namespace Fux.Building.AlgorithmW
         /// </summary>
         private Type InstantiateType(Polytype polytype, Environment env)
         {
-            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: env.GetNext())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
+            var newVarMap = polytype.TypeVariables.Select(typeVar => (typeVar, newVar: env.GetNextTypeVar())).ToImmutableDictionary(x => x.typeVar, x => (Type)x.newVar);
             var substitution = new Substitution(newVarMap);
             return ApplySubstitution(polytype.Type, substitution);
         }

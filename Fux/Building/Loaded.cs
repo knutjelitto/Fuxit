@@ -24,6 +24,13 @@ namespace Fux.Building
             {
                 package = new Package(pack);
 
+                foreach (var dependency in pak.Dependencies)
+                {
+                    var found = new FuxPackages.Package(dependency.Name);
+
+                    package.AddDependency(Register(found));
+                }
+
                 foreach (var exposed in pak.ExposedModules)
                 {
                     package.AddExposed(new Module(package, exposed.Name));
@@ -127,7 +134,7 @@ namespace Fux.Building
                     }
                     else
                     {
-                        package.AddIntern(new Module(package, name, js: true));
+                        package.AddIntern(new Module(package, name, builtin: true));
                         Assert(true);
                     }
                 }

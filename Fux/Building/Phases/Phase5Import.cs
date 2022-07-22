@@ -32,7 +32,7 @@ namespace Fux.Building.Phases
 
         private void Imports(Module module)
         {
-            if (module.IsJs)
+            if (module.IsBuiltin)
             {
                 return;
             }
@@ -45,7 +45,7 @@ namespace Fux.Building.Phases
             {
                 if (module.Name != Lex.Primitive.List)
                 {
-                    ListPrelude(module);
+                    //ListPrelude(module);
                 }
             }
 
@@ -171,6 +171,20 @@ namespace Fux.Building.Phases
 
         private void ListPrelude(Module module)
         {
+        }
+
+        private void Prelude(Module module)
+        {
+            if (module.Name == "Test")
+            {
+                return;
+            }
+            Assert(Package.FindImport("Basics") != null);
+
+            Import(module,
+                new Decl.Import(module, Identifier.Artificial(module, "Basics"), null,
+                new ExposingAll()));
+
             Import(module,
                 new Decl.Import(
                     module,
@@ -178,65 +192,46 @@ namespace Fux.Building.Phases
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, Lex.Primitive.List), false),
                         new Exposed.Var(Identifier.Artificial(module, Lex.Symbol.ListCons)))));
-        }
 
-        private void Prelude(Module module)
-        {
-            Assert(Package.FindImport("Basics") != null);
-            Import(module,
-                new Decl.Import(module, Identifier.Artificial(module, "Basics"), null,
-                new ExposingAll()));
-            ListPrelude(module);
             Import(module,
                 new Decl.Import(
                     module,
                     Identifier.Artificial(module, "Maybe"), null,
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, "Maybe"), true))));
+
             Import(module,
                 new Decl.Import(
                     module,
                     Identifier.Artificial(module, "Result"), null,
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, "Result"), true))));
+
             Import(module,
                 new Decl.Import(
                     module,
                     Identifier.Artificial(module, "String"), null,
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, "String"), false))));
+
+            Import(module,
+                new Decl.Import(
+                    module,
+                    Identifier.Artificial(module, "Int"), null,
+                    new ExposingSome(
+                        new Exposed.Type(Identifier.Artificial(module, "Int"), false))));
+
             Import(module,
                 new Decl.Import(
                     module,
                     Identifier.Artificial(module, "Char"), null,
                     new ExposingSome(
                         new Exposed.Type(Identifier.Artificial(module, "Char"), false))));
+
             Import(module,
                 new Decl.Import(
                     module,
                     Identifier.Artificial(module, "Tuple"), null, null));
-            Import(module,
-                new Decl.Import(
-                    module,
-                    Identifier.Artificial(module, "Debug"), null, null));
-            Import(module,
-                new Decl.Import(
-                    module,
-                    Identifier.Artificial(module, "Platform"), null,
-                    new ExposingSome(
-                        new Exposed.Type(Identifier.Artificial(module, "Program"), false))));
-            Import(module,
-                new Decl.Import(
-                    module,
-                    Identifier.Artificial(module, "Platform.Cmd"), Identifier.Artificial(module, "Cmd"),
-                    new ExposingSome(
-                        new Exposed.Type(Identifier.Artificial(module, "Cmd"), false))));
-            Import(module,
-                new Decl.Import(
-                    module,
-                    Identifier.Artificial(module, "Platform.Sub"), Identifier.Artificial(module, "Sub"),
-                    new ExposingSome(
-                        new Exposed.Type(Identifier.Artificial(module, "Sub"), false))));
         }
     }
 }

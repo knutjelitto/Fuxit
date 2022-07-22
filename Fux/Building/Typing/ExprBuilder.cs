@@ -184,8 +184,9 @@
                         foreach (var f in record.Fields)
                         {
                             var name = f.Name.Text;
-                            var value = Build(ref env, f.Expression);
-                            var field = new W.Expr.Field(name, value);
+                            var field = f.Expression == null
+                                ? new W.Expr.Field(name, null)
+                                : new W.Expr.Field(name, Build(ref env, f.Expression));
                             fields.Add(field);
                         }
 
@@ -583,7 +584,7 @@
 
                         W.Polytype genType(W.Environment env)
                         {
-                            return new W.Polytype(new W.Type.List(env.GetNext()));
+                            return new W.Polytype(new W.Type.List(env.GetNextTypeVar()));
                         }
                     }
 
@@ -609,7 +610,7 @@
 
                         W.Polytype genType(W.Environment env)
                         {
-                            return new W.Polytype(new W.Type.Tuple2(env.GetNext(), env.GetNext()));
+                            return new W.Polytype(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
                         }
                     }
 
@@ -693,7 +694,7 @@
                     case A.Pattern.LowerId lower:
                         {
                             var name = new W.TermVariable(lower.Identifier);
-                            var type = env.GetNext();
+                            var type = env.GetNextTypeVar();
                             env = env.Insert(name, new W.Polytype(type));
 
                             expr = new W.Expr.Lambda(name, expr);
@@ -703,7 +704,7 @@
                     case A.Pattern.Wildcard:
                         {
                             var name = new W.TermVariable(GenWildcard());
-                            var type = env.GetNext();
+                            var type = env.GetNextTypeVar();
                             env = env.Insert(name, new W.Polytype(type));
 
                             expr = new W.Expr.Lambda(name, expr);
@@ -713,7 +714,7 @@
                     case A.Pattern.Tuple2 tuple:
                         {
                             var name = GenVariable(GenParamPrefix);
-                            var type = env.GetNext();
+                            var type = env.GetNextTypeVar();
                             env = env.Insert(name.Term, new W.Polytype(type));
 
                             expr = BuildDestructure(ref env, name, prm, expr);
@@ -818,7 +819,7 @@
                             new W.Expr.Let(name1, first,
                                 new W.Expr.Let(name2, second, inExpr)));
 
-                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple2(env.GetNext(), env.GetNext()));
+                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
                     }
 
                 case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple3 tuple2:
@@ -839,7 +840,7 @@
                                 new W.Expr.Let(name2, second,
                                     new W.Expr.Let(name3, third, inExpr))));
 
-                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple3(env.GetNext(), env.GetNext(), env.GetNext()));
+                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple3(env.GetNextTypeVar(), env.GetNextTypeVar(), env.GetNextTypeVar()));
                     }
                 case A.Decl.Var var when var.Parameters.Count == 0:
                     {
@@ -885,7 +886,7 @@
                                             expr = new W.Expr.Lambda(variable.Term, expr);
                                             return expr;
 
-                                            W.Polytype typeGen(W.Environment env) =>  new W.Polytype(new W.Type.Tuple2(env.GetNext(), env.GetNext()));
+                                            W.Polytype typeGen(W.Environment env) =>  new W.Polytype(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
                                         }
                                     default:
                                         Assert(false);

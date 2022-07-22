@@ -17,7 +17,7 @@ namespace Fux.Building.Phases
             {
                 Terminal.Write(".");
 
-                if (module.IsJs)
+                if (module.IsBuiltin)
                 {
                     continue;
                 }
@@ -146,6 +146,11 @@ namespace Fux.Building.Phases
                             {
                                 ResolveType(Module.Scope, argument);
                             }
+                            break;
+                        }
+
+                    case A.Decl.TypeClass typeClass:
+                        {
                             break;
                         }
 
@@ -401,7 +406,6 @@ namespace Fux.Building.Phases
                 {
                     case A.Expr.Literal:
                     case A.Expr.Unit:
-                    case A.Wildcard:
                     case A.Expr.Dot:
                         {
                             break; //TODO: what to do at DOT
@@ -539,9 +543,12 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.FieldAssign fieldAssign:
+                    case A.Expr.Field fieldAssign:
                         {
-                            ResolveExpr(scope, fieldAssign.Expression);
+                            if (fieldAssign.Expression != null)
+                            {
+                                ResolveExpr(scope, fieldAssign.Expression);
+                            }
                             break;
                         }
 
@@ -566,15 +573,6 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.RecordPattern recordPattern:
-                        {
-                            foreach (var field in recordPattern.Fields)
-                            {
-                                ResolveExpr(scope, field);
-                            }
-                            break;
-                        }
-
                     case A.Expr.Ctor ctor:
                         {
                             ResolveExpr(scope, ctor.Name);
@@ -582,12 +580,6 @@ namespace Fux.Building.Phases
                             {
                                 ResolveExpr(scope, expr);
                             }
-                            break;
-                        }
-
-                    case A.FieldPattern fieldPattern:
-                        {
-                            ResolveExpr(scope, fieldPattern.Name);
                             break;
                         }
 

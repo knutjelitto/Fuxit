@@ -6,16 +6,20 @@
         "Primitives": [
             "Basics",
             "Int",
+            "Float",
             "Bool",
             "String",
             "Char",
             "Compare",
             "Bitwise",
             "Maybe",
-            "Result"
+            "Result",
+            "Tuple"
         ],
         "Collections": [
-            "List"
+            "List",
+            "Dict",
+            "Set"
         ]
     },
     "dependencies": {}

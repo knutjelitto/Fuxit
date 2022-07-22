@@ -31,7 +31,7 @@ namespace Fux.Building.Phases
 
         private void Make(Module module)
         {
-            if (module.IsElm)
+            if (module.IsFux)
             {
                 Collector.ScanTime.Start();
                 Scan(module);

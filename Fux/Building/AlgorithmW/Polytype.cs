@@ -16,9 +16,9 @@
         public Type Type { get; }
         public IReadOnlyList<TypeVariable> TypeVariables { get; }
 
-        public override string ToString()
+        public override string? ToString()
         {
-            return Type.ToString();
+            return Type?.ToString();
         }
     }
 }

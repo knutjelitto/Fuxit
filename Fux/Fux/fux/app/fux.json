@@ -1,0 +1,11 @@
+{
+    "type": "package",
+    "name": "fux/app",
+    "summary": "Fux testing module",
+    "exposed-modules": [
+        "Main"
+    ],
+    "dependencies": {
+        "fux/core": 1
+    }
+}

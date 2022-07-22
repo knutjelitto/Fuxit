@@ -5,15 +5,42 @@
         Type At(int index);
     }
 
-    public abstract record Type
+    public abstract class Type
     {
-        public sealed record Variable(TypeVariable TypeVar) : Type
+        public sealed class Variable : Type
         {
+            public Variable(TypeVariable typeVar)
+            {
+                TypeVar = typeVar;
+            }
+
+            public TypeVariable TypeVar { get; }
+
+            public void Deconstruct(out TypeVariable typeVar)
+            {
+                typeVar = TypeVar;
+            }
+
             public override string ToString() => $"{TypeVar}";
         }
 
-        public sealed record Function(Type InType, Type OutType) : Type
+        public sealed class Function : Type
         {
+            public Function(Type inType, Type outType)
+            {
+                InType = inType;
+                OutType = outType;
+            }
+
+            public Type InType { get; }
+            public Type OutType { get; }
+
+            public void Deconstruct(out Type inType, out Type outType)
+            {
+                inType = InType;
+                outType = OutType;
+            }
+
             public override string ToString()
             {
                 var start = InType is Function ? $"({InType})" : $"{InType}";
@@ -22,29 +49,69 @@
             }
         }
 
-        public abstract record Tuple(IReadOnlyList<Type> Types) : Type, WithStructure
+        public abstract class Tuple : Type, WithStructure
         {
+            protected Tuple(params Type[] types)
+            {
+                Types = types;
+            }
+
+            public IReadOnlyList<Type> Types { get; }
+
             public Type At(int index) => Types[index];
-        }
 
-        public sealed record Tuple2(Type Type1, Type Type2) : Tuple(new Type[] { Type1, Type2 })
-        {
             public override string ToString()
             {
-                return $"({Type1}, {Type2})";
+                var types = string.Join(", ", Types);
+                return $"({types})";
             }
         }
 
-        public sealed record Tuple3(Type Type1, Type Type2, Type Type3) : Tuple(new Type[] { Type1, Type2, Type3 })
+        public sealed class Tuple2 : Tuple
         {
-            public override string ToString()
+            public Tuple2(Type type1, Type type2)
+                : base(type1, type2)
             {
-                return $"({Type1}, {Type2}, {Type3})";
+            }
+
+            public Type Type1 => Types[0];
+            public Type Type2 => Types[1];
+
+            public void Deconstruct(out Type type1, out Type type2)
+            {
+                type1 = Type1;
+                type2 = Type2;
             }
         }
 
-        public sealed record List(Type Type) : Type, WithStructure
-{
+        public sealed class Tuple3 : Tuple
+        {
+            public Tuple3(Type type1, Type type2, Type type3)
+                : base(type1, type2, type3)
+            {
+            }
+
+            public Type Type1 => Types[0];
+            public Type Type2 => Types[1];
+            public Type Type3 => Types[2];
+
+            public void Deconstruct(out Type type1, out Type type2, out Type type3)
+            {
+                type1 = Type1;
+                type2 = Type2;
+                type3 = Type3;
+            }
+        }
+
+        public sealed class List : Type, WithStructure
+        {
+            public List(Type type)
+            {
+                Type = type;
+            }
+
+            public Type Type { get; }
+
             public Type At(int index)
             {
                 if (index == 0)
@@ -55,11 +122,22 @@
                 return this;
             }
 
+            public void Deconstruct(out Type type)
+            {
+                type = Type;
+            }
+
             public override string ToString() => $"{Lex.Primitive.List}<{Type}>";
         }
 
-        public sealed record Custom(string Name, IReadOnlyList<Type> Arguments) : Type
+        public sealed class Custom : Type
         {
+            public Custom(string name, IReadOnlyList<Type> arguments)
+            {
+                Name = name;
+                Arguments = arguments;
+            }
+
             public override string ToString() => $"{Name}{StrArguments}";
 
             private string StrArguments
@@ -73,6 +151,9 @@
                     return "";
                 }
             }
+
+            public string Name { get; }
+            public IReadOnlyList<Type> Arguments { get; }
         }
 
         public sealed record Field(string Name, Type Type)
@@ -83,48 +164,77 @@
             }
         }
 
-        public sealed record Record(IReadOnlyList<Field> Fields) : Type
+        public sealed class Record : Type
         {
+            public Record(IReadOnlyList<Field> fields)
+            {
+                Fields = fields;
+            }
+
+            public IReadOnlyList<Field> Fields { get; }
+
             public override string ToString()
             {
                 var fields = string.Join(", ", Fields);
                 return $"{{{fields}}}";
             }
+
+            public void Deconstruct(out IReadOnlyList<Field> fields)
+            {
+                fields = Fields;
+            }
         }
 
-        public abstract record Primitive(string Name) : Type
+        public abstract class Primitive : Type
         {
+            protected Primitive(string name)
+            {
+                Name = name;
+            }
+
+            public string Name { get; }
+
             public override string ToString() => Name;
         }
 
-        public sealed record Unit() : Primitive(Lex.Symbol.Unit)
+        public sealed class Unit : Primitive
         {
-            public override string ToString() => Name;
+            public Unit() : base(Lex.Symbol.Unit) { }
         }
 
-        public sealed record Integer() : Primitive(Lex.Primitive.Int)
+        public sealed class Integer : Primitive
         {
-            public override string ToString() => Name;
+            public static readonly Integer Instance = new();
+
+            private Integer() : base(Lex.Primitive.Int) { }
         }
 
-        public sealed record Float() : Primitive(Lex.Primitive.Float)
+        public sealed class Float : Primitive
         {
-            public override string ToString() => Name;
+            public static readonly Float Instance = new();
+
+            private Float() : base(Lex.Primitive.Float) { }
         }
 
-        public sealed record Bool() : Primitive(Lex.Primitive.Bool)
+        public sealed class Bool : Primitive
         {
-            public override string ToString() => Name;
+            public static readonly Bool Instance = new();
+
+            private Bool() : base(Lex.Primitive.Bool) { }
         }
 
-        public sealed record String() : Primitive(Lex.Primitive.String)
+        public sealed class String : Primitive
         {
-            public override string ToString() => Name;
+            public static readonly String Instance = new();
+
+            private String() : base(Lex.Primitive.String) { }
         }
 
-        public sealed record Char() : Primitive(Lex.Primitive.Char)
+        public sealed class Char : Primitive
         {
-            public override string ToString() => Name;
+            public static readonly Char Instance = new();
+
+            private Char() : base(Lex.Primitive.Char) { }
         }
     }
 }

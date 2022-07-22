@@ -35,6 +35,9 @@ Insert, remove, and query operations all take *O(log n)* time.
 
 
 import Basics exposing (..)
+import Int exposing (..)
+import Bool exposing (..)
+import Compare exposing (..)
 import Maybe exposing (..)
 import List exposing (..)
 

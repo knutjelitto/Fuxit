@@ -21,7 +21,7 @@ namespace Fux.Building.Phases
             {
                 Terminal.Write(".");
 
-                if (module.IsJs)
+                if (module.IsBuiltin)
                 {
                     continue;
                 }
@@ -197,6 +197,11 @@ namespace Fux.Building.Phases
                             break;
                         }
 
+                    case A.Decl.TypeClass typeClass:
+                        {
+                            break;
+                        }
+
                     default:
                         Assert(false);
                         throw new NotImplementedException();
@@ -322,7 +327,10 @@ namespace Fux.Building.Phases
                             record.Scope.Parent = scope;
                             foreach (var field in record.Fields)
                             {
-                                ScopeExpr(record.Scope, field.Expression);
+                                if (field.Expression != null)
+                                {
+                                    ScopeExpr(record.Scope, field.Expression);
+                                }
                             }
                             break;
                         }

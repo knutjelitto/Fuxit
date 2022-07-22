@@ -78,6 +78,11 @@
 
         private void Resolve(A.Decl.Var var, bool investigated)
         {
+            if (investigated)
+            {
+                Assert(true);
+            }
+
             var inferrer = new W.Inferrer();
             var env = inferrer.GetEmptyEnvironment();
 
@@ -88,7 +93,11 @@
 
             Writer.Indent(() =>
             {
-                Resolve(inferrer, env, expression, investigated);
+                if (investigated)
+                {
+                    Assert(true);
+                }
+                var type = Resolve(inferrer, env, expression, investigated);
             });
         }
 
@@ -101,7 +110,7 @@
             }
         }
 
-        private void Resolve(W.Inferrer inferrer, W.Environment env, W.Expr expression, bool investigated)
+        private W.Type Resolve(W.Inferrer inferrer, W.Environment env, W.Expr expression, bool investigated)
         {
             Pretty.PP(expression);
             Writer.EndLine();
@@ -109,6 +118,7 @@
             Writer.WriteLine();
             var type = inferrer.Run(env, expression, investigated);
             Writer.WriteLine($"OUTPUT: {type}");
+            return type;
         }
     }
 }

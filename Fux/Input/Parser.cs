@@ -97,6 +97,10 @@ namespace Fux.Input
                 {
                     outer = Decl.TypeAnnotation(cursor);
                 }
+                else if (cursor.Is(Lex.KwClass))
+                {
+                    outer = Decl.TypeClass(cursor);
+                }
                 else
                 {
                     outer = Decl.VarDecl(cursor);

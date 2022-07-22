@@ -22,5 +22,14 @@ namespace Fux.Input.Ast
         {
             return nodes.Join(" ");
         }
+
+        public static string OptJoin(this Node left, string joiner, Node? right)
+        {
+            if (right == null)
+            {
+                return $"{left}";
+            }
+            return $"{left}{joiner}{right}";
+        }
     }
 }

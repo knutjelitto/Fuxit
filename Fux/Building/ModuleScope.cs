@@ -200,7 +200,7 @@ namespace Fux.Building
 
                 foreach (var importModule in FindModules(importName))
                 {
-                    if (importModule.IsJs)
+                    if (importModule.IsBuiltin)
                     {
                         if (!importModule.Scope.LookupNative(memberName, out var native))
                         {

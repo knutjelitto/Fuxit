@@ -39,6 +39,11 @@
             return cursor.More() && cursor.Current.Lex != lex;
         }
 
+        public static bool IsNot(this Cursor cursor, params Lex[] lexes)
+        {
+            return cursor.More() && lexes.All(lex => cursor.Current.Lex != lex);
+        }
+
         public static Token At(this Cursor cursor)
         {
             return cursor.Current;

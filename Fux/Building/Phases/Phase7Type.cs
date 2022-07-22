@@ -10,7 +10,7 @@ namespace Fux.Building.Phases
 {
     public sealed class Phase7Typing : Phase
     {
-        private const int underInvestigation = 127;
+        private const int underInvestigation = 243;
         private static int numero = 0;
         private const int numeroFrom = 1;
         private const int numeroTo = 350;
@@ -31,7 +31,7 @@ namespace Fux.Building.Phases
                 {
                     Terminal.Write(".");
 
-                    if (module.IsJs)
+                    if (module.IsBuiltin)
                     {
                         continue;
                     }

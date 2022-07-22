@@ -51,6 +51,6 @@ namespace Fux.Building.AlgorithmW
 
         public IEnumerable<(TermVariable var, Polytype polytype)> Enumerate() => Map.Select(kv => (kv.Key, kv.Value));
 
-        public Type.Variable GetNext(string? name = null) => Generator.GetNext(name);
+        public Type.Variable GetNextTypeVar(string? name = null) => Generator.GetNextTypeVar(name);
     }
 }
