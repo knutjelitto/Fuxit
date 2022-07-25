@@ -6,8 +6,11 @@
 	],
 	"settings": {
 		"files.associations": {
+			"*.sax": "ceylon",
+			"*.six": "ceylon",
 			"*.fux": "elm",
-			"stdbool.h": "c"
+			"stdbool.h": "c",
+			"features.h": "c"
 		}
 	}
 }

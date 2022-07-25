@@ -33,7 +33,7 @@ WASM2WAT	= wasm-dis
 WASM2C		= wasm2c
 
 EXPORTS = square sum
-SOURCES = $(wildcard *.c) $(wildcard src/kernel/math/*.c) src/Object.cpp src/kernel/core/core.c
+SOURCES = $(wildcard src/*.c) $(wildcard src/kernel/math/*.c) src/kernel/core/core.c
 BUILD   = DEBUG
 
 #------------------------------------------------------------------------------------------------------

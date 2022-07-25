@@ -1,61 +1,111 @@
 (module
  (type $f64_=>_f64 (func (param f64) (result f64)))
  (type $f64_f64_=>_f64 (func (param f64 f64) (result f64)))
- (type $i32_=>_f64 (func (param i32) (result f64)))
  (type $f64_=>_i32 (func (param f64) (result i32)))
+ (type $i32_=>_f64 (func (param i32) (result f64)))
  (type $f64_f64_i32_=>_f64 (func (param f64 f64 i32) (result f64)))
  (type $none_=>_none (func))
+ (type $i32_f64_=>_f64 (func (param i32 f64) (result f64)))
  (type $f64_i32_=>_i32 (func (param f64 i32) (result i32)))
  (type $i32_i32_i32_i32_i32_=>_i32 (func (param i32 i32 i32 i32 i32) (result i32)))
  (type $i64_=>_i32 (func (param i64) (result i32)))
  (type $f64_i64_i64_=>_f64 (func (param f64 i64 i64) (result f64)))
  (type $f64_i32_=>_f64 (func (param f64 i32) (result f64)))
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (import "env" "__math_oflow" (func $__math_oflow (param i32) (result f64)))
- (import "env" "__math_uflow" (func $__math_uflow (param i32) (result f64)))
- (global $__stack_pointer (mut i32) (i32.const 67296))
- (global $global$1 i32 (i32.const 1504))
- (global $global$2 i32 (i32.const 1024))
- (global $global$3 i32 (i32.const 1760))
- (global $global$4 i32 (i32.const 1024))
- (global $global$5 i32 (i32.const 67296))
- (global $global$6 i32 (i32.const 0))
- (global $global$7 i32 (i32.const 1))
+ (global $__stack_pointer (mut i32) (i32.const 67040))
+ (global $global$1 i32 (i32.const 1024))
+ (global $global$2 i32 (i32.const 1504))
+ (global $global$3 i32 (i32.const 1024))
+ (global $global$4 i32 (i32.const 67040))
+ (global $global$5 i32 (i32.const 0))
+ (global $global$6 i32 (i32.const 1))
  (memory $0 16 16)
- (data $.rodata (i32.const 1024) "\03\00\00\00\04\00\00\00\04\00\00\00\06\00\00\00\83\f9\a2\00DNn\00\fc)\15\00\d1W\'\00\dd4\f5\00b\db\c0\00<\99\95\00A\90C\00cQ\fe\00\bb\de\ab\00\b7a\c5\00:n$\00\d2MB\00I\06\e0\00\t\ea.\00\1c\92\d1\00\eb\1d\fe\00)\b1\1c\00\e8>\a7\00\f55\82\00D\bb.\00\9c\e9\84\00\b4&p\00A~_\00\d6\919\00S\839\00\9c\f49\00\8b_\84\00(\f9\bd\00\f8\1f;\00\de\ff\97\00\0f\98\05\00\11/\ef\00\nZ\8b\00m\1fm\00\cf~6\00\t\cb\'\00FO\b7\00\9ef?\00-\ea_\00\ba\'u\00\e5\eb\c7\00={\f1\00\f79\07\00\92R\8a\00\fbk\ea\00\1f\b1_\00\08]\8d\000\03V\00{\fcF\00\f0\abk\00 \bc\cf\006\f4\9a\00\e3\a9\1d\00^a\91\00\08\1b\e6\00\85\99e\00\a0\14_\00\8d@h\00\80\d8\ff\00\'sM\00\06\061\00\caV\15\00\c9\a8s\00{\e2`\00k\8c\c0\00\00\00\00\00\00\00\00\00\00\00\00@\fb!\f9?\00\00\00\00-Dt>\00\00\00\80\98F\f8<\00\00\00`Q\ccx;\00\00\00\80\83\1b\f09\00\00\00@ %z8\00\00\00\80\"\82\e36\00\00\00\00\1d\f3i5O\bba\05g\ac\dd?\18-DT\fb!\e9?\9b\f6\81\d2\0bs\ef?\18-DT\fb!\f9?\e2e/\"\7f+z<\07\\\143&\a6\81<\bd\cb\f0z\88\07p<\07\\\143&\a6\91<\18-DT\fb!\e9?\18-DT\fb!\e9\bf\d2!3\7f|\d9\02@\d2!3\7f|\d9\02\c0\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\80\18-DT\fb!\t@\18-DT\fb!\t\c0Q\b4\f0\b2\96\b1D\b0\f9\ae\b6\ady\acC\ab\14\aa\eb\a8\c8\a7\aa\a6\92\a5\80\a4s\a3k\a2h\a1j\a0p\9f{\9e\8a\9d\9d\9c\b5\9b\d1\9a\f0\99\13\99:\98e\97\93\96\c4\95\f8\940\94k\93\a9\92\ea\91.\91u\90\be\8f\n\8fY\8e\aa\8d\fe\8cT\8c\ac\8b\07\8bd\8a\c4\89%\89\89\88\ee\87V\87\c0\86+\86\99\85\08\85y\84\ec\83a\83\d8\82P\82\c9\81E\81\c2\80@\80\02\ff\0e\fd%\fbG\f9s\f7\aa\f5\ea\f34\f2\87\f0\e3\eeG\ed\b3\eb\'\ea\a3\e8\'\e7\b2\e5C\e4\dc\e2z\e1 \e0\cb\de}\dd4\dc\f1\da\b3\d9{\d8H\d7\1a\d6\f1\d4\cd\d3\ad\d2\92\d1{\d0i\cf[\ceQ\cdJ\ccH\cbJ\caO\c9X\c8d\c7t\c6\87\c5\9d\c4\b7\c3\d4\c2\f4\c1\16\c1<\c0e\bf\90\be\be\bd\ef\bc#\bcY\bb\91\ba\cc\b9\n\b9J\b8\8c\b7\d0\b6\17\b6`\b5")
+ (data $.rodata (i32.const 1024) "\03\00\00\00\04\00\00\00\04\00\00\00\06\00\00\00\83\f9\a2\00DNn\00\fc)\15\00\d1W\'\00\dd4\f5\00b\db\c0\00<\99\95\00A\90C\00cQ\fe\00\bb\de\ab\00\b7a\c5\00:n$\00\d2MB\00I\06\e0\00\t\ea.\00\1c\92\d1\00\eb\1d\fe\00)\b1\1c\00\e8>\a7\00\f55\82\00D\bb.\00\9c\e9\84\00\b4&p\00A~_\00\d6\919\00S\839\00\9c\f49\00\8b_\84\00(\f9\bd\00\f8\1f;\00\de\ff\97\00\0f\98\05\00\11/\ef\00\nZ\8b\00m\1fm\00\cf~6\00\t\cb\'\00FO\b7\00\9ef?\00-\ea_\00\ba\'u\00\e5\eb\c7\00={\f1\00\f79\07\00\92R\8a\00\fbk\ea\00\1f\b1_\00\08]\8d\000\03V\00{\fcF\00\f0\abk\00 \bc\cf\006\f4\9a\00\e3\a9\1d\00^a\91\00\08\1b\e6\00\85\99e\00\a0\14_\00\8d@h\00\80\d8\ff\00\'sM\00\06\061\00\caV\15\00\c9\a8s\00{\e2`\00k\8c\c0\00\00\00\00\00\00\00\00\00\00\00\00@\fb!\f9?\00\00\00\00-Dt>\00\00\00\80\98F\f8<\00\00\00`Q\ccx;\00\00\00\80\83\1b\f09\00\00\00@ %z8\00\00\00\80\"\82\e36\00\00\00\00\1d\f3i5O\bba\05g\ac\dd?\18-DT\fb!\e9?\9b\f6\81\d2\0bs\ef?\18-DT\fb!\f9?\e2e/\"\7f+z<\07\\\143&\a6\81<\bd\cb\f0z\88\07p<\07\\\143&\a6\91<\18-DT\fb!\e9?\18-DT\fb!\e9\bf\d2!3\7f|\d9\02@\d2!3\7f|\d9\02\c0\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\80\18-DT\fb!\t@\18-DT\fb!\t\c0")
  (export "memory" (memory $0))
  (export "__wasm_call_ctors" (func $__wasm_call_ctors))
+ (export "core_f64_ceil" (func $core_f64_ceil))
+ (export "core_f64_floor" (func $core_f64_floor))
+ (export "core_f64_trunc" (func $core_f64_trunc))
+ (export "core_f64_nearest" (func $core_f64_nearest))
+ (export "core_f64_sqrt" (func $core_f64_sqrt))
+ (export "core_f64_min" (func $core_f64_min))
+ (export "core_f64_max" (func $core_f64_max))
+ (export "core_f64_abs" (func $core_f64_abs))
+ (export "core_f64_neg" (func $core_f64_neg))
  (export "core_math___cos" (func $core_math___cos))
  (export "core_math___fpclassify" (func $core_math___fpclassify))
  (export "core_math___math_invalid" (func $core_math___math_invalid))
+ (export "core_math___math_oflow" (func $core_math___math_oflow))
+ (export "core_math___math_xflow" (func $core_math___math_xflow))
+ (export "core_math___math_uflow" (func $core_math___math_uflow))
  (export "core_math___rem_pio2" (func $core_math___rem_pio2))
  (export "core_math___rem_pio2_large" (func $core_math___rem_pio2_large))
  (export "core_math_scalbn" (func $core_math_scalbn))
  (export "core_math___sin" (func $core_math___sin))
  (export "core_math___tan" (func $core_math___tan))
  (export "core_math_acos" (func $core_math_acos))
- (export "core_math_sqrt" (func $core_math_sqrt))
  (export "core_math_asin" (func $core_math_asin))
  (export "core_math_fabs" (func $core_math_fabs))
  (export "core_math_atan" (func $core_math_atan))
  (export "core_math_isnan" (func $core_math_isnan))
- (export "atan2" (func $atan2))
- (export "cbrt" (func $cbrt))
+ (export "core_math_atan2" (func $core_math_atan2))
  (export "core_math_cos" (func $core_math_cos))
- (export "pow" (func $pow))
- (export "core_math_round" (func $core_math_round))
+ (export "core_math_pow" (func $core_math_pow))
  (export "core_math_sin" (func $core_math_sin))
- (export "core_math___rsqrt_tab" (global $global$1))
  (export "core_math_tan" (func $core_math_tan))
- (export "core_math_trunc" (func $core_math_trunc))
- (export "adder" (func $adder))
- (export "__dso_handle" (global $global$2))
- (export "__data_end" (global $global$3))
- (export "__global_base" (global $global$4))
- (export "__heap_base" (global $global$5))
- (export "__memory_base" (global $global$6))
- (export "__table_base" (global $global$7))
+ (export "__dso_handle" (global $global$1))
+ (export "__data_end" (global $global$2))
+ (export "__global_base" (global $global$3))
+ (export "__heap_base" (global $global$4))
+ (export "__memory_base" (global $global$5))
+ (export "__table_base" (global $global$6))
  (func $__wasm_call_ctors
+ )
+ (func $core_f64_ceil (param $0 f64) (result f64)
+  (f64.ceil
+   (local.get $0)
+  )
+ )
+ (func $core_f64_floor (param $0 f64) (result f64)
+  (f64.floor
+   (local.get $0)
+  )
+ )
+ (func $core_f64_trunc (param $0 f64) (result f64)
+  (f64.trunc
+   (local.get $0)
+  )
+ )
+ (func $core_f64_nearest (param $0 f64) (result f64)
+  (f64.nearest
+   (local.get $0)
+  )
+ )
+ (func $core_f64_sqrt (param $0 f64) (result f64)
+  (f64.sqrt
+   (local.get $0)
+  )
+ )
+ (func $core_f64_min (param $0 f64) (param $1 f64) (result f64)
+  (f64.min
+   (local.get $0)
+   (local.get $1)
+  )
+ )
+ (func $core_f64_max (param $0 f64) (param $1 f64) (result f64)
+  (f64.max
+   (local.get $0)
+   (local.get $1)
+  )
+ )
+ (func $core_f64_abs (param $0 f64) (result f64)
+  (f64.abs
+   (local.get $0)
+  )
+ )
+ (func $core_f64_neg (param $0 f64) (result f64)
+  (f64.neg
+   (local.get $0)
+  )
  )
  (func $core_math___cos (param $0 f64) (param $1 f64) (result f64)
   (f64.add
@@ -179,6 +229,42 @@
  )
  (func $core_math___math_invalid (param $0 f64) (result f64)
   (f64.const nan:0x8000000000000)
+ )
+ (func $core_math___math_oflow (param $0 i32) (result f64)
+  (call $core_math___math_xflow
+   (local.get $0)
+   (f64.const 3105036184601417870297958e207)
+  )
+ )
+ (func $core_math___math_uflow (param $0 i32) (result f64)
+  (call $core_math___math_xflow
+   (local.get $0)
+   (f64.const 1.2882297539194267e-231)
+  )
+ )
+ (func $core_math___math_xflow (param $0 i32) (param $1 f64) (result f64)
+  (local $2 i32)
+  (f64.store offset=8
+   (local.tee $2
+    (i32.sub
+     (global.get $__stack_pointer)
+     (i32.const 16)
+    )
+   )
+   (select
+    (f64.neg
+     (local.get $1)
+    )
+    (local.get $1)
+    (local.get $0)
+   )
+  )
+  (f64.mul
+   (f64.load offset=8
+    (local.get $2)
+   )
+   (local.get $1)
+  )
  )
  (func $core_math___rem_pio2 (param $0 f64) (param $1 i32) (result i32)
   (local $2 i32)
@@ -1660,7 +1746,7 @@
                  (f64.trunc
                   (f64.mul
                    (local.get $34)
-                   (f64.const 5.960464477539063e-08)
+                   (f64.const 5.9604644775390625e-08)
                   )
                  )
                 )
@@ -1712,7 +1798,7 @@
                  (f64.trunc
                   (f64.mul
                    (local.get $34)
-                   (f64.const 5.960464477539063e-08)
+                   (f64.const 5.9604644775390625e-08)
                   )
                  )
                 )
@@ -1813,7 +1899,7 @@
                (f64.trunc
                 (f64.mul
                  (local.get $34)
-                 (f64.const 5.960464477539063e-08)
+                 (f64.const 5.9604644775390625e-08)
                 )
                )
               )
@@ -2776,7 +2862,7 @@
                (local.tee $33
                 (f64.mul
                  (local.get $34)
-                 (f64.const 5.960464477539063e-08)
+                 (f64.const 5.9604644775390625e-08)
                 )
                )
               )
@@ -2938,7 +3024,7 @@
     (local.set $34
      (f64.mul
       (local.get $34)
-      (f64.const 5.960464477539063e-08)
+      (f64.const 5.9604644775390625e-08)
      )
     )
    )
@@ -2986,7 +3072,7 @@
       (f64.mul
        (f64.mul
         (local.get $34)
-        (f64.const 5.960464477539063e-08)
+        (f64.const 5.9604644775390625e-08)
        )
        (f64.convert_i32_s
         (i32.load
@@ -4687,7 +4773,7 @@
          (f64.sub
           (f64.const 6.123233995736766e-17)
           (local.tee $3
-           (call $core_math_sqrt
+           (f64.sqrt
             (local.tee $0
              (f64.add
               (local.get $0)
@@ -4700,40 +4786,40 @@
          (f64.div
           (f64.mul
            (f64.mul
-            (f64.add
-             (f64.mul
-              (f64.add
-               (f64.mul
-                (f64.add
-                 (f64.mul
-                  (f64.add
-                   (f64.mul
-                    (f64.add
-                     (f64.mul
-                      (local.get $0)
-                      (f64.const -3.479331075960212e-05)
-                     )
-                     (f64.const -7.915349942898145e-04)
-                    )
-                    (local.get $0)
-                   )
-                   (f64.const 0.04005553450067941)
-                  )
-                  (local.get $0)
-                 )
-                 (f64.const -0.20121253213486293)
-                )
-                (local.get $0)
-               )
-               (f64.const 0.3255658186224009)
-              )
-              (local.get $0)
-             )
-             (f64.const -0.16666666666666666)
-            )
+            (local.get $3)
             (local.get $0)
            )
-           (local.get $3)
+           (f64.add
+            (f64.mul
+             (f64.add
+              (f64.mul
+               (f64.add
+                (f64.mul
+                 (f64.add
+                  (f64.mul
+                   (f64.add
+                    (f64.mul
+                     (local.get $0)
+                     (f64.const -3.479331075960212e-05)
+                    )
+                    (f64.const -7.915349942898145e-04)
+                   )
+                   (local.get $0)
+                  )
+                  (f64.const 0.04005553450067941)
+                 )
+                 (local.get $0)
+                )
+                (f64.const -0.20121253213486293)
+               )
+               (local.get $0)
+              )
+              (f64.const 0.3255658186224009)
+             )
+             (local.get $0)
+            )
+            (f64.const -0.16666666666666666)
+           )
           )
           (f64.add
            (f64.mul
@@ -4775,51 +4861,43 @@
       (f64.add
        (f64.add
         (f64.div
-         (f64.mul
-          (f64.mul
-           (f64.add
-            (f64.mul
-             (f64.add
-              (f64.mul
-               (f64.add
-                (f64.mul
-                 (f64.add
-                  (f64.mul
-                   (f64.add
-                    (f64.mul
-                     (local.tee $0
-                      (f64.sub
-                       (f64.const 0.5)
-                       (local.get $0)
-                      )
-                     )
-                     (f64.const 3.479331075960212e-05)
-                    )
-                    (f64.const 7.915349942898145e-04)
-                   )
-                   (local.get $0)
-                  )
-                  (f64.const -0.04005553450067941)
-                 )
-                 (local.get $0)
-                )
-                (f64.const 0.20121253213486293)
-               )
-               (local.get $0)
-              )
-              (f64.const -0.3255658186224009)
-             )
-             (local.get $0)
-            )
-            (f64.const 0.16666666666666666)
-           )
-           (local.get $0)
-          )
-          (local.tee $4
-           (call $core_math_sqrt
+         (f64.sub
+          (local.tee $0
+           (f64.sub
+            (f64.const 0.5)
             (local.get $0)
            )
           )
+          (f64.mul
+           (local.tee $3
+            (f64.reinterpret_i64
+             (i64.and
+              (i64.reinterpret_f64
+               (local.tee $4
+                (f64.sqrt
+                 (local.get $0)
+                )
+               )
+              )
+              (i64.const -4294967296)
+             )
+            )
+           )
+           (local.get $3)
+          )
+         )
+         (f64.add
+          (local.get $4)
+          (local.get $3)
+         )
+        )
+        (local.get $3)
+       )
+       (f64.div
+        (f64.mul
+         (f64.mul
+          (local.get $4)
+          (local.get $0)
          )
          (f64.add
           (f64.mul
@@ -4829,46 +4907,54 @@
               (f64.mul
                (f64.add
                 (f64.mul
+                 (f64.add
+                  (f64.mul
+                   (local.get $0)
+                   (f64.const 3.479331075960212e-05)
+                  )
+                  (f64.const 7.915349942898145e-04)
+                 )
                  (local.get $0)
-                 (f64.const 0.07703815055590194)
                 )
-                (f64.const -0.6882839716054533)
+                (f64.const -0.04005553450067941)
                )
                (local.get $0)
               )
-              (f64.const 2.0209457602335057)
+              (f64.const 0.20121253213486293)
              )
              (local.get $0)
             )
-            (f64.const -2.403394911734414)
+            (f64.const -0.3255658186224009)
            )
            (local.get $0)
           )
-          (f64.const 1)
-         )
-        )
-        (local.tee $3
-         (f64.reinterpret_i64
-          (i64.and
-           (i64.reinterpret_f64
-            (local.get $4)
-           )
-           (i64.const -4294967296)
-          )
-         )
-        )
-       )
-       (f64.div
-        (f64.sub
-         (local.get $0)
-         (f64.mul
-          (local.get $3)
-          (local.get $3)
+          (f64.const 0.16666666666666666)
          )
         )
         (f64.add
-         (local.get $4)
-         (local.get $3)
+         (f64.mul
+          (f64.add
+           (f64.mul
+            (f64.add
+             (f64.mul
+              (f64.add
+               (f64.mul
+                (local.get $0)
+                (f64.const 0.07703815055590194)
+               )
+               (f64.const -0.6882839716054533)
+              )
+              (local.get $0)
+             )
+             (f64.const 2.0209457602335057)
+            )
+            (local.get $0)
+           )
+           (f64.const -2.403394911734414)
+          )
+          (local.get $0)
+         )
+         (f64.const 1)
         )
        )
       )
@@ -5094,7 +5180,7 @@
     )
    )
    (local.set $3
-    (call $core_math_sqrt
+    (f64.sqrt
      (local.get $0)
     )
    )
@@ -5524,7 +5610,7 @@
   )
   (local.get $0)
  )
- (func $atan2 (param $0 f64) (param $1 f64) (result f64)
+ (func $core_math_atan2 (param $0 f64) (param $1 f64) (result f64)
   (local $2 i64)
   (local $3 i32)
   (local $4 i32)
@@ -5787,180 +5873,6 @@
   )
   (local.get $8)
  )
- (func $cbrt (param $0 f64) (result f64)
-  (local $1 i64)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 f64)
-  (local $5 f64)
-  (block $label$1
-   (br_if $label$1
-    (i32.lt_u
-     (local.tee $2
-      (i32.and
-       (i32.wrap_i64
-        (i64.shr_u
-         (local.tee $1
-          (i64.reinterpret_f64
-           (local.get $0)
-          )
-         )
-         (i64.const 32)
-        )
-       )
-       (i32.const 2147483647)
-      )
-     )
-     (i32.const 2146435072)
-    )
-   )
-   (return
-    (f64.add
-     (local.get $0)
-     (local.get $0)
-    )
-   )
-  )
-  (local.set $3
-   (i32.const 715094163)
-  )
-  (block $label$2
-   (block $label$3
-    (br_if $label$3
-     (i32.gt_u
-      (local.get $2)
-      (i32.const 1048575)
-     )
-    )
-    (local.set $3
-     (i32.const 696219795)
-    )
-    (br_if $label$2
-     (i32.eqz
-      (local.tee $2
-       (i32.and
-        (i32.wrap_i64
-         (i64.shr_u
-          (local.tee $1
-           (i64.reinterpret_f64
-            (f64.mul
-             (local.get $0)
-             (f64.const 18014398509481984)
-            )
-           )
-          )
-          (i64.const 32)
-         )
-        )
-        (i32.const 2147483647)
-       )
-      )
-     )
-    )
-   )
-   (local.set $0
-    (f64.add
-     (f64.div
-      (f64.mul
-       (f64.sub
-        (local.tee $0
-         (f64.div
-          (local.get $0)
-          (f64.mul
-           (local.tee $4
-            (f64.reinterpret_i64
-             (i64.and
-              (i64.add
-               (i64.reinterpret_f64
-                (f64.mul
-                 (f64.add
-                  (f64.mul
-                   (f64.add
-                    (f64.mul
-                     (f64.add
-                      (f64.mul
-                       (f64.add
-                        (f64.mul
-                         (local.tee $5
-                          (f64.div
-                           (f64.mul
-                            (f64.mul
-                             (local.tee $4
-                              (f64.reinterpret_i64
-                               (i64.or
-                                (i64.shl
-                                 (i64.extend_i32_u
-                                  (i32.add
-                                   (i32.div_u
-                                    (local.get $2)
-                                    (i32.const 3)
-                                   )
-                                   (local.get $3)
-                                  )
-                                 )
-                                 (i64.const 32)
-                                )
-                                (i64.and
-                                 (local.get $1)
-                                 (i64.const -9223372036854775808)
-                                )
-                               )
-                              )
-                             )
-                             (local.get $4)
-                            )
-                            (local.get $4)
-                           )
-                           (local.get $0)
-                          )
-                         )
-                         (f64.const 0.14599619288661245)
-                        )
-                        (f64.const -0.758397934778766)
-                       )
-                       (local.get $5)
-                      )
-                      (f64.const 1.6214297201053545)
-                     )
-                     (local.get $5)
-                    )
-                    (f64.const -1.8849797954337717)
-                   )
-                   (local.get $5)
-                  )
-                  (f64.const 1.87595182427177)
-                 )
-                 (local.get $4)
-                )
-               )
-               (i64.const 2147483648)
-              )
-              (i64.const -1073741824)
-             )
-            )
-           )
-           (local.get $4)
-          )
-         )
-        )
-        (local.get $4)
-       )
-       (local.get $4)
-      )
-      (f64.add
-       (local.get $0)
-       (f64.add
-        (local.get $4)
-        (local.get $4)
-       )
-      )
-     )
-     (local.get $4)
-    )
-   )
-  )
-  (local.get $0)
- )
  (func $core_math_cos (param $0 f64) (result f64)
   (local $1 i32)
   (local $2 i32)
@@ -6121,7 +6033,7 @@
    )
   )
  )
- (func $pow (param $0 f64) (param $1 f64) (result f64)
+ (func $core_math_pow (param $0 f64) (param $1 f64) (result f64)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -6449,14 +6361,14 @@
        )
       )
       (local.set $11
-       (call $__math_oflow
+       (call $core_math___math_oflow
         (i32.const 0)
        )
       )
       (br $label$1)
      )
      (local.set $11
-      (call $__math_uflow
+      (call $core_math___math_uflow
        (i32.const 0)
       )
      )
@@ -6757,14 +6669,14 @@
       )
      )
      (local.set $11
-      (call $__math_uflow
+      (call $core_math___math_uflow
        (local.get $7)
       )
      )
      (br $label$1)
     )
     (local.set $11
-     (call $__math_oflow
+     (call $core_math___math_oflow
       (local.get $7)
      )
     )
@@ -7117,83 +7029,6 @@
   )
   (local.get $0)
  )
- (func $core_math_round (param $0 f64) (result f64)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i32)
-  (local $4 i64)
-  (local $5 f64)
-  (local.set $1
-   (i32.sub
-    (global.get $__stack_pointer)
-    (i32.const 16)
-   )
-  )
-  (block $label$1
-   (br_if $label$1
-    (i32.gt_u
-     (local.tee $2
-      (i32.and
-       (i32.wrap_i64
-        (i64.shr_u
-         (local.tee $4
-          (i64.reinterpret_f64
-           (local.get $0)
-          )
-         )
-         (i64.const 52)
-        )
-       )
-       (i32.const 2047)
-      )
-     )
-     (i32.const 1074)
-    )
-   )
-   (local.set $5
-    (select
-     (local.get $0)
-     (f64.neg
-      (local.get $0)
-     )
-     (local.tee $3
-      (i64.gt_s
-       (local.get $4)
-       (i64.const -1)
-      )
-     )
-    )
-   )
-   (block $label$2
-    (br_if $label$2
-     (i32.gt_u
-      (local.get $2)
-      (i32.const 1021)
-     )
-    )
-    (f64.store offset=8
-     (local.get $1)
-     (f64.add
-      (local.get $5)
-      (f64.const 4503599627370496)
-     )
-    )
-    (return
-     (f64.const 0)
-    )
-   )
-   (local.set $0
-    (select
-     (local.get $0)
-     (f64.neg
-      (local.get $5)
-     )
-     (local.get $3)
-    )
-   )
-  )
-  (local.get $0)
- )
  (func $core_math_scalbn (param $0 f64) (param $1 i32) (result f64)
   (block $label$1
    (block $label$2
@@ -7452,339 +7287,6 @@
   )
   (local.get $3)
  )
- (func $core_math_sqrt (param $0 f64) (result f64)
-  (local $1 i64)
-  (local $2 i64)
-  (local $3 i64)
-  (local $4 i64)
-  (local $5 i64)
-  (local $6 i64)
-  (block $label$1
-   (block $label$2
-    (br_if $label$2
-     (i64.gt_u
-      (i64.add
-       (local.tee $2
-        (i64.shr_u
-         (local.tee $1
-          (i64.reinterpret_f64
-           (local.get $0)
-          )
-         )
-         (i64.const 52)
-        )
-       )
-       (i64.const -2047)
-      )
-      (i64.const -2047)
-     )
-    )
-    (br_if $label$1
-     (i64.eq
-      (local.get $1)
-      (i64.const -9223372036854775808)
-     )
-    )
-    (br_if $label$1
-     (i64.eqz
-      (local.get $1)
-     )
-    )
-    (br_if $label$1
-     (i64.eq
-      (local.get $1)
-      (i64.const 9218868437227405312)
-     )
-    )
-    (block $label$3
-     (br_if $label$3
-      (i64.lt_u
-       (local.get $1)
-       (i64.const 9218868437227405313)
-      )
-     )
-     (return
-      (call $core_math___math_invalid
-       (local.get $0)
-      )
-     )
-    )
-    (local.set $2
-     (i64.add
-      (i64.shr_u
-       (local.tee $1
-        (i64.reinterpret_f64
-         (f64.mul
-          (local.get $0)
-          (f64.const 4503599627370496)
-         )
-        )
-       )
-       (i64.const 52)
-      )
-      (i64.const -52)
-     )
-    )
-   )
-   (local.set $0
-    (f64.add
-     (f64.reinterpret_i64
-      (i64.or
-       (i64.and
-        (i64.add
-         (i64.shr_u
-          (local.tee $3
-           (i64.add
-            (i64.sub
-             (local.tee $1
-              (i64.shr_u
-               (i64.add
-                (i64.add
-                 (i64.add
-                  (i64.mul
-                   (local.tee $6
-                    (i64.shr_u
-                     (local.tee $1
-                      (i64.sub
-                       (i64.const -4611686018427387904)
-                       (i64.add
-                        (i64.mul
-                         (local.tee $4
-                          (i64.shr_u
-                           (local.tee $5
-                            (i64.add
-                             (i64.shr_u
-                              (i64.mul
-                               (local.tee $1
-                                (i64.and
-                                 (i64.shr_u
-                                  (i64.mul
-                                   (i64.and
-                                    (i64.sub
-                                     (i64.const 3221225472)
-                                     (i64.shr_u
-                                      (i64.mul
-                                       (local.tee $1
-                                        (i64.and
-                                         (i64.shr_u
-                                          (i64.mul
-                                           (local.tee $6
-                                            (i64.and
-                                             (i64.sub
-                                              (i64.const 3221225472)
-                                              (i64.shr_u
-                                               (i64.mul
-                                                (local.tee $5
-                                                 (i64.shr_u
-                                                  (i64.mul
-                                                   (local.tee $4
-                                                    (i64.shr_u
-                                                     (local.tee $3
-                                                      (i64.shr_u
-                                                       (i64.or
-                                                        (i64.shl
-                                                         (local.get $1)
-                                                         (i64.const 11)
-                                                        )
-                                                        (i64.const -9223372036854775808)
-                                                       )
-                                                       (i64.and
-                                                        (local.get $2)
-                                                        (i64.const 1)
-                                                       )
-                                                      )
-                                                     )
-                                                     (i64.const 32)
-                                                    )
-                                                   )
-                                                   (local.tee $1
-                                                    (i64.shl
-                                                     (i64.load16_u
-                                                      (i32.add
-                                                       (i32.shl
-                                                        (i32.and
-                                                         (i32.wrap_i64
-                                                          (i64.shr_u
-                                                           (local.get $1)
-                                                           (i64.const 46)
-                                                          )
-                                                         )
-                                                         (i32.const 127)
-                                                        )
-                                                        (i32.const 1)
-                                                       )
-                                                       (i32.const 1504)
-                                                      )
-                                                     )
-                                                     (i64.const 16)
-                                                    )
-                                                   )
-                                                  )
-                                                  (i64.const 32)
-                                                 )
-                                                )
-                                                (local.get $1)
-                                               )
-                                               (i64.const 32)
-                                              )
-                                             )
-                                             (i64.const 4294967295)
-                                            )
-                                           )
-                                           (local.get $1)
-                                          )
-                                          (i64.const 31)
-                                         )
-                                         (i64.const 4294967294)
-                                        )
-                                       )
-                                       (i64.and
-                                        (i64.shr_u
-                                         (i64.mul
-                                          (local.get $6)
-                                          (local.get $5)
-                                         )
-                                         (i64.const 31)
-                                        )
-                                        (i64.const 4294967294)
-                                       )
-                                      )
-                                      (i64.const 32)
-                                     )
-                                    )
-                                    (i64.const 4294967295)
-                                   )
-                                   (local.get $1)
-                                  )
-                                  (i64.const 31)
-                                 )
-                                 (i64.const 4294967294)
-                                )
-                               )
-                               (i64.and
-                                (local.get $3)
-                                (i64.const 4294966272)
-                               )
-                              )
-                              (i64.const 32)
-                             )
-                             (i64.mul
-                              (local.get $1)
-                              (local.get $4)
-                             )
-                            )
-                           )
-                           (i64.const 32)
-                          )
-                         )
-                         (local.get $1)
-                        )
-                        (i64.shr_u
-                         (i64.mul
-                          (local.tee $5
-                           (i64.and
-                            (local.get $5)
-                            (i64.const 4294967295)
-                           )
-                          )
-                          (local.get $1)
-                         )
-                         (i64.const 32)
-                        )
-                       )
-                      )
-                     )
-                     (i64.const 32)
-                    )
-                   )
-                   (local.get $4)
-                  )
-                  (i64.shr_u
-                   (i64.mul
-                    (i64.and
-                     (local.get $1)
-                     (i64.const 4294967295)
-                    )
-                    (local.get $4)
-                   )
-                   (i64.const 32)
-                  )
-                 )
-                 (i64.shr_u
-                  (i64.mul
-                   (local.get $6)
-                   (local.get $5)
-                  )
-                  (i64.const 32)
-                 )
-                )
-                (i64.const -2)
-               )
-               (i64.const 9)
-              )
-             )
-             (i64.shl
-              (local.get $3)
-              (i64.const 42)
-             )
-            )
-            (i64.mul
-             (local.get $1)
-             (local.get $1)
-            )
-           )
-          )
-          (i64.const 63)
-         )
-         (local.get $1)
-        )
-        (i64.const 4503599627370495)
-       )
-       (i64.and
-        (i64.add
-         (i64.shl
-          (local.get $2)
-          (i64.const 51)
-         )
-         (i64.const 2303591209400008704)
-        )
-        (i64.const -4503599627370496)
-       )
-      )
-     )
-     (f64.reinterpret_i64
-      (i64.or
-       (i64.shl
-        (i64.extend_i32_u
-         (i64.ne
-          (local.tee $1
-           (i64.add
-            (i64.add
-             (local.get $1)
-             (local.get $3)
-            )
-            (i64.const 1)
-           )
-          )
-          (i64.const 0)
-         )
-        )
-        (i64.const 52)
-       )
-       (i64.and
-        (i64.xor
-         (local.get $1)
-         (local.get $3)
-        )
-        (i64.const -9223372036854775808)
-       )
-      )
-     )
-    )
-   )
-  )
-  (local.get $0)
- )
  (func $core_math_tan (param $0 f64) (result f64)
   (local $1 i32)
   (local $2 i32)
@@ -7892,90 +7394,6 @@
    )
   )
   (local.get $3)
- )
- (func $core_math_trunc (param $0 f64) (result f64)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 i64)
-  (local.set $1
-   (i32.sub
-    (global.get $__stack_pointer)
-    (i32.const 16)
-   )
-  )
-  (block $label$1
-   (br_if $label$1
-    (i32.gt_u
-     (local.tee $2
-      (i32.and
-       (i32.wrap_i64
-        (i64.shr_u
-         (local.tee $3
-          (i64.reinterpret_f64
-           (local.get $0)
-          )
-         )
-         (i64.const 52)
-        )
-       )
-       (i32.const 2047)
-      )
-     )
-     (i32.const 1074)
-    )
-   )
-   (br_if $label$1
-    (i64.eqz
-     (i64.and
-      (local.tee $4
-       (i64.shr_u
-        (i64.const -1)
-        (i64.extend_i32_u
-         (select
-          (i32.const 1)
-          (i32.add
-           (local.get $2)
-           (i32.const -1011)
-          )
-          (i32.lt_u
-           (local.get $2)
-           (i32.const 1023)
-          )
-         )
-        )
-       )
-      )
-      (local.get $3)
-     )
-    )
-   )
-   (f64.store offset=8
-    (local.get $1)
-    (f64.add
-     (local.get $0)
-     (f64.const 1329227995784915872903807e12)
-    )
-   )
-   (local.set $0
-    (f64.reinterpret_i64
-     (i64.and
-      (i64.xor
-       (local.get $4)
-       (i64.const -1)
-      )
-      (local.get $3)
-     )
-    )
-   )
-  )
-  (local.get $0)
- )
- (func $adder (param $0 i32) (param $1 i32) (result i32)
-  (i32.add
-   (local.get $1)
-   (local.get $0)
-  )
  )
  ;; custom section "producers", size 28
 )

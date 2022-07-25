@@ -24,9 +24,11 @@ hidden double   __cos(double,double);
 hidden double   __tan(double,double,int);
 hidden double   __expo2(double,double);
 
-hidden double   __math_invalid(double);
+hidden double   __math_xflow(uint32_t, double);
 hidden double   __math_uflow(uint32_t);
 hidden double   __math_oflow(uint32_t);
+hidden double   __math_divzero(uint32_t);
+hidden double   __math_invalid(double);
 
 bool         isnan(double);
 
@@ -39,6 +41,22 @@ static inline double core_math_floor(double x)
 {
     return __builtin_floor(x);
 }
+
+static inline double core_math_nearest(double x)
+{
+    return __builtin_nearbyint(x);
+}
+
+static inline double core_math_trunc(double x)
+{
+    return __builtin_trunc(x);
+}
+
+static inline double core_math_sqrt(double x)
+{
+    return __builtin_sqrt(x);
+}
+
 
 double      acos(double);
 double      acosh(double);
@@ -92,8 +110,6 @@ double      scalbln(double, long);
 double      scalbn(double, int);
 double      sin(double);
 double      sinh(double);
-double      sqrt(double);
 double      tan(double);
 double      tanh(double);
 double      tgamma(double);
-double      trunc(double);
