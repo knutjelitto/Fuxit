@@ -31,7 +31,6 @@
  (export "core_math___rem_pio2" (func $core_math___rem_pio2))
  (export "core_math___rem_pio2_large" (func $core_math___rem_pio2_large))
  (export "core_math_scalbn" (func $core_math_scalbn))
- (export "core_math_floor" (func $core_math_floor))
  (export "core_math___sin" (func $core_math___sin))
  (export "core_math___tan" (func $core_math___tan))
  (export "core_math_acos" (func $core_math_acos))
@@ -42,7 +41,6 @@
  (export "core_math_isnan" (func $core_math_isnan))
  (export "atan2" (func $atan2))
  (export "cbrt" (func $cbrt))
- (export "core_math_ceil" (func $core_math_ceil))
  (export "core_math_cos" (func $core_math_cos))
  (export "pow" (func $pow))
  (export "core_math_round" (func $core_math_round))
@@ -1861,19 +1859,18 @@
       )
      )
     )
-    (local.set $34
-     (call $core_math_scalbn
-      (local.get $34)
-      (local.get $18)
-     )
-    )
     (local.set $33
      (f64.trunc
       (local.tee $34
        (f64.add
-        (local.get $34)
+        (local.tee $34
+         (call $core_math_scalbn
+          (local.get $34)
+          (local.get $18)
+         )
+        )
         (f64.mul
-         (call $core_math_floor
+         (f64.floor
           (f64.mul
            (local.get $34)
            (f64.const 0.125)
@@ -5964,52 +5961,6 @@
   )
   (local.get $0)
  )
- (func $core_math_ceil (param $0 f64) (result f64)
-  (local $1 i32)
-  (local $2 i64)
-  (local.set $1
-   (i32.sub
-    (global.get $__stack_pointer)
-    (i32.const 16)
-   )
-  )
-  (block $label$1
-   (br_if $label$1
-    (i64.gt_u
-     (i64.and
-      (local.tee $2
-       (i64.reinterpret_f64
-        (local.get $0)
-       )
-      )
-      (i64.const 9218868437227405312)
-     )
-     (i64.const 4607182418800017407)
-    )
-   )
-   (br_if $label$1
-    (f64.eq
-     (local.get $0)
-     (f64.const 0)
-    )
-   )
-   (i64.store offset=8
-    (local.get $1)
-    (i64.const 0)
-   )
-   (local.set $0
-    (select
-     (f64.const 1)
-     (f64.const -0)
-     (i64.gt_s
-      (local.get $2)
-      (i64.const -1)
-     )
-    )
-   )
-  )
-  (local.get $0)
- )
  (func $core_math_cos (param $0 f64) (result f64)
   (local $1 i32)
   (local $2 i32)
@@ -6162,52 +6113,6 @@
     (i64.const 9223372036854775807)
    )
   )
- )
- (func $core_math_floor (param $0 f64) (result f64)
-  (local $1 i32)
-  (local $2 i64)
-  (local.set $1
-   (i32.sub
-    (global.get $__stack_pointer)
-    (i32.const 16)
-   )
-  )
-  (block $label$1
-   (br_if $label$1
-    (i64.gt_u
-     (i64.and
-      (local.tee $2
-       (i64.reinterpret_f64
-        (local.get $0)
-       )
-      )
-      (i64.const 9218868437227405312)
-     )
-     (i64.const 4607182418800017407)
-    )
-   )
-   (br_if $label$1
-    (f64.eq
-     (local.get $0)
-     (f64.const 0)
-    )
-   )
-   (i64.store offset=8
-    (local.get $1)
-    (i64.const 0)
-   )
-   (local.set $0
-    (select
-     (f64.const -1)
-     (f64.const 0)
-     (i64.lt_s
-      (local.get $2)
-      (i64.const 0)
-     )
-    )
-   )
-  )
-  (local.get $0)
  )
  (func $core_math_isnan (param $0 f64) (result i32)
   (i32.eqz

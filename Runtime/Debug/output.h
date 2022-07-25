@@ -52,8 +52,6 @@ extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2Z_idi))(f64, u32);
 extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
 /* export: 'core_math_scalbn' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_scalbnZ_ddi))(f64, u32);
-/* export: 'core_math_floor' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_floorZ_dd))(f64);
 /* export: 'core_math___sin' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi))(f64, f64, u32);
 /* export: 'core_math___tan' */
@@ -74,8 +72,6 @@ extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math_isnanZ_id))(f64);
 extern f64 (*WASM_RT_ADD_PREFIX(Z_atan2Z_ddd))(f64, f64);
 /* export: 'cbrt' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_cbrtZ_dd))(f64);
-/* export: 'core_math_ceil' */
-extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_ceilZ_dd))(f64);
 /* export: 'core_math_cos' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd))(f64);
 /* export: 'pow' */

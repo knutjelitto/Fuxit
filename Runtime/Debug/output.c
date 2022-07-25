@@ -235,10 +235,8 @@ static f64 w2c_core_math_asin(f64);
 static f64 w2c_core_math_atan(f64);
 static f64 w2c_atan2(f64, f64);
 static f64 w2c_cbrt(f64);
-static f64 w2c_core_math_ceil(f64);
 static f64 w2c_core_math_cos(f64);
 static f64 w2c_core_math_fabs(f64);
-static f64 w2c_core_math_floor(f64);
 static u32 w2c_core_math_isnan(f64);
 static f64 w2c_pow(f64, f64);
 static u32 w2c_checkint(u64);
@@ -1470,11 +1468,10 @@ static u32 w2c_core_math___rem_pio2_large(u32 w2c_p0, u32 w2c_p1, u32 w2c_p2, u3
     w2c_i1 = w2c_l18;
     w2c_d0 = w2c_core_math_scalbn(w2c_d0, w2c_i1);
     w2c_l34 = w2c_d0;
-    w2c_d0 = w2c_l34;
     w2c_d1 = w2c_l34;
     w2c_d2 = 0.125;
     w2c_d1 *= w2c_d2;
-    w2c_d1 = w2c_core_math_floor(w2c_d1);
+    w2c_d1 = floor(w2c_d1);
     w2c_d2 = -8;
     w2c_d1 *= w2c_d2;
     w2c_d0 += w2c_d1;
@@ -4184,45 +4181,6 @@ static f64 w2c_cbrt(f64 w2c_p0) {
   return w2c_d0;
 }
 
-static f64 w2c_core_math_ceil(f64 w2c_p0) {
-  u32 w2c_l1 = 0;
-  u64 w2c_l2 = 0;
-  FUNC_PROLOGUE;
-  u32 w2c_i0, w2c_i1, w2c_i2;
-  u64 w2c_j0, w2c_j1, w2c_j2, w2c_j3;
-  f64 w2c_d0, w2c_d1;
-  w2c_i0 = w2c___stack_pointer;
-  w2c_i1 = 16u;
-  w2c_i0 -= w2c_i1;
-  w2c_l1 = w2c_i0;
-  w2c_d0 = w2c_p0;
-  w2c_j0 = i64_reinterpret_f64(w2c_d0);
-  w2c_l2 = w2c_j0;
-  w2c_j1 = 9218868437227405312ull;
-  w2c_j0 &= w2c_j1;
-  w2c_j1 = 4607182418800017407ull;
-  w2c_i0 = w2c_j0 > w2c_j1;
-  if (w2c_i0) {goto w2c_B0;}
-  w2c_d0 = w2c_p0;
-  w2c_d1 = 0;
-  w2c_i0 = w2c_d0 == w2c_d1;
-  if (w2c_i0) {goto w2c_B0;}
-  w2c_i0 = w2c_l1;
-  w2c_j1 = 0ull;
-  i64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_j1);
-  w2c_d0 = 1;
-  w2c_d1 = -0.0;
-  w2c_j2 = w2c_l2;
-  w2c_j3 = 18446744073709551615ull;
-  w2c_i2 = (u64)((s64)w2c_j2 > (s64)w2c_j3);
-  w2c_d0 = w2c_i2 ? w2c_d0 : w2c_d1;
-  w2c_p0 = w2c_d0;
-  w2c_B0:;
-  w2c_d0 = w2c_p0;
-  FUNC_EPILOGUE;
-  return w2c_d0;
-}
-
 static f64 w2c_core_math_cos(f64 w2c_p0) {
   u32 w2c_l1 = 0, w2c_l2 = 0;
   f64 w2c_l3 = 0;
@@ -4336,45 +4294,6 @@ static f64 w2c_core_math_fabs(f64 w2c_p0) {
   w2c_j1 = 9223372036854775807ull;
   w2c_j0 &= w2c_j1;
   w2c_d0 = f64_reinterpret_i64(w2c_j0);
-  FUNC_EPILOGUE;
-  return w2c_d0;
-}
-
-static f64 w2c_core_math_floor(f64 w2c_p0) {
-  u32 w2c_l1 = 0;
-  u64 w2c_l2 = 0;
-  FUNC_PROLOGUE;
-  u32 w2c_i0, w2c_i1, w2c_i2;
-  u64 w2c_j0, w2c_j1, w2c_j2, w2c_j3;
-  f64 w2c_d0, w2c_d1;
-  w2c_i0 = w2c___stack_pointer;
-  w2c_i1 = 16u;
-  w2c_i0 -= w2c_i1;
-  w2c_l1 = w2c_i0;
-  w2c_d0 = w2c_p0;
-  w2c_j0 = i64_reinterpret_f64(w2c_d0);
-  w2c_l2 = w2c_j0;
-  w2c_j1 = 9218868437227405312ull;
-  w2c_j0 &= w2c_j1;
-  w2c_j1 = 4607182418800017407ull;
-  w2c_i0 = w2c_j0 > w2c_j1;
-  if (w2c_i0) {goto w2c_B0;}
-  w2c_d0 = w2c_p0;
-  w2c_d1 = 0;
-  w2c_i0 = w2c_d0 == w2c_d1;
-  if (w2c_i0) {goto w2c_B0;}
-  w2c_i0 = w2c_l1;
-  w2c_j1 = 0ull;
-  i64_store((&w2c_memory), (u64)(w2c_i0) + 8, w2c_j1);
-  w2c_d0 = -1;
-  w2c_d1 = 0;
-  w2c_j2 = w2c_l2;
-  w2c_j3 = 0ull;
-  w2c_i2 = (u64)((s64)w2c_j2 < (s64)w2c_j3);
-  w2c_d0 = w2c_i2 ? w2c_d0 : w2c_d1;
-  w2c_p0 = w2c_d0;
-  w2c_B0:;
-  w2c_d0 = w2c_p0;
   FUNC_EPILOGUE;
   return w2c_d0;
 }
@@ -5739,8 +5658,6 @@ u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2Z_idi))(f64, u32);
 u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
 /* export: 'core_math_scalbn' */
 f64 (*WASM_RT_ADD_PREFIX(Z_core_math_scalbnZ_ddi))(f64, u32);
-/* export: 'core_math_floor' */
-f64 (*WASM_RT_ADD_PREFIX(Z_core_math_floorZ_dd))(f64);
 /* export: 'core_math___sin' */
 f64 (*WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi))(f64, f64, u32);
 /* export: 'core_math___tan' */
@@ -5761,8 +5678,6 @@ u32 (*WASM_RT_ADD_PREFIX(Z_core_math_isnanZ_id))(f64);
 f64 (*WASM_RT_ADD_PREFIX(Z_atan2Z_ddd))(f64, f64);
 /* export: 'cbrt' */
 f64 (*WASM_RT_ADD_PREFIX(Z_cbrtZ_dd))(f64);
-/* export: 'core_math_ceil' */
-f64 (*WASM_RT_ADD_PREFIX(Z_core_math_ceilZ_dd))(f64);
 /* export: 'core_math_cos' */
 f64 (*WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd))(f64);
 /* export: 'pow' */
@@ -5809,8 +5724,6 @@ static void init_exports(void) {
   WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii) = (&w2c_core_math___rem_pio2_large);
   /* export: 'core_math_scalbn' */
   WASM_RT_ADD_PREFIX(Z_core_math_scalbnZ_ddi) = (&w2c_core_math_scalbn);
-  /* export: 'core_math_floor' */
-  WASM_RT_ADD_PREFIX(Z_core_math_floorZ_dd) = (&w2c_core_math_floor);
   /* export: 'core_math___sin' */
   WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi) = (&w2c_core_math___sin);
   /* export: 'core_math___tan' */
@@ -5831,8 +5744,6 @@ static void init_exports(void) {
   WASM_RT_ADD_PREFIX(Z_atan2Z_ddd) = (&w2c_atan2);
   /* export: 'cbrt' */
   WASM_RT_ADD_PREFIX(Z_cbrtZ_dd) = (&w2c_cbrt);
-  /* export: 'core_math_ceil' */
-  WASM_RT_ADD_PREFIX(Z_core_math_ceilZ_dd) = (&w2c_core_math_ceil);
   /* export: 'core_math_cos' */
   WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd) = (&w2c_core_math_cos);
   /* export: 'pow' */

@@ -30,6 +30,16 @@ hidden double   __math_oflow(uint32_t);
 
 bool         isnan(double);
 
+static inline double core_math_ceil(double x)
+{
+    return __builtin_ceil(x);
+}
+
+static inline double core_math_floor(double x)
+{
+    return __builtin_floor(x);
+}
+
 double      acos(double);
 double      acosh(double);
 double      asin(double);
@@ -38,7 +48,7 @@ double      atan(double);
 double      atan2(double, double);
 double      atanh(double);
 double      cbrt(double);
-double      ceil(double);
+
 double      copysign(double, double);
 double      cos(double);
 double      cosh(double);
@@ -49,7 +59,7 @@ double      exp2(double);
 double      expm1(double);
 double      fabs(double);
 double      fdim(double, double);
-double      floor(double);
+
 double      fma(double, double, double);
 double      fmax(double, double);
 double      fmin(double, double);

@@ -1,4 +1,6 @@
-﻿namespace Fux.Building.Typing
+﻿#pragma warning disable CA1822 // Mark members as static
+
+namespace Fux.Building.Typing
 {
     public sealed class ExprBuilder
     {
@@ -8,14 +10,12 @@
         const string GenParamPrefix = "_param";
 
         private TypeBuilder typeBuilder;
-        private readonly BindBuilder bind2;
         private readonly IdGenerator idGenerator;
 
         public ExprBuilder(Module module)
         {
             Module = module;
             typeBuilder = new TypeBuilder(new W.TypeVarGenerator(), false);
-            bind2 = new BindBuilder(Module, this);
             idGenerator = new(Module);
         }
 
@@ -465,46 +465,99 @@
                     {
                         if (expr is W.Expr.Variable variable)
                         {
-                            var x = Destruct(pattern1, Select(variable, 0),
+                            var result = Destruct(pattern1, Select(variable, 0),
                                         Destruct(pattern2, Select(variable, 1),
                                             inExpr));
-                            return x;
+                            return Shorten(result);
                         }
                         else
                         {
                             var temp = GenVariable(GenVarPrefix);
 
-                            var x = new W.Expr.Let(
+                            var result = new W.Expr.Let(
                                 temp.Term,
                                 expr,
                                 Destruct(pattern1, Select(temp, 0),
                                     Destruct(pattern2, Select(temp, 1),
                                         inExpr)));
-                            return x;
+                            
+                            return Shorten(result);
                         }
 
                         [DebuggerStepThrough]
                         static W.Expr Select(W.Expr.Variable variable, int index)
                         {
-                            return new W.Expr.GetValue(variable, typeGen, index);
-
-                            static W.Polytype typeGen(W.Environment env) => new(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
+                            return new W.Expr.GetValue(
+                                variable, 
+                                env => new(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar())), 
+                                index);
                         }
                     }
 
                 case A.Pattern.LowerId(var lower):
                     {
-                        var x = new W.Expr.Let(
+                        var result = new W.Expr.Let(
                             new W.TermVariable(lower),
                             expr,
                             inExpr);
 
-                        return x;
+                        return Shorten(result);
                     }
 
                 case A.Pattern.Wildcard:
                     {
-                        return inExpr;
+                        return Shorten(inExpr);
+                    }
+
+                case A.Pattern.UpperId upper:
+                    {
+                        return Shorten(inExpr);
+                    }
+
+                case A.Pattern.List list when list.Patterns.Count == 0:
+                    {
+                        return Shorten(inExpr);
+                    }
+
+                case A.Pattern.Literal.Integer integer:
+                    {
+                        return Shorten(inExpr);
+                    }
+
+                case A.Pattern.WithAlias withAlias:
+                    {
+                        var variable = new W.Expr.Variable(withAlias.Alias.Identifier);
+
+                        var result = new W.Expr.Let(
+                            variable.Term,
+                            expr,
+                            Destruct(withAlias.Pattern, variable, inExpr));
+
+                        return Shorten(result);
+                    }
+
+                case A.Pattern.Cons cons:
+                    {
+                        var var1 = GenVariable(GenVarPrefix);
+                        var select1 = select(expr, 0);
+                        var var2 = GenVariable(GenVarPrefix);
+                        var select2 = select(expr, 1);
+
+                        var result =
+                            new W.Expr.Let(var1.Term, select1,
+                                new W.Expr.Let(var2.Term, select2,
+                                    Destruct(cons.First, var1,
+                                        Destruct(cons.Rest, var2, inExpr))));
+
+                        return Shorten(result);
+
+                        W.Expr.GetValue select(W.Expr expr, int index)
+                        {
+                            return new W.Expr.GetValue(
+                                expr, 
+                                env => new W.Polytype(new W.Type.List(env.GetNextTypeVar())),
+                                index);
+                        }
                     }
 
                 case A.Pattern.Ctor ctorPattern:
@@ -513,24 +566,26 @@
                         {
                             Assert(ctorPattern.Arguments.Count == ctor.Arguments.Count);
 
+                            var result = inExpr;
+
                             var name = ctor.FullName();
                             var args = typeBuilder.BuildMulti(ctor.Arguments);
 
                             for (var i = ctorPattern.Arguments.Count - 1; i >= 0; i--)
                             {
-                                var arg = ctorPattern.Arguments[i];
+                                var argPattern = ctorPattern.Arguments[i];
 
                                 var variable = GenVariable(GenVarPrefix);
 
                                 var select = Select(expr, i, args[i]);
 
-                                inExpr = new W.Expr.Let(
+                                result = new W.Expr.Let(
                                     variable.Term,
                                     select,
-                                    Destruct(arg, variable, inExpr));
+                                    Destruct(argPattern, variable, result));
                             }
 
-                            return inExpr;
+                            return Shorten(result);
 
                             W.Expr.GetValue2 Select(W.Expr expr, int i, W.Polytype type)
                             {
@@ -550,187 +605,6 @@
 
             Assert(false);
             throw new NotImplementedException();
-        }
-
-        private W.Expr BuildDestructure(A.Pattern pattern, W.Expr expr, W.Expr inExpr)
-        {
-            if (Investigated)
-            {
-                Assert(true);
-            }
-
-            switch (pattern)
-            {
-                case A.Pattern.Wildcard:
-                    {
-                        return inExpr;
-                    }
-
-                case A.Pattern.List list when list.Patterns.Count == 0:
-                    {
-                        return inExpr;
-                    }
-
-                case A.Pattern.Literal.Integer integer:
-                    {
-                        return inExpr;
-                    }
-
-                case A.Pattern.UpperId upper:
-                    {
-                        return inExpr;
-                    }
-
-                case A.Pattern.List list when list.Patterns.Count > 0:
-                    {
-                        Assert(false);
-                        throw new NotImplementedException();
-                    }
-
-                case A.Pattern.Signature sign:
-                    {
-                        if (sign.Parameters.Count == 0)
-                        {
-                            var variable = new W.Expr.Variable(sign.Name);
-
-                            return new W.Expr.Let(variable.Term, expr, inExpr);
-                        }
-
-                        Assert(false);
-                        break;
-                    }
-
-                case A.Pattern.LowerId lower:
-                    {
-                        var variable = new W.Expr.Variable(lower.Identifier);
-
-                        return new W.Expr.Let(variable.Term, expr, inExpr);
-                    }
-
-                case A.Pattern.Ctor deCtor:
-                    {
-                        if (Investigated)
-                        {
-                            Assert(true);
-                        }
-
-                        if (deCtor.Name.Resolved is not A.Expr.Ref.Ctor ctorRef || ctorRef.Decl is not A.Decl.Ctor ctor)
-                        {
-                            Assert(false);
-                            throw NotImplemented(deCtor);
-                        }
-
-                        Assert(deCtor.Arguments.Count == ctor.Arguments.Count);
-
-                        var name = ctor.FullName();
-                        var args = new List<W.Polytype>();
-                        foreach (var arg in ctor.Arguments)
-                        {
-                            args.Add(typeBuilder.Build(arg));
-                        }
-
-                        W.Polytype genType(W.Environment env, int index)
-                        {
-                            Assert(index < ctor.Arguments.Count);
-                            return args![index];
-                        }
-
-                        var result = GenDestruct(0);
-
-                        return result;
-
-                        W.Expr GenDestruct(int index)
-                        {
-                            if (index == deCtor.Arguments.Count)
-                            {
-                                return inExpr;
-                            }
-                            else
-                            {
-                                var variable = GenVariable(GenVarPrefix);
-
-                                var select = new W.Expr.GetValue2(expr, genType, index);
-
-                                return new W.Expr.Let(variable.Term, select, 
-                                    BuildDestructure(deCtor.Arguments[index], variable, GenDestruct(index + 1)));
-                            }
-                        }
-                    }
-
-                case A.Pattern.Cons deCons:
-                    {
-                        var var1 = GenVariable(GenVarPrefix);
-                        var select1 = new W.Expr.GetValue(expr, genType, 0);
-                        var var2 = GenVariable(GenVarPrefix);
-                        var select2 = new W.Expr.GetValue(expr, genType, 1);
-
-                        var let =
-                            new W.Expr.Let(var1.Term, select1,
-                                new W.Expr.Let(var2.Term, select2,
-                                    BuildDestructure(deCons.First, var1,
-                                        BuildDestructure(deCons.Rest, var2, inExpr))));
-
-                        return let;
-
-                        W.Polytype genType(W.Environment env)
-                        {
-                            return new W.Polytype(new W.Type.List(env.GetNextTypeVar()));
-                        }
-                    }
-
-                case A.Pattern.Tuple2 tuple2:
-                    {
-                        if (Investigated)
-                        {
-                            Assert(true);
-                        }
-
-                        var var1 = GenVariable(GenVarPrefix);
-                        var select1 = new W.Expr.GetValue(expr, genType, 0);
-                        var var2 = GenVariable(GenVarPrefix);
-                        var select2 = new W.Expr.GetValue(expr, genType, 1);
-
-                        var let =
-                            new W.Expr.Let(var1.Term, select1,
-                                new W.Expr.Let(var2.Term, select2,
-                                    BuildDestructure(tuple2.Pattern1, var1,
-                                        BuildDestructure(tuple2.Pattern2, var2, inExpr))));
-
-                        return let;
-
-                        W.Polytype genType(W.Environment env)
-                        {
-                            return new W.Polytype(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
-                        }
-                    }
-
-                case A.Pattern.Tuple3 tuple3:
-                    {
-                        return new W.Expr.Tuple3(
-                            BuildDestructure(tuple3.Pattern1, expr, inExpr),
-                            BuildDestructure(tuple3.Pattern2, expr, inExpr),
-                            BuildDestructure(tuple3.Pattern3, expr, inExpr));
-                    }
-
-                case A.Pattern.WithAlias withAlias:
-                    {
-                        var variable = new W.Expr.Variable(withAlias.Alias.Identifier);
-
-                        var let = new W.Expr.Let(
-                            variable.Term,
-                            expr,
-                            BuildDestructure(withAlias.Pattern, variable, inExpr));
-
-                        return let;
-                    }
-
-                default:
-                    Assert(false);
-                    break;
-            }
-
-            throw NotImplemented(pattern);
-
         }
 
         private W.Expr BuildVarLambda(A.Decl.Var var)
@@ -804,6 +678,26 @@
                     return result;
                 }
             }
+            else if (expr is W.Expr.Let let)
+            {
+                if (Investigated)
+                {
+                    Assert(true);
+                }
+
+                if (let.Expr2 is W.Expr.Let inner)
+                {
+                    if (inner.Expr1 is W.Expr.Variable variable)
+                    {
+                        if (variable.Term == let.Term)
+                        {
+                            var result = new W.Expr.Let(inner.Term, let.Expr1, Shorten(inner.Expr2));
+
+                            return result;
+                        }
+                    }
+                }
+            }
 
             return expr;
         }
@@ -850,7 +744,7 @@
 
             var caseExpr = Build(cheese.Expression);
             var pattern = BuildPattern(cheese.Pattern);
-            var destructure = BuildDestructure(cheese.Pattern, matchExpr, caseExpr);
+            var destructure = Destruct(cheese.Pattern, matchExpr, caseExpr);
 
             return new W.Expr.Case(Env, pattern, destructure);
         }
