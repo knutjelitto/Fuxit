@@ -4,7 +4,7 @@ namespace Fux.Building.AlgorithmW
 {
     public sealed class Environment
     {
-        private readonly TypeVarGenerator Generator;
+        public readonly TypeVarGenerator Generator;
 
         private readonly ImmutableDictionary<TermVariable, Polytype> Map;
 
@@ -34,6 +34,11 @@ namespace Fux.Building.AlgorithmW
             }
 
             return new(generator, builder.ToImmutable());
+        }
+
+        public static Environment Empty()
+        {
+            return Initial(new TypeVarGenerator());
         }
 
         public Environment NewEmpty()

@@ -483,13 +483,13 @@ namespace Fux.Input
             {
                 cursor.Swallow(Lex.Lambda);
 
-                var pattern = Patt.Lambda(cursor);
+                var parameters = Patt.LambdaParameters(cursor);
 
                 cursor.Swallow(Lex.Arrow);
 
                 var expr = Expression(cursor);
 
-                return new A.Expr.Lambda(pattern, expr);
+                return new A.Expr.Lambda(parameters, expr);
             });
         }
     }

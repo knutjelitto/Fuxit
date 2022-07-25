@@ -31,25 +31,67 @@ typedef double f64;
 
 extern void WASM_RT_ADD_PREFIX(init)(void);
 
-/* import: 'env' 'core_math___cos' */
-extern f64 (*Z_envZ_core_math___cosZ_ddd)(f64, f64);
-/* import: 'env' 'core_math___rem_pio2' */
-extern u32 (*Z_envZ_core_math___rem_pio2Z_idi)(f64, u32);
-/* import: 'env' 'core_math___sin' */
-extern f64 (*Z_envZ_core_math___sinZ_dddi)(f64, f64, u32);
+/* import: 'env' '__math_oflow' */
+extern f64 (*Z_envZ___math_oflowZ_di)(u32);
+/* import: 'env' '__math_uflow' */
+extern f64 (*Z_envZ___math_uflowZ_di)(u32);
 
 /* export: 'memory' */
 extern wasm_rt_memory_t (*WASM_RT_ADD_PREFIX(Z_memory));
 /* export: '__wasm_call_ctors' */
 extern void (*WASM_RT_ADD_PREFIX(Z___wasm_call_ctorsZ_vv))(void);
-/* export: 'adder' */
-extern u32 (*WASM_RT_ADD_PREFIX(Z_adderZ_iii))(u32, u32);
+/* export: 'core_math___cos' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___cosZ_ddd))(f64, f64);
+/* export: 'core_math___fpclassify' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___fpclassifyZ_id))(f64);
+/* export: 'core_math___math_invalid' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___math_invalidZ_dd))(f64);
+/* export: 'core_math___rem_pio2' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2Z_idi))(f64, u32);
+/* export: 'core_math___rem_pio2_large' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rem_pio2_largeZ_iiiiii))(u32, u32, u32, u32, u32);
 /* export: 'core_math_scalbn' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_scalbnZ_ddi))(f64, u32);
+/* export: 'core_math_floor' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_floorZ_dd))(f64);
+/* export: 'core_math___sin' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___sinZ_dddi))(f64, f64, u32);
+/* export: 'core_math___tan' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math___tanZ_dddi))(f64, f64, u32);
+/* export: 'core_math_acos' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_acosZ_dd))(f64);
+/* export: 'core_math_sqrt' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_sqrtZ_dd))(f64);
+/* export: 'core_math_asin' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_asinZ_dd))(f64);
+/* export: 'core_math_fabs' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_fabsZ_dd))(f64);
+/* export: 'core_math_atan' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_atanZ_dd))(f64);
+/* export: 'core_math_isnan' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math_isnanZ_id))(f64);
+/* export: 'atan2' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_atan2Z_ddd))(f64, f64);
+/* export: 'cbrt' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_cbrtZ_dd))(f64);
+/* export: 'core_math_ceil' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_ceilZ_dd))(f64);
 /* export: 'core_math_cos' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_cosZ_dd))(f64);
+/* export: 'pow' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_powZ_ddd))(f64, f64);
+/* export: 'core_math_round' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_roundZ_dd))(f64);
 /* export: 'core_math_sin' */
 extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_sinZ_dd))(f64);
+/* export: 'core_math___rsqrt_tab' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_core_math___rsqrt_tabZ_i));
+/* export: 'core_math_tan' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_tanZ_dd))(f64);
+/* export: 'core_math_trunc' */
+extern f64 (*WASM_RT_ADD_PREFIX(Z_core_math_truncZ_dd))(f64);
+/* export: 'adder' */
+extern u32 (*WASM_RT_ADD_PREFIX(Z_adderZ_iii))(u32, u32);
 /* export: '__dso_handle' */
 extern u32 (*WASM_RT_ADD_PREFIX(Z___dso_handleZ_i));
 /* export: '__data_end' */

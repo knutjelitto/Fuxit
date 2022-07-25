@@ -1,4 +1,7 @@
-﻿#pragma warning disable IDE0066 // Convert switch statement to expression
+﻿#pragma warning disable IDE0079 // Remove unnecessary suppression
+#pragma warning disable IDE0066 // Convert switch statement to expression
+
+using System.Reflection.Emit;
 
 namespace Fux.Building.Typing
 {
@@ -7,40 +10,59 @@ namespace Fux.Building.Typing
         private readonly List<W.TypeVariable> vars = new();
         private readonly Dictionary<string, W.TypeVariable> index = new();
 
+        public W.TypeVarGenerator Gen { get; }
         public bool Investigated { get; set; } = false;
 
-        public W.Polytype Build(W.Environment env, A.Type? type)
+        public TypeBuilder(W.TypeVarGenerator gen, bool investigated)
+        {
+            Gen = gen;
+            Investigated = investigated;
+        }
+
+        public W.Polytype Build(A.Type? type)
         {
             if (type == null)
             {
-                return new W.Polytype(env.GetNextTypeVar());
+                return new W.Polytype(Gen.GetNextTypeVar());
             }
 
             vars.Clear();
             index.Clear();
 
-            var wtype = Resolve(env, type);
+            var wtype = Resolve(type);
 
             return new W.Polytype(wtype, vars);
         }
 
-        private W.Type Resolve(W.Environment env, A.Type type)
+        public List<W.Polytype> BuildMulti(IEnumerable<A.Type> types)
+        {
+            var list = new List<W.Polytype>();
+
+            foreach (var type in types)
+            {
+                list.Add(Build(type));
+            }
+
+            return list;
+        }
+
+        private W.Type Resolve(A.Type type)
         {
             switch (type.Resolved)
             {
                 case A.Type.Function function:
                     {
-                        return new W.Type.Function(Resolve(env, function.InType), Resolve(env, function.OutType));
+                        return new W.Type.Function(Resolve(function.InType), Resolve(function.OutType));
                     }
 
                 case A.Type.Tuple2 tuple2:
                     {
-                        return new W.Type.Tuple2(Resolve(env, tuple2.Type1), Resolve(env, tuple2.Type2));
+                        return new W.Type.Tuple2(Resolve(tuple2.Type1), Resolve(tuple2.Type2));
                     }
 
                 case A.Type.Tuple3 tuple3:
                     {
-                        return new W.Type.Tuple3(Resolve(env, tuple3.Type1), Resolve(env, tuple3.Type2), Resolve(env, tuple3.Type3));
+                        return new W.Type.Tuple3(Resolve(tuple3.Type1), Resolve(tuple3.Type2), Resolve(tuple3.Type3));
                     }
 
                 case A.Type.NumberClass number:
@@ -95,7 +117,7 @@ namespace Fux.Building.Typing
 
                 case A.Type.List list:
                     {
-                        return new W.Type.List(Resolve(env, list.Argument));
+                        return new W.Type.List(Resolve(list.Argument));
                     }
 
                 case A.Type.Custom custom:
@@ -120,7 +142,7 @@ namespace Fux.Building.Typing
                         }
 
                         Assert(name != "Bool.Bool");
-                        var args = custom.Arguments.Select(t => Resolve(env, t)).ToArray();
+                        var args = custom.Arguments.Select(t => Resolve(t)).ToArray();
                         return new W.Type.Custom(name, args);
                     }
 
@@ -132,7 +154,7 @@ namespace Fux.Building.Typing
                         foreach (var f in record.Fields)
                         {
                             var name = f.Name.Text;
-                            var ty = Resolve(env, f.Type);
+                            var ty = Resolve(f.Type);
 
                             var field = new W.Type.Field(name, ty);
                             fields.Add(field);
@@ -149,7 +171,7 @@ namespace Fux.Building.Typing
             {
                 if (!index.TryGetValue(text, out var typeVar))
                 {
-                    typeVar = env.GetNextTypeVar(text).TypeVar;
+                    typeVar = Gen.GetNextTypeVar(text).TypeVar;
                     index.Add(text, typeVar);
                     vars.Add(typeVar);
                 }

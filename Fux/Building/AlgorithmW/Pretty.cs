@@ -11,7 +11,7 @@ namespace Fux.Building.AlgorithmW
 
         private const int maxWidth = 30;
 
-        public static string Expr(Expr expr)
+        public static string ExprStr(Expr expr)
         {
             return Instance.Str(expr);
         }
@@ -32,7 +32,8 @@ namespace Fux.Building.AlgorithmW
         {
             switch (top)
             {
-                case AlgorithmW.Expr.Sugar.Let:
+                case Expr.Lambda:
+                case Expr.Sugar.Let:
                     break;
                 default:
                     var str = Str(top);
@@ -46,7 +47,7 @@ namespace Fux.Building.AlgorithmW
 
             switch (top)
             {
-                case AlgorithmW.Expr.Native:
+                case Expr.Native:
                     Write(Str(top));
                     break;
                 case Expr.Unify expr:
@@ -88,12 +89,15 @@ namespace Fux.Building.AlgorithmW
                         });
                     }
                     break;
+
                 case Expr.Application expr:
                     Print(SugarApp(expr));
                     break;
+
                 case Expr.Let expr:
                     Print(SugarLet(expr));
                     break;
+
                 case Expr.Sugar.Application expr:
                     PrintLine(expr.Exprs[0]);
                     Indent(() =>
@@ -104,6 +108,7 @@ namespace Fux.Building.AlgorithmW
                         }
                     });
                     break;
+
                 case Expr.Sugar.Let expr:
                     WriteLine($"{Lex.KwLet}");
                     Indent(() =>
@@ -118,10 +123,20 @@ namespace Fux.Building.AlgorithmW
                     WriteLine($"{Lex.KwIn}");
                     Indent(() => Print(expr.Expr));
                     break;
+
                 case Expr.Lambda expr:
-                    WriteLine($"{expr.Term} =>");
-                    Indent(() => Print(expr.Expr));
+                    if (expr.Expr is Expr.Lambda)
+                    {
+                        Write($"{expr.Term} => ");
+                        Print(expr.Expr);
+                    }
+                    else
+                    {
+                        WriteLine($"{expr.Term} =>");
+                        Indent(() => Print(expr.Expr));
+                    }
                     break;
+
                 case Expr.Tuple2 tuple2:
                     Write($"(   ");
                     Indent(() => Print(tuple2.Expr1));
@@ -129,21 +144,27 @@ namespace Fux.Building.AlgorithmW
                     Indent(() => Print(tuple2.Expr2));
                     WriteLine($")");
                     break;
+
                 case Expr.DeCons deCons:
                     Write($"<<<{Str(deCons)}>>>");
                     break;
+
                 case Expr.DeCtor deCtor:
                     Write($"{Str(deCtor)}");
                     break;
+
                 case Expr.Record record:
                     Write($"{Str(record)}");
                     break;
+
                 case Expr.Variable variable:
                     Write($"{Str(variable)}");
                     break;
+
                 case Expr.Ctor ctor:
                     Write($"{Str(ctor)}");
                     break;
+
                 default:
                     Assert(false);
                     throw new NotImplementedException();

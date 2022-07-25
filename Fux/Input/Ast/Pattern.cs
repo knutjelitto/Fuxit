@@ -25,6 +25,11 @@ namespace Fux.Input.Ast
 
             public Identifier Identifier { get; }
 
+            public void Deconstruct(out Identifier identifier)
+            {
+                identifier = Identifier;
+            }
+
             public override string ToString() => Identifier.ToString();
         }
 
@@ -75,10 +80,10 @@ namespace Fux.Input.Ast
         {
             public Lambda(List<Pattern> parameters)
             {
-                Parameters = parameters.ToArray();
+                Parameters = parameters;
             }
 
-            public IReadOnlyList<Pattern> Parameters { get; }
+            public List<Pattern> Parameters { get; }
 
             public override string ToString()
             {
@@ -86,9 +91,9 @@ namespace Fux.Input.Ast
             }
         }
 
-        public class DeCtor : PatternImpl
+        public class Ctor : PatternImpl
         {
-            public DeCtor(Identifier name, params Pattern[] arguments)
+            public Ctor(Identifier name, params Pattern[] arguments)
             {
                 Assert(name.IsMultiUpper);
 
@@ -159,6 +164,12 @@ namespace Fux.Input.Ast
 
             public Pattern Pattern1 => Patterns[0];
             public Pattern Pattern2 => Patterns[1];
+
+            public void Deconstruct(out Pattern pattern1, out Pattern pattern2)
+            {
+                pattern1 = Patterns[0];
+                pattern2 = Patterns[1];
+            }
         }
 
         public class Tuple3 : Tuple
@@ -222,9 +233,9 @@ namespace Fux.Input.Ast
             }
         }
 
-        public class DeCons : PatternImpl
+        public class Cons : PatternImpl
         {
-            public DeCons(Pattern first, Pattern rest)
+            public Cons(Pattern first, Pattern rest)
             {
                 First = first;
                 Rest = rest;

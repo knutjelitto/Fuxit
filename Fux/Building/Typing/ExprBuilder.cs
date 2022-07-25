@@ -3,29 +3,30 @@
     public sealed class ExprBuilder
     {
         const string GenTuple2Prefix = "_tuple2";
-        const string GenListPrefix = "_list";
         const string GenVarPrefix = "_var";
         const string GenMatchPrefix = "_match";
         const string GenParamPrefix = "_param";
 
-        private readonly TypeBuilder typeBuilder;
+        private TypeBuilder typeBuilder;
         private readonly BindBuilder bind2;
         private readonly IdGenerator idGenerator;
 
         public ExprBuilder(Module module)
         {
             Module = module;
-            typeBuilder = new TypeBuilder();
+            typeBuilder = new TypeBuilder(new W.TypeVarGenerator(), false);
             bind2 = new BindBuilder(Module, this);
             idGenerator = new(Module);
         }
 
         public Module Module { get; }
         public bool Investigated { get; set; }
+        public W.Environment Env { get; private set; } = W.Environment.Empty();
 
-        public W.Expr Build(ref W.Environment env, A.Decl.Var var, bool investigated)
+        public (W.Environment, W.Expr) Build(A.Decl.Var var, bool investigated)
         {
-            typeBuilder.Investigated = investigated;
+            Env = W.Environment.Empty();
+            typeBuilder = new TypeBuilder(Env.Generator, false);
             Investigated = investigated;
             idGenerator.Clear();
 
@@ -34,22 +35,19 @@
                 Assert(true);
             }
 
-            var varType = typeBuilder.Build(env, var.Type);
+            var wType = typeBuilder.Build(var.Type);
 
             var variable = var.FullName();
-            env = env.Insert(variable.Term, varType);
+            Env = Env.Insert(variable.Term, wType);
 
-            W.Expr wExpr;
-            W.Type wType;
+            var wExpr = BuildVarLambda(var);
 
-            (wExpr, wType) = BuildVarLambda(ref env, var);
+            var expression = new W.Expr.Unify(wExpr, wType);
 
-            var expression = new W.Expr.Unify(wType, wExpr);
-
-            return expression;
+            return (Env, expression);
         }
 
-        private W.Expr Build(ref W.Environment env, A.Expr expr)
+        private W.Expr Build(A.Expr expr)
         {
             if (Investigated)
             {
@@ -60,14 +58,14 @@
             {
                 case A.Identifier identifier:
                     {
-                        return BuildIdentifier(ref env, identifier);
+                        return BuildIdentifier(identifier);
                     }
 
                 case A.Expr.If ifExpr:
                     {
-                        var condition = Build(ref env, ifExpr.Condition);
-                        var ifTrue = Build(ref env, ifExpr.IfTrue);
-                        var ifFalse = Build(ref env, ifExpr.IfFalse);
+                        var condition = Build(ifExpr.Condition);
+                        var ifTrue = Build(ifExpr.IfTrue);
+                        var ifFalse = Build(ifExpr.IfFalse);
 
                         return new W.Expr.Iff(condition, ifTrue, ifFalse);
                     }
@@ -76,7 +74,7 @@
                     {
                         Assert(seqExpr.Count >= 2);
 
-                        return Apply(ref env, seqExpr, seqExpr.Count - 1);
+                        return Apply(seqExpr, seqExpr.Count - 1);
                     }
 
                 case A.Expr.Tuple tupleExpr:
@@ -84,8 +82,8 @@
                         if (tupleExpr.Count == 2)
                         {
                             return new W.Expr.Tuple2(
-                                Build(ref env, tupleExpr[0]),
-                                Build(ref env, tupleExpr[1]));
+                                Build(tupleExpr[0]),
+                                Build(tupleExpr[1]));
                         }
                         break;
                     }
@@ -99,12 +97,12 @@
 
                         Assert(ctorExpr.Name.Resolved is A.Expr.Ref.Ctor);
 
-                        var first = Build(ref env, ctorExpr.Name);
+                        var first = Build(ctorExpr.Name);
 
                         var arguments = new List<W.Expr>();
                         foreach (var arg in ctorExpr.Arguments)
                         {
-                            var argument = Build(ref env, arg);
+                            var argument = Build(arg);
                             arguments.Add(argument);
                         }
 
@@ -131,48 +129,48 @@
                 case A.OpChain chain:
                     {
                         Assert(chain.Resolved is A.Expr.Infix);
-                        return Build(ref env, chain.Resolved);
+                        return Build(chain.Resolved);
                     }
 
                 case A.Expr.Infix infix:
                     {
                         var infixDecl = infix.Op.InfixDecl;
                         Assert(infixDecl != null);
-                        var op = Build(ref env, infixDecl.Expression);
-                        var arg1 = Build(ref env, infix.Lhs.Resolved);
-                        var arg2 = Build(ref env, infix.Rhs.Resolved);
+                        var op = Build(infixDecl.Expression);
+                        var arg1 = Build(infix.Lhs.Resolved);
+                        var arg2 = Build(infix.Rhs.Resolved);
 
                         return new W.Expr.Application(new W.Expr.Application(op, arg1), arg2);
                     }
 
                 case A.Expr.Let let:
                     {
-                        return BuildLetExpr(ref env, let);
+                        return BuildLetExpr(let);
                     }
 
                 case A.Expr.Matcher caseMatch:
                     {
-                        return BuildMatcher(ref env, caseMatch);
+                        return BuildMatcher(caseMatch);
                     }
 
                 case A.Expr.Lambda lambda:
                     {
-                        return BuildLambdaExpr(ref env, lambda);
+                        return BuildLambdaExpr(lambda);
                     }
 
                 case A.Expr.List list:
                     {
-                        return Cons(ref env, list, 0);
+                        return Cons(list, 0);
                     }
 
                 case A.Expr.Ref reference:
                     {
-                        return BuildReference(ref env, reference);
+                        return BuildReference(reference);
                     }
 
                 case A.Pattern pattern:
                     {
-                        return BuildPattern(ref env, pattern);
+                        return BuildPattern(pattern);
                     }
 
                 case A.Expr.Record record:
@@ -186,7 +184,7 @@
                             var name = f.Name.Text;
                             var field = f.Expression == null
                                 ? new W.Expr.Field(name, null)
-                                : new W.Expr.Field(name, Build(ref env, f.Expression));
+                                : new W.Expr.Field(name, Build(f.Expression));
                             fields.Add(field);
                         }
 
@@ -201,7 +199,7 @@
 
             throw NotImplemented(expr);
 
-            W.Expr.List Cons(ref W.Environment env, A.Expr.List list, int index)
+            W.Expr.List Cons(A.Expr.List list, int index)
             {
                 if (index == list.Count)
                 {
@@ -209,38 +207,38 @@
                 }
                 else
                 {
-                    return new W.Expr.Cons(Build(ref env, list[index]), Cons(ref env, list, index + 1));
+                    return new W.Expr.Cons(Build(list[index]), Cons(list, index + 1));
                 }
             }
 
-            W.Expr Apply(ref W.Environment env, A.Expr.Application seq, int index)
+            W.Expr Apply(A.Expr.Application seq, int index)
             {
                 if (index == 1)
                 {
                     return new W.Expr.Application(
-                        Build(ref env, seq[0]),
-                        Build(ref env, seq[1]));
+                        Build(seq[0]),
+                        Build(seq[1]));
                 }
                 else
                 {
                     Assert(index > 1);
                     return new W.Expr.Application(
-                        Apply(ref env, seq, index - 1),
-                        Build(ref env, seq[index]));
+                        Apply(seq, index - 1),
+                        Build(seq[index]));
                 }
             }
         }
 
-        private W.Expr BuildIdentifier(ref W.Environment env, A.Identifier identifier)
+        private W.Expr BuildIdentifier(A.Identifier identifier)
         {
             Assert(identifier.Resolved is A.Expr.Ref);
 
             var reference = (A.Expr.Ref)identifier.Resolved!;
 
-            return BuildReference(ref env, reference);
+            return BuildReference(reference);
         }
 
-        private W.Expr BuildReference(ref W.Environment env, A.Expr.Ref reference)
+        private W.Expr BuildReference(A.Expr.Ref reference)
         {
             switch (reference)
             {
@@ -256,7 +254,7 @@
 
                         var variable = ctor.FullName();
 
-                        var polytype = env.TryGet(variable.Term);
+                        var polytype = Env.TryGet(variable.Term);
 
                         if (polytype == null)
                         {
@@ -269,9 +267,9 @@
                                 type = new A.Type.Function(x, type);
                             }
 
-                            polytype = typeBuilder.Build(env, type);
+                            polytype = typeBuilder.Build(type);
 
-                            env = env.Insert(variable.Term, polytype);
+                            Env = Env.Insert(variable.Term, polytype);
                         }
 
                         return variable;
@@ -285,12 +283,12 @@
 
                         var variable = var.FullName();
 
-                        var polytype = env.TryGet(variable.Term);
+                        var polytype = Env.TryGet(variable.Term);
 
                         if (polytype == null)
                         {
-                            polytype = typeBuilder.Build(env, var.Type);
-                            env = env.Insert(variable.Term, polytype);
+                            polytype = typeBuilder.Build(var.Type);
+                            Env = Env.Insert(variable.Term, polytype);
                         }
 
                         return variable;
@@ -326,7 +324,7 @@
                         Assert(infix.Name.IsSingleOp);
                         Assert(infix.Expression.Resolved is A.Expr.Ref.Var);
 
-                        return Build(ref env, infix.Expression.Resolved);
+                        return Build(infix.Expression.Resolved);
                     }
 
                 default:
@@ -338,7 +336,7 @@
 
         }
 
-        private W.Expr BuildPattern(ref W.Environment env, A.Pattern pattern)
+        private W.Expr BuildPattern(A.Pattern pattern)
         {
             switch (pattern)
             {
@@ -385,12 +383,12 @@
                     {
                         Assert(upper.Identifier.Resolved is A.Expr.Ref.Ctor);
 
-                        var first = Build(ref env, upper.Identifier);
+                        var first = Build(upper.Identifier);
 
                         return first;
                     }
 
-                case A.Pattern.DeCtor deCtor:
+                case A.Pattern.Ctor deCtor:
                     {
                         if (Investigated)
                         {
@@ -399,12 +397,12 @@
 
                         Assert(deCtor.Name.Resolved is A.Expr.Ref.Ctor);
 
-                        var first = Build(ref env, deCtor.Name);
+                        var first = Build(deCtor.Name);
 
                         var arguments = new List<W.Expr>();
                         foreach (var arg in deCtor.Arguments)
                         {
-                            var argument = BuildPattern(ref env, arg);
+                            var argument = BuildPattern(arg);
                             arguments.Add(argument);
                         }
 
@@ -413,11 +411,11 @@
                         return expr;
                     }
 
-                case A.Pattern.DeCons deCons:
+                case A.Pattern.Cons deCons:
                     {
                         var x = new W.Expr.DeCons(
-                            BuildPattern(ref env, deCons.First),
-                            BuildPattern(ref env, deCons.Rest));
+                            BuildPattern(deCons.First),
+                            BuildPattern(deCons.Rest));
 
                         return x;
                     }
@@ -425,16 +423,16 @@
                 case A.Pattern.Tuple2 tuple2:
                     {
                         return new W.Expr.Tuple2(
-                            BuildPattern(ref env, tuple2.Pattern1),
-                            BuildPattern(ref env, tuple2.Pattern2));
+                            BuildPattern(tuple2.Pattern1),
+                            BuildPattern(tuple2.Pattern2));
                     }
 
                 case A.Pattern.Tuple3 tuple3:
                     {
                         return new W.Expr.Tuple3(
-                            BuildPattern(ref env, tuple3.Pattern1),
-                            BuildPattern(ref env, tuple3.Pattern2),
-                            BuildPattern(ref env, tuple3.Pattern3));
+                            BuildPattern(tuple3.Pattern1),
+                            BuildPattern(tuple3.Pattern2),
+                            BuildPattern(tuple3.Pattern3));
                     }
 
                 case A.Pattern.Literal.Integer integer:
@@ -444,7 +442,7 @@
                 case A.Pattern.WithAlias withAlias:
                     {
                         var x = new W.Expr.WithAlias(
-                            BuildPattern(ref env, withAlias.Pattern),
+                            BuildPattern(withAlias.Pattern),
                             new W.Expr.DeVariable(new W.Expr.Variable(withAlias.Alias.Identifier)));
 
                         return x;
@@ -459,9 +457,102 @@
 
         }
 
-        private bool nonforce = false;
+        private W.Expr Destruct(A.Pattern pattern, W.Expr expr, W.Expr inExpr)
+        {
+            switch (pattern)
+            {
+                case A.Pattern.Tuple2(var pattern1, var pattern2):
+                    {
+                        if (expr is W.Expr.Variable variable)
+                        {
+                            var x = Destruct(pattern1, Select(variable, 0),
+                                        Destruct(pattern2, Select(variable, 1),
+                                            inExpr));
+                            return x;
+                        }
+                        else
+                        {
+                            var temp = GenVariable(GenVarPrefix);
 
-        private W.Expr BuildDestructure(ref W.Environment env, W.Expr.Variable matchVariable, A.Pattern pattern, W.Expr caseExpr)
+                            var x = new W.Expr.Let(
+                                temp.Term,
+                                expr,
+                                Destruct(pattern1, Select(temp, 0),
+                                    Destruct(pattern2, Select(temp, 1),
+                                        inExpr)));
+                            return x;
+                        }
+
+                        [DebuggerStepThrough]
+                        static W.Expr Select(W.Expr.Variable variable, int index)
+                        {
+                            return new W.Expr.GetValue(variable, typeGen, index);
+
+                            static W.Polytype typeGen(W.Environment env) => new(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
+                        }
+                    }
+
+                case A.Pattern.LowerId(var lower):
+                    {
+                        var x = new W.Expr.Let(
+                            new W.TermVariable(lower),
+                            expr,
+                            inExpr);
+
+                        return x;
+                    }
+
+                case A.Pattern.Wildcard:
+                    {
+                        return inExpr;
+                    }
+
+                case A.Pattern.Ctor ctorPattern:
+                    {
+                        if (ctorPattern.Name.Resolved is A.Expr.Ref.Ctor ctorRef && ctorRef.Decl is A.Decl.Ctor ctor)
+                        {
+                            Assert(ctorPattern.Arguments.Count == ctor.Arguments.Count);
+
+                            var name = ctor.FullName();
+                            var args = typeBuilder.BuildMulti(ctor.Arguments);
+
+                            for (var i = ctorPattern.Arguments.Count - 1; i >= 0; i--)
+                            {
+                                var arg = ctorPattern.Arguments[i];
+
+                                var variable = GenVariable(GenVarPrefix);
+
+                                var select = Select(expr, i, args[i]);
+
+                                inExpr = new W.Expr.Let(
+                                    variable.Term,
+                                    select,
+                                    Destruct(arg, variable, inExpr));
+                            }
+
+                            return inExpr;
+
+                            W.Expr.GetValue2 Select(W.Expr expr, int i, W.Polytype type)
+                            {
+                                var select = new W.Expr.GetValue2(expr, (env, i) => type, i);
+
+                                return select;
+                            }
+                        }
+
+                        Assert(false);
+                        throw NotImplemented(ctorPattern);
+                    }
+
+                default:
+                    break;
+            }
+
+            Assert(false);
+            throw new NotImplementedException();
+        }
+
+        private W.Expr BuildDestructure(A.Pattern pattern, W.Expr expr, W.Expr inExpr)
         {
             if (Investigated)
             {
@@ -472,22 +563,22 @@
             {
                 case A.Pattern.Wildcard:
                     {
-                        return caseExpr;
+                        return inExpr;
                     }
 
                 case A.Pattern.List list when list.Patterns.Count == 0:
                     {
-                        return caseExpr;
+                        return inExpr;
                     }
 
                 case A.Pattern.Literal.Integer integer:
                     {
-                        return caseExpr;
+                        return inExpr;
                     }
 
                 case A.Pattern.UpperId upper:
                     {
-                        return caseExpr;
+                        return inExpr;
                     }
 
                 case A.Pattern.List list when list.Patterns.Count > 0:
@@ -502,7 +593,7 @@
                         {
                             var variable = new W.Expr.Variable(sign.Name);
 
-                            return new W.Expr.Let(variable.Term, matchVariable, caseExpr);
+                            return new W.Expr.Let(variable.Term, expr, inExpr);
                         }
 
                         Assert(false);
@@ -513,10 +604,10 @@
                     {
                         var variable = new W.Expr.Variable(lower.Identifier);
 
-                        return new W.Expr.Let(variable.Term, matchVariable, caseExpr);
+                        return new W.Expr.Let(variable.Term, expr, inExpr);
                     }
 
-                case A.Pattern.DeCtor deCtor:
+                case A.Pattern.Ctor deCtor:
                     {
                         if (Investigated)
                         {
@@ -535,7 +626,7 @@
                         var args = new List<W.Polytype>();
                         foreach (var arg in ctor.Arguments)
                         {
-                            args.Add(typeBuilder.Build(env, arg));
+                            args.Add(typeBuilder.Build(arg));
                         }
 
                         W.Polytype genType(W.Environment env, int index)
@@ -544,41 +635,40 @@
                             return args![index];
                         }
 
-                        var expr = GenDestruct(ref env, 0);
+                        var result = GenDestruct(0);
 
-                        return expr;
+                        return result;
 
-                        W.Expr GenDestruct(ref W.Environment env, int index)
+                        W.Expr GenDestruct(int index)
                         {
                             if (index == deCtor.Arguments.Count)
                             {
-                                return caseExpr;
+                                return inExpr;
                             }
                             else
                             {
                                 var variable = GenVariable(GenVarPrefix);
 
-                                var select = new W.Expr.GetValue2(matchVariable, genType, index);
+                                var select = new W.Expr.GetValue2(expr, genType, index);
 
                                 return new W.Expr.Let(variable.Term, select, 
-                                    BuildDestructure(ref env, variable, deCtor.Arguments[index], GenDestruct(ref env, index + 1)));
+                                    BuildDestructure(deCtor.Arguments[index], variable, GenDestruct(index + 1)));
                             }
                         }
                     }
 
-
-                case A.Pattern.DeCons deCons:
+                case A.Pattern.Cons deCons:
                     {
                         var var1 = GenVariable(GenVarPrefix);
-                        var select1 = new W.Expr.GetValue(matchVariable, genType, 0);
+                        var select1 = new W.Expr.GetValue(expr, genType, 0);
                         var var2 = GenVariable(GenVarPrefix);
-                        var select2 = new W.Expr.GetValue(matchVariable, genType, 1);
+                        var select2 = new W.Expr.GetValue(expr, genType, 1);
 
                         var let =
                             new W.Expr.Let(var1.Term, select1,
                                 new W.Expr.Let(var2.Term, select2,
-                                    BuildDestructure(ref env, var1, deCons.First,
-                                        BuildDestructure(ref env, var2, deCons.Rest, caseExpr))));
+                                    BuildDestructure(deCons.First, var1,
+                                        BuildDestructure(deCons.Rest, var2, inExpr))));
 
                         return let;
 
@@ -596,15 +686,15 @@
                         }
 
                         var var1 = GenVariable(GenVarPrefix);
-                        var select1 = new W.Expr.GetValue(matchVariable, genType, 0);
+                        var select1 = new W.Expr.GetValue(expr, genType, 0);
                         var var2 = GenVariable(GenVarPrefix);
-                        var select2 = new W.Expr.GetValue(matchVariable, genType, 1);
+                        var select2 = new W.Expr.GetValue(expr, genType, 1);
 
                         var let =
                             new W.Expr.Let(var1.Term, select1,
                                 new W.Expr.Let(var2.Term, select2,
-                                    BuildDestructure(ref env, var1, tuple2.Pattern1,
-                                        BuildDestructure(ref env, var2, tuple2.Pattern2, caseExpr))));
+                                    BuildDestructure(tuple2.Pattern1, var1,
+                                        BuildDestructure(tuple2.Pattern2, var2, inExpr))));
 
                         return let;
 
@@ -616,12 +706,10 @@
 
                 case A.Pattern.Tuple3 tuple3:
                     {
-                        Assert(nonforce);
-
                         return new W.Expr.Tuple3(
-                            BuildDestructure(ref env, matchVariable, tuple3.Pattern1, caseExpr),
-                            BuildDestructure(ref env, matchVariable, tuple3.Pattern2, caseExpr),
-                            BuildDestructure(ref env, matchVariable, tuple3.Pattern3, caseExpr));
+                            BuildDestructure(tuple3.Pattern1, expr, inExpr),
+                            BuildDestructure(tuple3.Pattern2, expr, inExpr),
+                            BuildDestructure(tuple3.Pattern3, expr, inExpr));
                     }
 
                 case A.Pattern.WithAlias withAlias:
@@ -630,8 +718,8 @@
 
                         var let = new W.Expr.Let(
                             variable.Term,
-                            matchVariable,
-                            BuildDestructure(ref env, variable, withAlias.Pattern, caseExpr));
+                            expr,
+                            BuildDestructure(withAlias.Pattern, variable, inExpr));
 
                         return let;
                     }
@@ -645,123 +733,107 @@
 
         }
 
-        private (W.Expr, W.Type) BuildVarLambda(ref W.Environment env, A.Decl.Var var)
+        private W.Expr BuildVarLambda(A.Decl.Var var)
         {
             if (Investigated)
             {
                 Assert(true);
             }
 
-            var varType = typeBuilder.Build(env, var.Type);
+            var expr = Build(var.Expression);
+            var parameters = var.Parameters.Select(p => p.Pattern).ToList();
 
-            var expr = Build(ref env, var.Expression);
-
-            var (itypes, iresult) = bind2.Invert(varType.Type);
-            var (types, result) = bind2.Flatten(varType.Type);
-
-            var patterns = var.Parameters.Select(p => p.Pattern).Cast<A.Pattern>().Reverse().ToList();
-
-            var i = 0;
-            for (; i < patterns.Count; i++)
+            for (var i = parameters.Count - 1; i >= 0; i--)
             {
-                var pattern = patterns[i];
-                var type = itypes[i];
+                var pattern = parameters[i];
 
                 var name = GenVariable(GenParamPrefix);
 
-                expr = BuildDestructure(ref env, name, pattern, expr);
+                expr = Destruct(pattern, name, expr);
                 expr = new W.Expr.Lambda(name.Term, expr);
             }
 
-            var wtype = bind2.Recombine(itypes, 0, iresult);
-
-            return (expr, varType.Type);
+            return Shorten(expr);
         }
 
-        private W.Expr BuildLambdaExpr(ref W.Environment env, A.Expr.Lambda lambdaExpr)
+        private W.Expr BuildLambdaExpr(A.Expr.Lambda lambda)
         {
             if (Investigated)
             {
                 Assert(true);
             }
 
-            var expr = Build(ref env, lambdaExpr.Expression);
+            var expr = Build(lambda.Expression);
+            var parameters = lambda.Parameters;
 
-            foreach (var prm in lambdaExpr.Parameters.Parameters.Reverse())
+            for (var i = parameters.Count - 1; i >= 0; i--)
             {
-                switch (prm)
+                var pattern = parameters[i];
+
+                var name = GenVariable(GenParamPrefix);
+
+                expr = Destruct(pattern, name, expr);
+                expr = new W.Expr.Lambda(name.Term, expr);
+            }
+
+            return Shorten(expr);
+        }
+
+        private W.Expr Shorten(W.Expr expr)
+        {
+            if (expr is W.Expr.Lambda lambda)
+            {
+                if (lambda.Expr is W.Expr.Let let)
                 {
-                    case A.Pattern.LowerId lower:
+                    Assert(true);
+
+                    if (let.Expr1 is W.Expr.Variable variable)
+                    {
+                        if (lambda.Term == variable.Term)
                         {
-                            var name = new W.TermVariable(lower.Identifier);
-                            var type = env.GetNextTypeVar();
-                            env = env.Insert(name, new W.Polytype(type));
+                            var result = new W.Expr.Lambda(let.Term, Shorten(let.Expr2));
 
-                            expr = new W.Expr.Lambda(name, expr);
-
-                            break;
+                            return result;
                         }
-                    case A.Pattern.Wildcard:
-                        {
-                            var name = new W.TermVariable(GenWildcard());
-                            var type = env.GetNextTypeVar();
-                            env = env.Insert(name, new W.Polytype(type));
+                    }
+                }
+                else
+                {
+                    var result = new W.Expr.Lambda(lambda.Term, Shorten(lambda.Expr));
 
-                            expr = new W.Expr.Lambda(name, expr);
-
-                            break;
-                        }
-                    case A.Pattern.Tuple2 tuple:
-                        {
-                            var name = GenVariable(GenParamPrefix);
-                            var type = env.GetNextTypeVar();
-                            env = env.Insert(name.Term, new W.Polytype(type));
-
-                            expr = BuildDestructure(ref env, name, prm, expr);
-                            expr = new W.Expr.Lambda(name.Term, expr);
-
-                            break;
-                        }
-                    default:
-                        {
-                            Assert(false);
-
-                            var name = GenVariable(GenParamPrefix);
-
-                            break;
-                        }
+                    return result;
                 }
             }
 
             return expr;
         }
 
-        private W.Expr BuildMatcher(ref W.Environment env, A.Expr.Matcher matcher)
+        private W.Expr BuildMatcher(A.Expr.Matcher matcher)
         {
             if (Investigated)
             {
                 Assert(true);
             }
 
-            var matchExpr = Build(ref env, matcher.Expression);
+            var matchExpr = Build(matcher.Expression);
 
             if (matchExpr is W.Expr.Variable variable)
             {
-                return GenMatcher(ref env, variable);
+                return GenMatcher(variable);
             }
             else
             {
                 variable = GenVariable(GenMatchPrefix);
 
-                return new W.Expr.Let(variable.Term, matchExpr, GenMatcher(ref env, variable));
+                return new W.Expr.Let(variable.Term, matchExpr, GenMatcher(variable));
             }
 
-            W.Expr.Matcher GenMatcher(ref W.Environment env, W.Expr.Variable variable)
+            W.Expr.Matcher GenMatcher(W.Expr.Variable variable)
             {
                 var cases = new List<W.Expr.Case>();
                 foreach (var caseExpr in matcher.Cases)
                 {
-                    var abstraction = BuildCaseExpr(ref env, variable, caseExpr);
+                    var abstraction = BuildCaseExpr(variable, caseExpr);
                     cases.Add(abstraction);
                 }
 
@@ -769,86 +841,46 @@
             }
         }
 
-        private W.Expr.Case BuildCaseExpr(ref W.Environment env, W.Expr.Variable matchExpr, A.Expr.Case cheese)
+        private W.Expr.Case BuildCaseExpr(W.Expr.Variable matchExpr, A.Expr.Case cheese)
         {
             if (Investigated)
             {
                 Assert(true);
             }
 
-            var caseExpr = Build(ref env, cheese.Expression);
-            var pattern = BuildPattern(ref env, cheese.Pattern);
-            var destructure = BuildDestructure(ref env, matchExpr, cheese.Pattern, caseExpr);
+            var caseExpr = Build(cheese.Expression);
+            var pattern = BuildPattern(cheese.Pattern);
+            var destructure = BuildDestructure(cheese.Pattern, matchExpr, caseExpr);
 
-            return new W.Expr.Case(env, pattern, destructure);
+            return new W.Expr.Case(Env, pattern, destructure);
         }
 
-        private W.Expr BuildLetExpr(ref W.Environment env, A.Expr.Let letExpr)
+        private W.Expr BuildLetExpr(A.Expr.Let letExpr)
         {
             if (Investigated)
             {
                 Assert(true);
             }
 
-            W.Expr inExpr = Build(ref env, letExpr.InExpression);
+            W.Expr inExpr = Build(letExpr.InExpression);
 
-            foreach (var let in letExpr.LetDecls.AsEnumerable().Reverse())
+            for (var i = letExpr.LetDecls.Count - 1; i >= 0; i--)
             {
-                inExpr = BuildLet(ref env, let, inExpr);
+                inExpr = BuildLet(letExpr.LetDecls[i], inExpr);
             }
 
             return inExpr;
         }
 
-        private W.Expr.Let BuildLet(ref W.Environment env, A.Decl let, W.Expr inExpr)
+        private W.Expr BuildLet(A.Decl let, W.Expr inExpr)
         {
             switch (let)
             {
-                case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple2 tuple2:
+                case A.Decl.LetAssign assign:
                     {
-                        var name = GenVariable(GenVarPrefix);
-                        var expr = Build(ref env, assign.Expression);
-
-                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().Single().Identifier);
-                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().Single().Identifier);
-
-                        var first = new W.Expr.GetValue(name, typeGen, 0);
-                        var second = new W.Expr.GetValue(name, typeGen, 1);
-
-                        return new W.Expr.Let(name.Term, expr,
-                            new W.Expr.Let(name1, first,
-                                new W.Expr.Let(name2, second, inExpr)));
-
-                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
+                        return Destruct(assign.Pattern, Build(assign.Expression), inExpr);
                     }
 
-                case A.Decl.LetAssign assign when assign.Pattern is A.Pattern.Tuple3 tuple2:
-                    {
-                        var name = GenVariable(GenVarPrefix);
-                        var expr = Build(ref env, assign.Expression);
-
-                        var name1 = new W.TermVariable(tuple2.Pattern1.ExractMatchIds().Single().Identifier);
-                        var name2 = new W.TermVariable(tuple2.Pattern2.ExractMatchIds().Single().Identifier);
-                        var name3 = new W.TermVariable(tuple2.Pattern3.ExractMatchIds().Single().Identifier);
-
-                        var first = new W.Expr.GetValue(name, typeGen, 0);
-                        var second = new W.Expr.GetValue(name, typeGen, 1);
-                        var third = new W.Expr.GetValue(name, typeGen, 2);
-
-                        return new W.Expr.Let(name.Term, expr,
-                            new W.Expr.Let(name1, first,
-                                new W.Expr.Let(name2, second,
-                                    new W.Expr.Let(name3, third, inExpr))));
-
-                        W.Polytype typeGen(W.Environment env) => new W.Polytype(new W.Type.Tuple3(env.GetNextTypeVar(), env.GetNextTypeVar(), env.GetNextTypeVar()));
-                    }
-                case A.Decl.Var var when var.Parameters.Count == 0:
-                    {
-                        var name = new W.TermVariable(var.Name);
-                        var expr = Build(ref env, var.Expression);
-
-                        return new W.Expr.Let(name, expr, inExpr);
-                    }
                 case A.Decl.Var var:
                     {
                         if (Investigated)
@@ -857,61 +889,11 @@
                         }
 
                         var name = new W.TermVariable(var.Name);
-                        var expr = Build(ref env, var.Expression);
+                        var expr = Build(var.Expression);
 
-                        foreach (var parameter in var.Parameters.Reverse())
+                        foreach (var pattern in var.Parameters.Reverse().Select(p => p.Pattern))
                         {
-                            Assert(parameter.Pattern is A.Pattern);
-
-                            var pattern = (A.Pattern)parameter.Pattern;
-
                             expr = Decompose(pattern, expr);
-
-                            W.Expr Decompose(A.Pattern pattern, W.Expr expr)
-                            {
-                                switch (pattern)
-                                {
-                                    case A.Pattern.LowerId lower:
-                                        {
-                                            var term = new W.TermVariable(lower.Identifier);
-                                            return new W.Expr.Lambda(term, expr);
-                                        }
-                                    case A.Pattern.Tuple2 tuple2:
-                                        {
-                                            var variable = GenVariable(GenTuple2Prefix);
-                                            var get1 = new W.Expr.GetValue(variable, typeGen, 0);
-                                            var get2 = new W.Expr.GetValue(variable, typeGen, 1);
-                                            expr = Let(tuple2.Pattern2, get2, expr);
-                                            expr = Let(tuple2.Pattern1, get1, expr);
-                                            expr = new W.Expr.Lambda(variable.Term, expr);
-                                            return expr;
-
-                                            W.Polytype typeGen(W.Environment env) =>  new W.Polytype(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
-                                        }
-                                    default:
-                                        Assert(false);
-                                        throw new NotImplementedException();
-                                }
-                            }
-
-                            W.Expr Let(A.Pattern pattern, W.Expr get, W.Expr expr)
-                            {
-                                switch (pattern)
-                                {
-                                    case A.Pattern.LowerId lower:
-                                        {
-                                            var term = new W.TermVariable(lower.Identifier);
-                                            return new W.Expr.Let(term, get, expr);
-                                        }
-                                    case A.Pattern.Signature signature when signature.Parameters.Count == 0:
-                                        {
-                                            var term = new W.TermVariable(signature.Name);
-                                            return new W.Expr.Let(term, get, expr);
-                                        }
-                                }
-                                Assert(false);
-                                throw new NotImplementedException();
-                            }
                         }
 
                         return new W.Expr.Let(name, expr, inExpr);
@@ -922,6 +904,56 @@
 
             Assert(true);
             throw NotImplemented(let);
+        }
+
+        W.Expr Decompose(A.Pattern pattern, W.Expr expr)
+        {
+            switch (pattern)
+            {
+                case A.Pattern.LowerId lower:
+                    {
+                        var term = new W.TermVariable(lower.Identifier);
+                        return new W.Expr.Lambda(term, expr);
+                    }
+                case A.Pattern.Tuple2 tuple2:
+                    {
+                        if (Investigated)
+                        {
+                            Assert(true);
+                        }
+                        var variable = GenVariable(GenTuple2Prefix);
+                        var get1 = new W.Expr.GetValue(variable, typeGen, 0);
+                        var get2 = new W.Expr.GetValue(variable, typeGen, 1);
+                        expr = Let(tuple2.Pattern2, get2, expr);
+                        expr = Let(tuple2.Pattern1, get1, expr);
+                        expr = new W.Expr.Lambda(variable.Term, expr);
+                        return expr;
+
+                        static W.Polytype typeGen(W.Environment env) => new(new W.Type.Tuple2(env.GetNextTypeVar(), env.GetNextTypeVar()));
+                    }
+                default:
+                    Assert(false);
+                    throw new NotImplementedException();
+            }
+        }
+
+        W.Expr Let(A.Pattern pattern, W.Expr get, W.Expr expr)
+        {
+            switch (pattern)
+            {
+                case A.Pattern.LowerId lower:
+                    {
+                        var term = new W.TermVariable(lower.Identifier);
+                        return new W.Expr.Let(term, get, expr);
+                    }
+                case A.Pattern.Signature signature when signature.Parameters.Count == 0:
+                    {
+                        var term = new W.TermVariable(signature.Name);
+                        return new W.Expr.Let(term, get, expr);
+                    }
+            }
+            Assert(false);
+            throw new NotImplementedException();
         }
 
         private static Exception NotImplemented(A.Node node)

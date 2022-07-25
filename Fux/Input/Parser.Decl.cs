@@ -245,12 +245,12 @@ namespace Fux.Input
                 }
                 else
                 {
-                    return VarDecl(cursor);
+                    return VarDecl(cursor, inLet: true);
                 }
             });
         }
 
-        public A.Decl VarDecl(Cursor cursor)
+        public A.Decl VarDecl(Cursor cursor, bool inLet)
         {
             return cursor.Scope<A.Decl>(cursor =>
             {
@@ -273,9 +273,16 @@ namespace Fux.Input
                 {
                     var name = lower.Identifier.SingleLower();
 
-                    var parameters = new A.Parameters(Enumerable.Empty<A.Decl.Parameter>());
+                    if (inLet && true)
+                    {
+                        return new A.Decl.LetAssign(pattern, expression);
+                    }
+                    else
+                    {
+                        var parameters = new A.Parameters(Enumerable.Empty<A.Decl.Parameter>());
 
-                    return new A.Decl.Var(Module, name, parameters, expression);
+                        return new A.Decl.Var(Module, name, parameters, expression);
+                    }
                 }
                 else
                 {

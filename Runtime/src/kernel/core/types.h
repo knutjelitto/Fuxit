@@ -8,10 +8,10 @@
 
 // WEBASSEMBLY PRIMITIVE TYPES
 
-typedef char i8;
-typedef short i16;
-typedef int i32;
-typedef long long int i64;
+typedef signed char i8;
+typedef signed short i16;
+typedef signed int i32;
+typedef signed long long int i64;
 
 static_assert(sizeof(i8) == 1);
 static_assert(sizeof(i16) == 2);

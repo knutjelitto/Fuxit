@@ -84,12 +84,11 @@
             }
 
             var inferrer = new W.Inferrer();
-            var env = inferrer.GetEmptyEnvironment();
 
-            Assert(var.Type != null);
+            //Assert(var.Type != null);
             Assert(var.Parameters.Count >= 0);
 
-            var expression = exprBuilder.Build(ref env, var, investigated);
+            var (env, expression) = exprBuilder.Build(var, investigated);
 
             Writer.Indent(() =>
             {

@@ -74,7 +74,7 @@
                         break;
                     }
 
-                case A.Pattern.DeCons destruct:
+                case A.Pattern.Cons destruct:
                     {
                         foreach (var pim in Flatten(destruct.First, genWildcard, true))
                         {
@@ -99,7 +99,7 @@
                         break;
                     }
 
-                case A.Pattern.DeCtor ctor:
+                case A.Pattern.Ctor ctor:
                     {
                         foreach (var argument in ctor.Arguments)
                         {

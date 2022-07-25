@@ -10,9 +10,9 @@
         public Parser Parser { get; }
         public ExprParser Expr => Parser.Expr;
 
-        public A.Pattern.Lambda Lambda(Cursor cursor)
+        public List<A.Pattern> LambdaParameters(Cursor cursor)
         {
-            return new A.Pattern.Lambda(CollectAtomic(cursor));
+            return CollectAtomic(cursor);
         }
 
         public A.Pattern Pattern(Cursor cursor)
@@ -25,7 +25,7 @@
 
                 var rest = Pattern(cursor);
 
-                return new A.Pattern.DeCons(pattern, rest);
+                return new A.Pattern.Cons(pattern, rest);
             }
 
             return pattern;
@@ -162,7 +162,7 @@
                 patterns.Add(pattern);
             }
 
-            var ctor = new A.Pattern.DeCtor(name, patterns.ToArray());
+            var ctor = new A.Pattern.Ctor(name, patterns.ToArray());
 
             return ctor;
         }

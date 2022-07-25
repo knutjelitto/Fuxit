@@ -33,7 +33,7 @@ WASM2WAT	= wasm-dis
 WASM2C		= wasm2c
 
 EXPORTS = square sum
-SOURCES = $(wildcard *.c) src/Object.cpp src/kernel/core/core.c src/kernel/math/math.c
+SOURCES = $(wildcard *.c) $(wildcard src/kernel/math/*.c) src/Object.cpp src/kernel/core/core.c
 BUILD   = DEBUG
 
 #------------------------------------------------------------------------------------------------------
@@ -58,7 +58,6 @@ CCFLAGS  := $(DBGCFLAGS) -Ofast -std=c2x $(INCLUDES)
 
 # Global compiler flags for Wasm targeting
 CLANGFLAGS := -target wasm32 -nostdinc
-#CLANGFLAGS += -D__EMSCRIPTEN__ -D_LIBCPP_ABI_VERSION=2
 CLANGFLAGS += -fvisibility=hidden -fno-builtin -fno-exceptions -fno-threadsafe-statics
 
 # Flags for wasm-ld
@@ -67,7 +66,6 @@ LDFLAGS += -allow-undefined
 #LDFLAGS += -import-memory
 LDFLAGS += -initial-memory=1048576
 LDFLAGS += -max-memory=1048576
-#LDFLAGS += -export=__wasm_call_ctors
 LDFLAGS += -export-all
 LDFLAGS += $(addprefix -export=,$(patsubst _%,%,$(strip $(EXPORTS))))
 
@@ -96,12 +94,14 @@ clean:
 	@$(if $(wildcard $(OUTDIR)),$(if $(ISWIN),rmdir /S /Q,rm -rf) "$(OUTDIR)" $(PIPETONULL))
 
 # Generate a list of .o files to build, include dependency rules for source files, then compile files
-#OBJS := $(addprefix $(OUTDIR)/,$(notdir $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))))
 OBJS := $(addprefix $(OUTDIR)/,$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES))))
+
 -include $(OBJS:%.o=%.d)
-#MAKEOBJ = $(OUTDIR)/$(basename $(notdir $(1))).o: $(1) ; $$(call COMPILE,$$@,$$<,$(2),$(3) $$(FLAGS))
+
 MAKEOBJ = $(OUTDIR)/$(basename $(1)).o: $(1) ; $$(call COMPILE,$$@,$$<,$(2),$(3) $$(FLAGS))
+
 $(foreach F,$(filter %.cpp,$(SOURCES)),$(eval $(call MAKEOBJ,$(F),$$(CXX),$$(CXXFLAGS))))
+
 $(foreach F,$(filter %.c  ,$(SOURCES)),$(eval $(call MAKEOBJ,$(F),$$(CC),$$(CCFLAGS))))
 
 $(OUTDIR)/output.wasm : Makefile $(OBJS)

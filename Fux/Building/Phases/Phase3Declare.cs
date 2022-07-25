@@ -313,7 +313,7 @@ namespace Fux.Building.Phases
                     case A.Expr.Lambda lambda:
                         {
                             lambda.Scope.Parent = scope;
-                            foreach (var parameter in lambda.Parameters.ExtractMatchNames())
+                            foreach (var parameter in lambda.Parameters.SelectMany(p => p.ExtractMatchNames()))
                             {
                                 lambda.Scope.Add(parameter);
                             }

@@ -6,5 +6,6 @@
         "Test"
     ],
     "dependencies": {
+        "fux/core": 1
     }
 }

@@ -30,8 +30,8 @@ from Richard [here][rt].
 [rt]: https://youtu.be/IcgmSRJHu_8?t=1m14s
 -}
 type Bool
-    = True
-    | False
+    = False
+    | True
 
 
 {-| Negate a boolean value.
@@ -41,7 +41,7 @@ type Bool
 -}
 not : Bool -> Bool
 not =
-  Fux.Core.Bool.not
+    Fux.Core.Bool.not
 
 
 {-| The logical AND operator. `True` if both inputs are `True`.
@@ -57,7 +57,7 @@ and just return `False` overall.
 -}
 and : Bool -> Bool -> Bool
 and =
-  Fux.Core.Bool.and
+    Fux.Core.Bool.and
 
 
 {-| The logical OR operator. `True` if one or both inputs are `True`.
@@ -73,7 +73,7 @@ and just return `True` overall.
 -}
 or : Bool -> Bool -> Bool
 or =
-  Fux.Core.Bool.or
+    Fux.Core.Bool.or
 
 
 {-| The exclusive-or operator. `True` if exactly one input is `True`.
@@ -85,4 +85,4 @@ or =
 -}
 xor : Bool -> Bool -> Bool
 xor =
-  Fux.Core.Bool.xor
+    Fux.Core.Bool.xor

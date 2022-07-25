@@ -319,7 +319,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.DeCons destruct:
+                    case A.Pattern.Cons destruct:
 {
                             ResolvePattern(scope, destruct.First);
                             ResolvePattern(scope, destruct.Rest);
@@ -360,7 +360,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.DeCtor ctor:
+                    case A.Pattern.Ctor ctor:
                         {
                             ResolveExpr(scope, ctor.Name);
                             foreach (var pattern in ctor.Arguments)
@@ -498,7 +498,10 @@ namespace Fux.Building.Phases
 
                     case A.Expr.Lambda lambda:
                         {
-                            ResolvePattern(lambda.Scope, lambda.Parameters);
+                            foreach (var pattern in lambda.Parameters)
+                            {
+                                ResolvePattern(lambda.Scope, pattern);
+                            }
                             ResolveExpr(lambda.Scope, lambda.Expression);
                             break;
                         }
@@ -601,7 +604,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.DeCons destruct:
+                    case A.Pattern.Cons destruct:
                         {
                             ResolvePattern(scope, destruct.First);
                             ResolvePattern(scope, destruct.Rest);
@@ -642,7 +645,7 @@ namespace Fux.Building.Phases
                             break;
                         }
 
-                    case A.Pattern.DeCtor ctor:
+                    case A.Pattern.Ctor ctor:
                         {
                             ResolveExpr(scope, ctor.Name);
                             foreach (var pattern in ctor.Arguments)

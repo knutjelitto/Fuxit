@@ -46,16 +46,18 @@ namespace Fux.Building.AlgorithmW
 
             switch (expression)
             {
-                case Expr.Unify({ } type, { } expr):
+                case Expr.Unify({ } expr, { } type):
                     {
                         if (Investigated)
                         {
                             Assert(true);
                         }
 
+                        var typee = InstantiateType(type, env);
+
                         var (s1, type2) = InferType(expr, env);
-                        var s2 = MostGeneralUnifier(type, type2);
-                        return (ComposeSubstitutions(s2, s1), ApplySubstitution(type, s2));
+                        var s2 = MostGeneralUnifier(typee, type2);
+                        return (ComposeSubstitutions(s2, s1), ApplySubstitution(typee, s2));
                     }
 
                 case Expr.Tuple2({ } expr1, { } expr2):

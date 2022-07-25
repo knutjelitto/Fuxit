@@ -12,7 +12,9 @@
 			"*.six": "ceylon",
 			"*.sax": "ceylon",
 			"*.fux": "elm",
-			"stdint.h": "c"
+			"stdint.h": "c",
+			"features.h": "c",
+			"math.h": "c"
 		}
 	}
 }

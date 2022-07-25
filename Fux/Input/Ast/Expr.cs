@@ -159,20 +159,21 @@ namespace Fux.Input.Ast
         }
         public sealed class Lambda : ExprImpl
         {
-            public Lambda(Pattern.Lambda parameters, Expr expr)
+            public Lambda(List<Pattern> parameters, Expr expr)
             {
                 Parameters = parameters;
                 Expression = expr;
             }
 
-            public Pattern.Lambda Parameters { get; set; }
+            public List<Pattern> Parameters { get; set; }
             public Expr Expression { get; set; }
 
             public LetScope Scope { get; } = new();
 
             public override string ToString()
             {
-                return Protected($"{Lex.Lambda}{Parameters} {Lex.Arrow} {Expression}");
+                var parameters = string.Join(" ", Parameters);
+                return Protected($"{Lex.Lambda}{parameters} {Lex.Arrow} {Expression}");
             }
 
             public override void PP(Writer writer)

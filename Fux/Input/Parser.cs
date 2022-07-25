@@ -103,7 +103,7 @@ namespace Fux.Input
                 }
                 else
                 {
-                    outer = Decl.VarDecl(cursor);
+                    outer = Decl.VarDecl(cursor, inLet: false);
                 }
 
                 if (cursor.More())
